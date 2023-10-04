@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model children {
+  id          Int       @id @default(autoincrement())
+  family_id   Int
+  person_id   Int
+  school_id   Int?
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  school      school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_CHILDREN_SCHOOL1")
+  person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
+  family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
+
+  @@index([school_id], map: "fk_CHILDREN_SCHOOL1_idx")
+  @@index([person_id], map: "fk_children_PERSON1_idx")
+  @@index([family_id], map: "fk_children_family1_idx")
+}
+
+model district {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(80)
+  province_id Int
+  province    province @relation(fields: [province_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_DISTRICT_PROVINCE1")
+  home        home[]
+  school      school[]
+
+  @@index([province_id], map: "fk_DISTRICT_PROVINCE1_idx")
+}
+
+model doc {
+  id          Int       @id @default(autoincrement())
+  NAME        String    @db.VarChar(60)
+  person_id   Int
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  update_time DateTime? @db.Timestamp(0)
+  person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_DOC_PERSON1")
+
+  @@index([person_id], map: "fk_DOC_PERSON1_idx")
+}
+
+model family {
+  id                        Int        @id @default(autoincrement())
+  name                      String     @db.VarChar(255)
+  padreId                   Int?
+  madreId                   Int?
+  home_id                   Int?
+  create_time               DateTime?  @default(now()) @db.Timestamp(0)
+  update_time               DateTime?  @db.Timestamp(0)
+  children                  children[]
+  home                      home?      @relation(fields: [home_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_FAMILY_HOME1")
+  user_family_padreIdTouser user?      @relation("family_padreIdTouser", fields: [padreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
+  user_family_madreIdTouser user?      @relation("family_madreIdTouser", fields: [madreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
+  income                    income[]
+
+  @@index([home_id], map: "fk_FAMILY_HOME1_idx")
+  @@index([padreId], map: "fk_family_USER1_idx")
+  @@index([madreId], map: "fk_family_USER2_idx")
+}
+
+model home {
+  id          Int       @id @default(autoincrement())
+  address     String    @db.VarChar(255)
+  reference   String?   @db.Text
+  doc         String?   @db.VarChar(60)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  update_time DateTime? @db.Timestamp(0)
+  district_id Int
+  family      family[]
+  district    district  @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_HOME_DISTRICT1")
+
+  @@index([district_id], map: "fk_HOME_DISTRICT1_idx")
+}
+
+model income {
+  id          Int       @id @default(autoincrement())
+  range_id    Int
+  family_id   Int
+  doc         String?   @db.VarChar(60)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  update_time DateTime? @db.Timestamp(0)
+  family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incomes_FAMILY1")
+  range       range     @relation(fields: [range_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incomes_range1")
+
+  @@index([family_id], map: "fk_incomes_FAMILY1_idx")
+  @@index([range_id], map: "fk_incomes_range1_idx")
+}
+
+model person {
+  id           Int              @id @default(autoincrement())
+  name         String           @db.VarChar(120)
+  surname      String           @db.VarChar(45)
+  lastname     String           @db.VarChar(45)
+  doc_number   String           @unique(map: "doc_number_UNIQUE") @db.Char(9)
+  ubigeo       String?          @db.VarChar(45)
+  issuance_doc DateTime?        @db.Date
+  civil_status String?          @db.VarChar(45)
+  gender       person_gender?
+  profession   String?          @db.VarChar(255)
+  type_doc     person_type_doc?
+  creaate_time DateTime?        @default(now()) @db.Timestamp(0)
+  update_time  DateTime?        @db.Timestamp(0)
+  children     children[]
+  doc          doc[]
+  user         user[]
+}
+
+model province {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(80)
+  region_id Int
+  district  district[]
+  region    region     @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_PROVINCE_REGION1")
+
+  @@index([region_id], map: "fk_PROVINCE_REGION1_idx")
+}
+
+model range {
+  id     Int      @id @default(autoincrement())
+  name   String?  @db.VarChar(150)
+  income income[]
+}
+
+model region {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(60)
+  province province[]
+}
+
+model school {
+  id          Int        @id @default(autoincrement())
+  name        String?    @db.VarChar(45)
+  grade       String?    @db.VarChar(45)
+  lib_doc     String?    @db.VarChar(60)
+  district_id Int
+  create_time DateTime?  @default(now()) @db.Timestamp(0)
+  update_time DateTime?  @db.Timestamp(0)
+  children    children[]
+  district    district   @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_SCHOOL_DISTRICT1")
+
+  @@index([district_id], map: "fk_SCHOOL_DISTRICT1_idx")
+}
+
+model user {
+  id                          Int       @id @default(autoincrement())
+  email                       String    @unique(map: "email_UNIQUE") @db.VarChar(200)
+  phone                       String    @db.Char(9)
+  password                    String?   @db.VarChar(60)
+  confirmed_email             Int?      @default(0) @db.TinyInt
+  confirmed_phone             Int?      @default(0) @db.TinyInt
+  create_time                 DateTime? @default(now()) @db.Timestamp(0)
+  update_time                 DateTime? @db.Timestamp(0)
+  role                        Int       @default(1)
+  token                       String?   @db.VarChar(60)
+  code                        String?   @db.Char(5)
+  mauticId                    Int?
+  person_id                   Int
+  family_family_padreIdTouser family[]  @relation("family_padreIdTouser")
+  family_family_madreIdTouser family[]  @relation("family_madreIdTouser")
+  person                      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_USER_PERSON")
+
+  @@index([person_id], map: "fk_USER_PERSON_idx")
+}
+
+enum person_gender {
+  M
+  F
+}
+
+enum person_type_doc {
+  DNI
+  CE
+}
