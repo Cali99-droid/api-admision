@@ -12,10 +12,10 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: "http://localhost:3001/api",
+      url: "http://api.dev-solware.com/api",
     },
     {
-      url: "https://myurldeploy/api",
+      url: "http://localhost:3001/api",
     },
   ],
   components: {
