@@ -20,12 +20,20 @@ export const validatorToken = [
   },
 ];
 
-// const validatorLogin = [
-//   check("password").exists().notEmpty().isLength({ min: 3, max: 15 }),
-//   check("email").exists().notEmpty().isEmail(),
-//   (req, res, next) => {
-//     return validateResults(req, res, next);
-//   },
-// ];
+export const validatorPassword = [
+  check("password").exists().notEmpty().isLength({ min: 5, max: 50 }),
+  check("email").exists().notEmpty().isEmail(),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
+
+export const validatorLogin = [
+  check("password").exists().notEmpty().isLength({ min: 5, max: 50 }),
+  check("email").exists().notEmpty().isEmail(),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 
 // module.exports = { validatorRegister, validatorLogin };
