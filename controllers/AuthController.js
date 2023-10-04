@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 const registerUser = async (req, res) => {
   try {
     req = matchedData(req);
-    const { name, lastname, surname, doc_number, email, phone } = req.body;
+    const { name, lastname, surname, doc_number, email, phone } = req;
 
     //verificar emails y número de documento duplicados
     const existsDoc = await prisma.person.findFirst({
@@ -65,7 +65,7 @@ const registerUser = async (req, res) => {
       },
     });
     res.status(201);
-    res.send(user);
+    res.send({ id: user.id });
 
     //mautic email
   } catch (error) {
@@ -77,7 +77,7 @@ const registerUser = async (req, res) => {
 const confirmEmail = async (req, res) => {
   try {
     req = matchedData(req);
-    const { token } = req.params;
+    const { token, password } = req;
 
     const userConfirm = await prisma.user.findFirst({
       where: {
@@ -89,6 +89,7 @@ const confirmEmail = async (req, res) => {
       handleHttpError(res, "INVALID_TOKEN", 401);
       return;
     }
+    const passHash = await encrypt(password);
     const userUpdate = await prisma.user.update({
       where: {
         id: userConfirm.id,
@@ -96,6 +97,7 @@ const confirmEmail = async (req, res) => {
       data: {
         token: "",
         confirmed_email: 1,
+        password: passHash,
       },
     });
     res.status(201);
