@@ -1,5 +1,5 @@
 import axios from "axios";
-
+const NODE_ENV = process.env.NODE_ENV;
 const createContact = async (name, email, phone, tokenEmail, lastname) => {
   const contactData = {
     firstname: name,
@@ -7,7 +7,7 @@ const createContact = async (name, email, phone, tokenEmail, lastname) => {
     email: email,
     token: tokenEmail,
     phone: phone,
-    origen: "admision",
+    origen: NODE_ENV === "development" ? "none" : "admision",
     // Otros campos según tus necesidades y configuración en Mautic
   };
   try {

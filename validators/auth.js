@@ -1,41 +1,47 @@
-import { check } from "express-validator";
+import { body, check } from "express-validator";
 import validateResults from "../utils/handleValidator.js";
 
 export const validatorRegister = [
-  check("name").exists().notEmpty().isLength({ min: 3, max: 99 }),
-  check("surname").exists().notEmpty().isLength({ min: 3, max: 99 }),
-  check("lastname").exists().notEmpty().isLength({ min: 3, max: 99 }),
-  check("doc_number")
+  body("name").trim().exists().notEmpty().isLength({ min: 3, max: 99 }),
+  body("surname").trim().exists().notEmpty().isLength({ min: 3, max: 99 }),
+  body("lastname").trim().exists().notEmpty().isLength({ min: 3, max: 99 }),
+  body("doc_number")
+    .trim()
     .exists()
     .notEmpty()
     .isNumeric()
     .isLength({ min: 8, max: 8 }),
-  check("phone").exists().notEmpty().isNumeric().isLength({ min: 9, max: 9 }),
-  check("email").exists().notEmpty().isEmail(),
+  body("phone")
+    .trim()
+    .exists()
+    .notEmpty()
+    .isNumeric()
+    .isLength({ min: 9, max: 9 }),
+  body("email").trim().exists().notEmpty().isEmail(),
   (req, res, next) => {
     return validateResults(req, res, next);
   },
 ];
 
 export const validatorToken = [
-  check("token").exists().notEmpty().isLength({ min: 3, max: 99 }),
-  check("password").exists().notEmpty().isLength({ min: 5, max: 50 }),
+  body("token").trim().exists().notEmpty().isLength({ min: 3, max: 99 }),
+  body("password").trim().exists().notEmpty().isLength({ min: 5, max: 50 }),
   (req, res, next) => {
     return validateResults(req, res, next);
   },
 ];
 
 export const validatorPassword = [
-  check("password").exists().notEmpty().isLength({ min: 5, max: 50 }),
-  check("email").exists().notEmpty().isEmail(),
+  body("password").exists().notEmpty().isLength({ min: 5, max: 50 }),
+  body("email").exists().notEmpty().isEmail().trim(),
   (req, res, next) => {
     return validateResults(req, res, next);
   },
 ];
 
 export const validatorLogin = [
-  check("password").exists().notEmpty().isLength({ min: 5, max: 50 }),
-  check("email").exists().notEmpty().isEmail(),
+  body("password").trim().exists().notEmpty().isLength({ min: 5, max: 50 }),
+  body("email").trim().exists().notEmpty().isEmail(),
   (req, res, next) => {
     return validateResults(req, res, next);
   },
