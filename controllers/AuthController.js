@@ -65,7 +65,7 @@ const registerUser = async (req, res) => {
       },
     });
     res.status(201);
-    res.send({ id: user.id, email: user.email });
+    res.send({ id: user.id, email: user.email, name: person.name });
 
     //mautic email
   } catch (error) {
@@ -148,6 +148,15 @@ const login = async (req, res) => {
       where: {
         email,
       },
+      include: {
+        person: {
+          select: {
+            name: true,
+            lastname: true,
+            surname: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -171,7 +180,14 @@ const login = async (req, res) => {
     // user.set("password", undefined, { strict: false });
     const data = {
       token: await tokenSign(user),
-      user: { id: user.id, role: user.role, email: user.email },
+      user: {
+        id: user.id,
+        role: user.role,
+        email: user.email,
+        name: user.person.name,
+        lastname: user.person.lastname,
+        surname: user.person.surname,
+      },
     };
 
     res.send({ data });
