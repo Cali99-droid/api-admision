@@ -1,15 +1,15 @@
 import express from "express";
 import {
   validatorLogin,
-  validatorPassword,
+  validatorResetPass,
   validatorRegister,
   validatorToken,
 } from "../validators/auth.js";
 import {
   confirmEmail,
+  forgotPassword,
   login,
   registerUser,
-  resetPassword,
 } from "../controllers/AuthController.js";
 const router = express.Router();
 
@@ -87,5 +87,53 @@ router.post("/confirm-email", validatorToken, confirmEmail);
  *
  */
 router.post("/login", validatorLogin, login);
+/**
+ * Forgot password
+ * @openapi
+ * /auth/forgot-password:
+ *    post:
+ *      tags:
+ *        - auth
+ *      summary: "Enviar email de recuperación contraseña"
+ *      description: envia el email de recuperacíon
+ *      responses:
+ *        '200':
+ *          description: Retorna el email a donde se envio el correo de recuperacíon.
+ *        '404':
+ *          description: No existe el email o usuario.
+ *        '401':
+ *          description: Email no confirmado.
+ *      requestBody:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: "#/components/schemas/authForgot"
+ *
+ */
+router.post("/forgot-password", validatorResetPass, forgotPassword);
+/**
+ * Reset password
+ * @openapi
+ * /auth/reset-password:
+ *    post:
+ *      tags:
+ *        - auth
+ *      summary: "Recuperar contraseña"
+ *      description: Recibe el nuevo password
+ *      responses:
+ *        '201':
+ *          description: El password se actualizó correctamente
+ *        '401':
+ *          description: El token es inválido
+ *        '403':
+ *          description: Error por validación
+ *      requestBody:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: "#/components/schemas/authConfirm"
+ *
+ */
+router.post("/reset-password", validatorToken, confirmEmail);
 
 export default router;

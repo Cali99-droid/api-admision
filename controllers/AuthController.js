@@ -5,6 +5,7 @@ import createContact from "../mautic/mauticApi.js";
 import { compare, encrypt } from "../utils/handlePassword.js";
 import { matchedData } from "express-validator";
 import { tokenSign } from "../utils/handleJwt.js";
+import sendEmailToContact from "../mautic/sendEmailReset.js";
 const prisma = new PrismaClient();
 
 const registerUser = async (req, res) => {
@@ -107,39 +108,7 @@ const confirmEmail = async (req, res) => {
     handleHttpError(res, "ERROR_CONFIRM_USER");
   }
 };
-const resetPassword = async (req, res) => {
-  try {
-    req = matchedData(req);
-    const { password, email } = req;
-    const existsUser = await prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
-    if (!existsUser) {
-      handleHttpError(res, "USER_DOES_NOT_EXIST", 404);
-      return;
-    }
-    if (existsUser.confirmed_email === 0) {
-      handleHttpError(res, "UNCONFIRMED_EMAIL", 401);
-      return;
-    }
-    const passHash = await encrypt(password);
-    const updateUserPass = await prisma.user.update({
-      where: {
-        email,
-      },
-      data: {
-        password: passHash,
-      },
-    });
-    res.status(201);
-    res.send({ id: updateUserPass.id });
-  } catch (error) {
-    console.log(error);
-    handleHttpError(res, "ERROR_CREATE_PASSWORD");
-  }
-};
+
 const login = async (req, res) => {
   try {
     req = matchedData(req);
@@ -196,5 +165,45 @@ const login = async (req, res) => {
     handleHttpError(res, "ERROR_LOGIN_USER");
   }
 };
+const forgotPassword = async (req, res) => {
+  try {
+    // req = matchedData(req);
+    const { email } = req.body;
+    const existsUser = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    if (!existsUser) {
+      handleHttpError(res, "USER_DOES_NOT_EXIST", 404);
+      return;
+    }
+    if (existsUser.confirmed_email === 0) {
+      handleHttpError(res, "UNCONFIRMED_EMAIL", 401);
+      return;
+    }
+    const token = generateId();
+    const updateUser = await prisma.user.update({
+      data: {
+        token,
+      },
+      where: {
+        id: existsUser.id,
+      },
+    });
 
-export { registerUser, confirmEmail, resetPassword, login };
+    const resp = await sendEmailToContact(updateUser.mauticId, token);
+    if (!resp) {
+      console.log(error);
+      handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+    }
+
+    res.status(200);
+    res.send({ email: updateUser.email });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_SEND_EMAIL");
+  }
+};
+
+export { registerUser, confirmEmail, login, forgotPassword };

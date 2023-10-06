@@ -46,5 +46,11 @@ export const validatorLogin = [
     return validateResults(req, res, next);
   },
 ];
+export const validatorResetPass = [
+  body("email").trim().exists().notEmpty().isEmail(),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 
 // module.exports = { validatorRegister, validatorLogin };
