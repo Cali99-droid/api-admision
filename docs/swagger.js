@@ -90,6 +90,15 @@ const swaggerDefinition = {
           },
         },
       },
+      family: {
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: {
+            type: "string",
+          },
+        },
+      },
     },
   },
 };

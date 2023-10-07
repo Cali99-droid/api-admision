@@ -7,7 +7,7 @@ const createContact = async (name, email, phone, tokenEmail, lastname) => {
     email: email,
     token: tokenEmail,
     phone: phone,
-    origen: NODE_ENV === "development" ? "admision" : "admision",
+    origen: NODE_ENV === "development" ? "none" : "admision",
     // Otros campos según tus necesidades y configuración en Mautic
   };
   try {
