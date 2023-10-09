@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 const registerUser = async (req, res) => {
   try {
     req = matchedData(req);
-    const { name, lastname, surname, doc_number, email, phone } = req;
+    const { name, lastname, mLastname, doc_number, email, phone } = req;
 
     //verificar emails y número de documento duplicados
     const existsDoc = await prisma.person.findFirst({
@@ -36,21 +36,21 @@ const registerUser = async (req, res) => {
       return;
     }
 
-    const surnames = lastname + " " + surname;
+    const surnames = lastname + " " + mLastname;
     //generar token
     const token = generateId();
-    const { contact } = await createContact(
-      name,
-      email,
-      phone,
-      token,
-      surnames
-    );
+    // const { contact } = await createContact(
+    //   name,
+    //   email,
+    //   phone,
+    //   token,
+    //   surnames
+    // );
     const code = generateId().substring(5, 10);
     const person = await prisma.person.create({
       data: {
         name,
-        surname,
+        mLastname,
         lastname,
         doc_number,
       },
@@ -62,11 +62,17 @@ const registerUser = async (req, res) => {
         person_id: person.id,
         token,
         code,
-        mauticId: contact.id,
+        // mauticId: contact.id,
+        mauticId: 0,
       },
     });
-    res.status(201);
-    res.send({ id: user.id, email: user.email, name: person.name });
+    const data = { id: user.id, email: user.email, name: person.name };
+    res.status(201).json({
+      success: true,
+      data: data,
+    });
+    // res.send({ id: user.id, email: user.email, name: person.name });
+    // res.success({ mensaje: "Operación exitosa" });
 
     //mautic email
   } catch (error) {
@@ -101,8 +107,12 @@ const confirmEmail = async (req, res) => {
         password: passHash,
       },
     });
-    res.status(201);
-    res.send({ email: userUpdate.email });
+
+    const data = { email: userUpdate.email };
+    res.status(201).json({
+      success: true,
+      data: data,
+    });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_CONFIRM_USER");
@@ -122,7 +132,7 @@ const login = async (req, res) => {
           select: {
             name: true,
             lastname: true,
-            surname: true,
+            mLastname: true,
           },
         },
       },
@@ -155,11 +165,13 @@ const login = async (req, res) => {
         email: user.email,
         name: user.person.name,
         lastname: user.person.lastname,
-        surname: user.person.surname,
+        mLastname: user.person.mLastname,
       },
     };
-
-    res.send({ data });
+    res.status(201).json({
+      success: true,
+      data: data,
+    });
   } catch (e) {
     console.log(e);
     handleHttpError(res, "ERROR_LOGIN_USER");
@@ -198,8 +210,11 @@ const forgotPassword = async (req, res) => {
       handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
     }
 
-    res.status(200);
-    res.send({ email: updateUser.email });
+    const data = { email: updateUser.email };
+    res.status(201).json({
+      success: true,
+      data: data,
+    });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_SEND_EMAIL");

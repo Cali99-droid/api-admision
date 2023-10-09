@@ -43,7 +43,7 @@ const sendEmailToContact = async (id, token) => {
     console.log("Email enviado correctamente:", response.data);
     return true;
   } catch (error) {
-    console.error("Error al crear el contacto:", error);
+    console.error("Error al enviar email :", error);
     return false;
   }
 };

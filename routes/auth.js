@@ -42,12 +42,12 @@ router.post("/register", validatorRegister, registerUser);
  *
  * Route confirma email
  * @openapi
- * /auth/confirm-email:
+ * /auth/password:
  *      post:
  *          tags:
  *              - auth
- *          summary: "Confirmar email"
- *          description: "Esta ruta es para confirmar el email, enviando el token que se encuentra en el enlace enviado por el email y el nuevo password del usuario registrado"
+ *          summary: "Ruta para confirmar email y cambiar contraseña"
+ *          description: "Esta ruta es para confirmar el email, enviando el token que se encuentra en el enlace enviado por el email y el nuevo password del usuario registrado o del mismo modo cmabiar o recuperar contraseña"
  *          requestBody:
  *              content:
  *                  application/json:
@@ -61,7 +61,7 @@ router.post("/register", validatorRegister, registerUser);
  *                  '403':
  *                      description: Error por validación
  */
-router.post("/confirm-email", validatorToken, confirmEmail);
+router.post("/password", validatorToken, confirmEmail);
 
 /**
  * Login user
@@ -111,29 +111,5 @@ router.post("/login", validatorLogin, login);
  *
  */
 router.post("/forgot-password", validatorResetPass, forgotPassword);
-/**
- * Reset password
- * @openapi
- * /auth/reset-password:
- *    post:
- *      tags:
- *        - auth
- *      summary: "Recuperar contraseña"
- *      description: Recibe el nuevo password
- *      responses:
- *        '201':
- *          description: El password se actualizó correctamente
- *        '401':
- *          description: El token es inválido
- *        '403':
- *          description: Error por validación
- *      requestBody:
- *          content:
- *            application/json:
- *              schema:
- *                 $ref: "#/components/schemas/authConfirm"
- *
- */
-router.post("/reset-password", validatorToken, confirmEmail);
 
 export default router;

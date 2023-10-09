@@ -43,7 +43,7 @@ const swaggerDefinition = {
         required: [
           "name",
           "lastname",
-          "surname",
+          "mLastname",
           "doc_number",
           "email",
           "phone",
@@ -55,17 +55,17 @@ const swaggerDefinition = {
           lastname: {
             type: "string",
           },
-          surname: {
+          mLastname: {
             type: "string",
           },
           doc_number: {
-            type: "string",
+            type: "integer",
           },
           email: {
             type: "string",
           },
           phone: {
-            type: "string",
+            type: "integer",
           },
         },
       },

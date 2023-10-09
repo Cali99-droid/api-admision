@@ -4,6 +4,7 @@ import cors from "cors";
 import router from "./routes/index.js";
 import openApiConfigration from "./docs/swagger.js";
 import swaggerUI from "swagger-ui-express";
+
 const app = express();
 
 app.use(express.json());
@@ -32,7 +33,7 @@ app.use(
   swaggerUI.serve,
   swaggerUI.setup(openApiConfigration)
 );
-
+// app.use(customMiddleware);
 /**
  * Aqui invocamos a las rutas! 😎
  */
