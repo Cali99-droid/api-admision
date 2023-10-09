@@ -62,8 +62,8 @@ const registerUser = async (req, res) => {
         person_id: person.id,
         token,
         code,
-        // mauticId: contact.id,
-        mauticId: 0,
+        mauticId: contact.id,
+        // mauticId: 0,
       },
     });
     const data = { id: user.id, email: user.email, name: person.name };
