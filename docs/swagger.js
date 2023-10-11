@@ -12,10 +12,10 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: "http://api.dev-solware.com/api",
+      url: "http://localhost:3001/api",
     },
     {
-      url: "http://localhost:3001/api",
+      url: "https://api.dev-solware.com/api",
     },
   ],
   components: {
@@ -96,6 +96,69 @@ const swaggerDefinition = {
         properties: {
           name: {
             type: "string",
+          },
+        },
+      },
+      spouse: {
+        type: "object",
+        properties: {
+          userData: {
+            type: "object",
+            required: ["email", "phone"],
+            properties: {
+              email: {
+                type: "string",
+                example: "otraespo2@gmail.com",
+              },
+              phone: {
+                type: "integer",
+                format: "int64",
+                example: 990170959,
+              },
+            },
+          },
+          person: {
+            type: "object",
+            required: [
+              "name",
+              "lastname",
+              "mLastname",
+              "type_doc",
+              "doc_number",
+              "profession",
+              "birthdate",
+            ],
+            properties: {
+              name: {
+                type: "string",
+                example: "Julia",
+              },
+              lastname: {
+                type: "string",
+                example: "Flores",
+              },
+              mLastname: {
+                type: "string",
+                example: "Flores",
+              },
+              type_doc: {
+                type: "string",
+                example: "DNI o CE",
+              },
+              doc_number: {
+                type: "integer",
+                example: 95848745,
+              },
+              profession: {
+                type: "string",
+                example: "doctor",
+              },
+              birthdate: {
+                type: "string",
+                format: "date",
+                example: "2021-04-10",
+              },
+            },
           },
         },
       },

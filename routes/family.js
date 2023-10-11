@@ -1,6 +1,7 @@
 import express from "express";
-import { store } from "../controllers/FamilyController.js";
+import { show, store } from "../controllers/FamilyController.js";
 import { authMiddleware } from "../middleware/session.js";
+import { validatorFamily } from "../validators/family.js";
 
 const router = express.Router();
 
@@ -31,6 +32,28 @@ const router = express.Router();
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/", authMiddleware, store);
+router.post("/", authMiddleware, validatorFamily, store);
+/**
+ * @openapi
+ * /family:
+ *    get:
+ *      tags:
+ *        - family
+ *      summary: "Todas las familias de un usuario"
+ *      description: obtiene la lista de familias de un usuario
+ *      security:
+ *        - bearerAuth: []
+ *
+ *      responses:
+ *        '200':
+ *          description: Retorna el objecto de la family.
+ *          content:
+ *             application/json:
+ *               schema:
+ *                   $ref: '#/components/schemas/family'
+ *        '422':
+ *          description: Error de validacion.
+ */
+router.get("/", authMiddleware, show);
 
 export default router;

@@ -7,9 +7,8 @@ const prisma = new PrismaClient();
 
 const store = async (req, res) => {
   try {
-    //  req = matchedData(req);
     const { user } = req;
-    const { name } = req.body;
+    const { name } = matchedData(req);
     // const userExists = await prisma.user.findFirst({
     //   where: {
     //     id,
@@ -25,12 +24,37 @@ const store = async (req, res) => {
         name,
       },
     });
-    res.status(201);
-    res.send(family);
+    const data = {
+      id: family.id,
+    };
+    res.status(201).json({
+      success: true,
+      data: data,
+    });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_CREATE_FAMILY");
   }
 };
 
-export { store };
+const show = async (req, res) => {
+  const { user } = req;
+  if (!user) {
+    handleHttpError(res, "NOT_EXIST_USER");
+  }
+  const data = await prisma.family.findMany({
+    where: {
+      padreId: user.id,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+  res.status(200).json({
+    success: true,
+    data: data,
+  });
+};
+
+export { store, show };

@@ -14,7 +14,8 @@ const dominiosPermitidos = [process.env.FRONTEND_URL, "http://localhost:3001"];
 const corsOptions = {
   origin: function (origin, callback) {
     if (dominiosPermitidos.indexOf(origin) !== -1) {
-      // El Origen del Request esta permitido
+      // El Origen del Request esta permitido http://api.dev-solware.com/ sudo certbot --nginx -d api.dev-solware.com
+
       callback(null, true);
     } else {
       callback(new Error("No permitido por CORS"));

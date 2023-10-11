@@ -39,13 +39,13 @@ const registerUser = async (req, res) => {
     const surnames = lastname + " " + mLastname;
     //generar token
     const token = generateId();
-     const { contact } = await createContact(
-       name,
-       email,
+    const { contact } = await createContact(
+      name,
+      email,
       phone,
       token,
       surnames
-     );
+    );
     const code = generateId().substring(5, 10);
     const person = await prisma.person.create({
       data: {
