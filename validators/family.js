@@ -12,3 +12,34 @@ export const validatorFamily = [
     return validateResults(req, res, next);
   },
 ];
+
+export const validatorGetFamily = [
+  check("id")
+    .exists()
+    .notEmpty()
+    .withMessage("parameto id no valido")
+    .isNumeric()
+    .withMessage("el parametro no es un numero"),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
+
+export const validatorHome = [
+  body("address")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo address no puede estar vacío"),
+  body("district_id")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo district no puede estar vacío")
+    .isNumeric()
+    .withMessage("El campo district debe ser un numero "),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];

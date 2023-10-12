@@ -72,7 +72,7 @@ const store = async (req, res) => {
       },
     });
 
-    const data = { familyId: familyUpdateMarried.id };
+    const data = { id: personCreate.id };
     res.status(201).json({
       success: true,
       data: data,

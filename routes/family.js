@@ -1,7 +1,17 @@
 import express from "express";
-import { show, store } from "../controllers/FamilyController.js";
+import {
+  createHome,
+  get,
+  show,
+  store,
+} from "../controllers/FamilyController.js";
 import { authMiddleware } from "../middleware/session.js";
-import { validatorFamily } from "../validators/family.js";
+import {
+  validatorFamily,
+  validatorGetFamily,
+  validatorHome,
+} from "../validators/family.js";
+import { upload } from "../utils/handleUpload.js";
 
 const router = express.Router();
 
@@ -55,5 +65,84 @@ router.post("/", authMiddleware, validatorFamily, store);
  *          description: Error de validacion.
  */
 router.get("/", authMiddleware, show);
+/**
+ * @openapi
+ * /family/{id}:
+ *    get:
+ *      tags:
+ *        - family
+ *      summary: "detalle familia "
+ *      description: obtiene el detalle de una familia
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: id de la familia
+ *        required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna el objecto de la family.
+ *          content:
+ *             application/json:
+ *               schema:
+ *                   $ref: '#/components/schemas/family'
+ *        '422':
+ *          description: Error de validacion.
+ */
+router.get("/:id", authMiddleware, validatorGetFamily, get);
+
+/**
+ * http://localhost:3001/api
+ *
+ * Route domicilio family
+ * @openapi
+ * /family/{id}:
+ *      post:
+ *          tags:
+ *              - family
+ *          summary: "Crear datos de domicilio de una familia"
+ *          description: "Esta ruta es para Crear datos de domicilio de una familia"
+ *          security:
+ *            - bearerAuth: []
+ *          requestBody:
+ *            content:
+ *              multipart/form-data:
+ *                schema:
+ *                  type: object
+ *                  required: address, district_id
+ *                  properties:
+ *                    address:
+ *                      type: string
+ *                    reference:
+ *                      type: string
+ *                    district_id:
+ *                      type: integer
+ *
+ *                    img:
+ *                      type: string
+ *                      format: binary
+ *          parameters:
+ *          - name: id
+ *            in: path
+ *            description: id de la familia a la cual se le asignará el domicilio creado
+ *            required: true
+ *          responses:
+ *                  '201':
+ *                      description: los datos de domicilio se creo de manera correcta
+ *                  '401':
+ *                      description: Error por validación de datos
+ *                  '403':
+ *                      description: No tiene permisos '403'
+ *
+ */
+router.post(
+  "/:id",
+  validatorGetFamily,
+  upload.fields([{ name: "img" }]),
+  authMiddleware,
+  validatorHome,
+  createHome
+);
 
 export default router;

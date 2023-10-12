@@ -99,6 +99,7 @@ const swaggerDefinition = {
           },
         },
       },
+
       spouse: {
         type: "object",
         properties: {
@@ -159,6 +160,39 @@ const swaggerDefinition = {
                 example: "2021-04-10",
               },
             },
+          },
+        },
+      },
+      region: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+        },
+      },
+      province: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+        },
+      },
+      district: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
           },
         },
       },

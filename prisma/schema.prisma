@@ -24,14 +24,14 @@ model children {
 }
 
 model district {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @db.VarChar(6)
   name        String   @db.VarChar(80)
-  province_id Int
+  province_id String   @db.VarChar(4)
   province    province @relation(fields: [province_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_DISTRICT_PROVINCE1")
   home        home[]
   school      school[]
 
-  @@index([province_id], map: "fk_DISTRICT_PROVINCE1_idx")
+  @@index([province_id], map: "fk_district_province1_idx")
 }
 
 model doc {
@@ -46,20 +46,18 @@ model doc {
 }
 
 model family {
-  id                        Int        @id @default(autoincrement())
-  name                      String     @db.VarChar(255)
-  padreId                   Int?
-  madreId                   Int?
-  home_id                   Int?
-  create_time               DateTime?  @default(now()) @db.Timestamp(0)
-  update_time               DateTime?  @db.Timestamp(0)
-  children                  children[]
-  home                      home?      @relation(fields: [home_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_FAMILY_HOME1")
-  user_family_padreIdTouser user?      @relation("family_padreIdTouser", fields: [padreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
-  user_family_madreIdTouser user?      @relation("family_madreIdTouser", fields: [madreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
-  income                    income[]
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(255)
+  padreId     Int?
+  madreId     Int?
+  create_time DateTime?  @default(now()) @db.Timestamp(0)
+  update_time DateTime?  @db.Timestamp(0)
+  children    children[]
+  padre       user?      @relation("family_padreIdTouser", fields: [padreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
+  conyugue    user?      @relation("family_madreIdTouser", fields: [madreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
+  home        home[]
+  income      income[]
 
-  @@index([home_id], map: "fk_FAMILY_HOME1_idx")
   @@index([padreId], map: "fk_family_USER1_idx")
   @@index([madreId], map: "fk_family_USER2_idx")
 }
@@ -71,11 +69,13 @@ model home {
   doc         String?   @db.VarChar(60)
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
-  district_id Int
-  family      family[]
+  district_id String    @db.VarChar(6)
+  family_id   Int
   district    district  @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_HOME_DISTRICT1")
+  family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_home_family1")
 
-  @@index([district_id], map: "fk_HOME_DISTRICT1_idx")
+  @@index([district_id], map: "fk_home_district1_idx")
+  @@index([family_id], map: "fk_home_family1_idx")
 }
 
 model income {
@@ -113,13 +113,13 @@ model person {
 }
 
 model province {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @db.VarChar(4)
   name      String     @db.VarChar(80)
-  region_id Int
+  region_id String     @db.VarChar(2)
   district  district[]
   region    region     @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_PROVINCE_REGION1")
 
-  @@index([region_id], map: "fk_PROVINCE_REGION1_idx")
+  @@index([region_id], map: "fk_province_region1_idx")
 }
 
 model range {
@@ -129,7 +129,7 @@ model range {
 }
 
 model region {
-  id       Int        @id @default(autoincrement())
+  id       String     @id @db.VarChar(2)
   name     String     @db.VarChar(60)
   province province[]
 }
@@ -139,13 +139,13 @@ model school {
   name        String?    @db.VarChar(45)
   grade       String?    @db.VarChar(45)
   lib_doc     String?    @db.VarChar(60)
-  district_id Int
   create_time DateTime?  @default(now()) @db.Timestamp(0)
   update_time DateTime?  @db.Timestamp(0)
+  district_id String     @db.VarChar(6)
   children    children[]
   district    district   @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_SCHOOL_DISTRICT1")
 
-  @@index([district_id], map: "fk_SCHOOL_DISTRICT1_idx")
+  @@index([district_id], map: "fk_school_district1_idx")
 }
 
 model user {
