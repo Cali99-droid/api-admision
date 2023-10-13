@@ -229,7 +229,7 @@ const updateHome = async (req, res) => {
     });
     const data = { id: home.id };
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       data,
     });
@@ -239,4 +239,44 @@ const updateHome = async (req, res) => {
   }
 };
 
-export { store, show, get, createHome, updateHome };
+const getHome = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { user } = req;
+  const family = await prisma.family.findUnique({
+    where: {
+      id: id,
+      AND: {
+        padreId: user.id,
+      },
+    },
+  });
+
+  if (!family) {
+    handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+    return;
+  }
+
+  const home = await prisma.home.findFirst({
+    where: {
+      family_id: id,
+    },
+    select: {
+      id: true,
+      address: true,
+      reference: true,
+      district: true,
+      doc: true,
+    },
+  });
+
+  const data = { home };
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+};
+
+const createIncome = async (req, res) => {};
+
+export { store, show, get, createHome, updateHome, getHome, createIncome };

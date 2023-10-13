@@ -204,6 +204,48 @@ const swaggerDefinition = {
           },
         },
       },
+      home: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          address: {
+            type: "string",
+          },
+          reference: {
+            type: "string",
+          },
+          district: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+              },
+              name: {
+                type: "string",
+              },
+              province_id: {
+                type: "string",
+              },
+            },
+          },
+          doc: {
+            type: "string",
+          },
+        },
+      },
+      range: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          name: {
+            type: "string",
+          },
+        },
+      },
     },
   },
 };

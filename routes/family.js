@@ -1,7 +1,9 @@
 import express from "express";
 import {
   createHome,
+  createIncome,
   get,
+  getHome,
   show,
   store,
   updateHome,
@@ -197,5 +199,78 @@ router.put(
   validatorHome,
   updateHome
 );
+
+/**
+ * @openapi
+ * /family/home/{id}:
+ *    get:
+ *      tags:
+ *        - family
+ *      summary: "Obtener datos de domicilio de familia "
+ *      description: obtiene los datos de domicilio de de una familia
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: id de la familia
+ *        required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna el objecto de  los datos de domicilio de de una familia.
+ *          content:
+ *             application/json:
+ *               schema:
+ *                   $ref: '#/components/schemas/home'
+ *        '422':
+ *          description: Error de validacion.
+
+ */
+router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
+/**
+ * http://localhost:3001/api
+ *
+ * Route domicilio family
+ * @openapi
+ * /family/home/{id}:
+ *      post:
+ *          tags:
+ *              - family
+ *          summary: "Crear datos de domicilio de una familia"
+ *          description: "Esta ruta es para Crear datos de domicilio de una familia"
+ *          security:
+ *            - bearerAuth: []
+ *          requestBody:
+ *            content:
+ *              multipart/form-data:
+ *                schema:
+ *                  type: object
+ *                  required: address, district_id
+ *                  properties:
+ *                    address:
+ *                      type: string
+ *                    reference:
+ *                      type: string
+ *                    district_id:
+ *                      type: integer
+ *
+ *                    img:
+ *                      type: string
+ *                      format: binary
+ *          parameters:
+ *          - name: id
+ *            in: path
+ *            description: id de la familia a la cual se le asignará el domicilio creado
+ *            required: true
+ *          responses:
+ *                  '201':
+ *                      description: los datos de domicilio se creo de manera correcta
+ *                  '401':
+ *                      description: Error por validación de datos
+ *                  '403':
+ *                      description: No tiene permisos '403'
+ *
+ */
+router.post("/income/:id", validatorGetFamily, authMiddleware, createIncome);
 
 export default router;
