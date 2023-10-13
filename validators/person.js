@@ -24,7 +24,10 @@ export const personValidationRules = [
 ];
 
 export const userValidationRules = [
-  body("userData.email").isEmail().withMessage("el email es incorrecto"),
+  body("userData[email]")
+    .trim()
+    .isEmail()
+    .withMessage("el email es incorrecto"),
   body("userData.phone")
     .isMobilePhone("es-PE")
     .withMessage("el telefono no tiene el formato PE"), // Ajusta la región según corresponda

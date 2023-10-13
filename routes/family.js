@@ -4,6 +4,7 @@ import {
   get,
   show,
   store,
+  updateHome,
 } from "../controllers/FamilyController.js";
 import { authMiddleware } from "../middleware/session.js";
 import {
@@ -97,7 +98,7 @@ router.get("/:id", authMiddleware, validatorGetFamily, get);
  *
  * Route domicilio family
  * @openapi
- * /family/{id}:
+ * /family/home/{id}:
  *      post:
  *          tags:
  *              - family
@@ -137,12 +138,65 @@ router.get("/:id", authMiddleware, validatorGetFamily, get);
  *
  */
 router.post(
-  "/:id",
+  "/home/:id",
   validatorGetFamily,
   upload.fields([{ name: "img" }]),
   authMiddleware,
   validatorHome,
   createHome
+);
+
+/**
+ * http://localhost:3001/api
+ *
+ * Route domicilio family
+ * @openapi
+ * /family/home/{id}:
+ *      put:
+ *          tags:
+ *              - family
+ *          summary: "Actualizar datos de domicilio de una familia"
+ *          description: "Esta ruta es para Actualizar datos de domicilio de una familia"
+ *          security:
+ *            - bearerAuth: []
+ *          requestBody:
+ *            content:
+ *              multipart/form-data:
+ *                schema:
+ *                  type: object
+ *                  required: address, district_id
+ *                  properties:
+ *                    address:
+ *                      type: string
+ *                    reference:
+ *                      type: string
+ *                    district_id:
+ *                      type: integer
+ *
+ *                    img:
+ *                      type: string
+ *                      format: binary
+ *          parameters:
+ *          - name: id
+ *            in: path
+ *            description: id de la familia a la cual se le asignará el domicilio creado
+ *            required: true
+ *          responses:
+ *                  '201':
+ *                      description: los datos de domicilio se creo de manera correcta
+ *                  '401':
+ *                      description: Error por validación de datos
+ *                  '403':
+ *                      description: No tiene permisos '403'
+ *
+ */
+router.put(
+  "/home/:id",
+  validatorGetFamily,
+  upload.fields([{ name: "img" }]),
+  authMiddleware,
+  validatorHome,
+  updateHome
 );
 
 export default router;

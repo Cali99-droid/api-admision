@@ -152,5 +152,78 @@ const createHome = async (req, res) => {
     handleHttpError("ERROR_CREATE_HOME");
   }
 };
+const updateHome = async (req, res) => {
+  try {
+    let { body } = req;
+    const { user } = req;
+    const id = parseInt(req.params.id);
+    const { img } = req.files;
 
-export { store, show, get, createHome };
+    const family = await prisma.family.findUnique({
+      where: {
+        id: id,
+        AND: {
+          padreId: user.id,
+        },
+      },
+    });
+
+    if (!family) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+      return;
+    }
+
+    const homeExist = await prisma.home.findFirst({
+      where: {
+        family_id: id,
+      },
+    });
+    if (!homeExist) {
+      handleHttpError(res, "HOME_NOT_EXIST");
+      return;
+    }
+
+    if (homeExist.doc !== img[0].originalname) {
+      console.log(img);
+      return;
+    }
+    if (img) {
+      if (homeExist.doc !== img[0].originalname) {
+      }
+      const ext = img[0].originalname.split(".").pop();
+      const imgName = `${Date.now()}.${ext}`;
+
+      const result = await s3Client.send(
+        new PutObjectCommand({
+          Bucket: process.env.BUCKET_NAME,
+          Key: "admision/" + imgName,
+          Body: img[0].buffer,
+        })
+      );
+
+      if (result.$metadata.httpStatusCode !== 200) {
+        handleHttpError(res, "ERROR_UPLOAD_IMG");
+        return;
+      }
+      body = { doc: imgName, ...body };
+    }
+
+    body = { family_id: id, ...body };
+
+    const home = await prisma.home.update({
+      data: body,
+      where,
+    });
+    const data = { id: home.id };
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError("ERROR_CREATE_HOME");
+  }
+};
+
+export { store, show, get, createHome, updateHome };

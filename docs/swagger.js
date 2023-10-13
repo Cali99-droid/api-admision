@@ -159,6 +159,14 @@ const swaggerDefinition = {
                 format: "date",
                 example: "2021-04-10",
               },
+              img1: {
+                type: "string",
+                format: "binary",
+              },
+              img2: {
+                type: "string",
+                format: "binary",
+              },
             },
           },
         },
