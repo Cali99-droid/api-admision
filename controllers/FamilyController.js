@@ -1,7 +1,7 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import s3Client from "../utils/aws.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import prisma from "../utils/prisma.js";
 
 const store = async (req, res) => {
@@ -184,15 +184,24 @@ const updateHome = async (req, res) => {
     }
 
     if (homeExist.doc !== img[0].originalname) {
-      console.log(img);
-      return;
-    }
-    if (img) {
-      if (homeExist.doc !== img[0].originalname) {
+      console.log("son diferentees");
+      //si son diferentes eliminar imagen y actualizar
+      const params = {
+        Bucket: "caebucket",
+        Key: "admision/" + homeExist.doc,
+      };
+      const command = new DeleteObjectCommand(params);
+      try {
+        const response = await s3Client.send(command);
+        console.log("Objeto eliminado exitosamente:");
+      } catch (error) {
+        handleHttpError(res, "ERROR_UPDATE_IMAGE");
+        console.error("Error al eliminar el objeto:", error);
       }
+
+      //subimos la nueva imagen
       const ext = img[0].originalname.split(".").pop();
       const imgName = `${Date.now()}.${ext}`;
-
       const result = await s3Client.send(
         new PutObjectCommand({
           Bucket: process.env.BUCKET_NAME,
@@ -200,19 +209,23 @@ const updateHome = async (req, res) => {
           Body: img[0].buffer,
         })
       );
+      //agregamos el nombre a la db
+      body = { doc: imgName, ...body };
 
       if (result.$metadata.httpStatusCode !== 200) {
         handleHttpError(res, "ERROR_UPLOAD_IMG");
         return;
       }
-      body = { doc: imgName, ...body };
     }
-
+    const dateUpdate = new Date();
     body = { family_id: id, ...body };
+    body = { update_time: dateUpdate, ...body };
 
     const home = await prisma.home.update({
       data: body,
-      where,
+      where: {
+        id: homeExist.id,
+      },
     });
     const data = { id: home.id };
 

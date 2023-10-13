@@ -172,14 +172,13 @@ router.post(
  *                      type: string
  *                    district_id:
  *                      type: integer
- *
  *                    img:
  *                      type: string
  *                      format: binary
  *          parameters:
  *          - name: id
  *            in: path
- *            description: id de la familia a la cual se le asignará el domicilio creado
+ *            description: id de la familia a la cual se le actualizará el domicilio
  *            required: true
  *          responses:
  *                  '201':
