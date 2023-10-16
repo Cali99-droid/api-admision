@@ -161,6 +161,7 @@ const login = async (req, res) => {
       token: await tokenSign(user),
       user: {
         id: user.id,
+        personId: user.person_id,
         role: user.role,
         email: user.email,
         name: user.person.name,

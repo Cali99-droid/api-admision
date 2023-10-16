@@ -1,5 +1,5 @@
 import express from "express";
-import { store } from "../controllers/SpouseController.js";
+import { store, update } from "../controllers/SpouseController.js";
 import { authMiddleware } from "../middleware/session.js";
 import {
   idValidationRules,
@@ -102,6 +102,77 @@ router.post(
   userValidationRules,
   personValidationRules,
   store
+);
+
+/**
+ * @openapi
+ * /spouse/{id}:
+ *   put:
+ *     tags:
+ *       - spouse
+ *     summary: "Actualizar los datos de un conyugue"
+ *     description: "Esta ruta es para actualizar los datos de un conyugue en una familia especifica"
+ *
+ *     security:
+ *            - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userData[email]:
+ *                 type: string
+ *               userData[phone]:
+ *                 type: integer
+ *               person[name]:
+ *                 type: string
+ *               person[lastname]:
+ *                 type: string
+ *               person[mLastname]:
+ *                 type: string
+ *               person[type_doc]:
+ *                 type: string
+ *               person[doc_number]:
+ *                 type: integer
+ *               person[profession]:
+ *                 type: string
+ *               person[birthdate]:
+ *                 type: string
+ *               img1:
+ *                 type: string
+ *                 format: binary
+ *               img2:
+ *                 type: string
+ *                 format: binary
+ *     parameters:
+ *     - name: id
+ *       in: path
+ *       description: id del conyugue el cual será actualizado
+ *       required: true
+ *     responses:
+ *       '201':
+ *         description: Respuesta exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+
+ *                 $ref: '#/components/schemas/spouseUpd'
+ *       '401':
+ *         description: Error por validación de datos
+ *       '403':
+ *         description: No tiene permisos '403'
+ */
+
+router.put(
+  "/:id",
+
+  authMiddleware,
+  upload.fields([{ name: "img1" }, { name: "img2" }]),
+  idValidationRules,
+  userValidationRules,
+  personValidationRules,
+  update
 );
 
 export default router;

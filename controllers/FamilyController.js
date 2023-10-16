@@ -3,6 +3,8 @@ import { matchedData } from "express-validator";
 import s3Client from "../utils/aws.js";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import prisma from "../utils/prisma.js";
+import sharp from "sharp";
+import { deleteImage, uploadImage } from "../utils/handleImg.js";
 
 const store = async (req, res) => {
   try {
@@ -50,6 +52,8 @@ const show = async (req, res) => {
       select: {
         id: true,
         name: true,
+        home: true,
+        children: true,
       },
     });
     res.status(200).json({
@@ -118,23 +122,11 @@ const createHome = async (req, res) => {
       handleHttpError(res, "HOME_ALREADY_EXIST");
       return;
     }
+
+    //subir imagen
     if (img) {
-      const ext = img[0].originalname.split(".").pop();
-      const imgName = `${Date.now()}.${ext}`;
-
-      const result = await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME,
-          Key: "admision/" + imgName,
-          Body: img[0].buffer,
-        })
-      );
-
-      if (result.$metadata.httpStatusCode !== 200) {
-        handleHttpError(res, "ERROR_UPLOAD_IMG");
-        return;
-      }
-      body = { doc: imgName, ...body };
+      const { imageName } = await uploadImage(img[0]);
+      body = { doc: imageName, ...body };
     }
 
     body = { family_id: id, ...body };
@@ -150,7 +142,7 @@ const createHome = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError("ERROR_CREATE_HOME");
+    handleHttpError(res, "ERROR_CREATE_HOME");
   }
 };
 const updateHome = async (req, res) => {
@@ -186,37 +178,9 @@ const updateHome = async (req, res) => {
 
     if (homeExist.doc !== img[0].originalname) {
       console.log("son diferentees");
-      //si son diferentes eliminar imagen y actualizar
-      const params = {
-        Bucket: "caebucket",
-        Key: "admision/" + homeExist.doc,
-      };
-      const command = new DeleteObjectCommand(params);
-      try {
-        const response = await s3Client.send(command);
-        console.log("Objeto eliminado exitosamente:");
-      } catch (error) {
-        handleHttpError(res, "ERROR_UPDATE_IMAGE");
-        console.error("Error al eliminar el objeto:", error);
-      }
-
-      //subimos la nueva imagen
-      const ext = img[0].originalname.split(".").pop();
-      const imgName = `${Date.now()}.${ext}`;
-      const result = await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME,
-          Key: "admision/" + imgName,
-          Body: img[0].buffer,
-        })
-      );
-      //agregamos el nombre a la db
-      body = { doc: imgName, ...body };
-
-      if (result.$metadata.httpStatusCode !== 200) {
-        handleHttpError(res, "ERROR_UPLOAD_IMG");
-        return;
-      }
+      deleteImage(homeExist.doc);
+      const { imageName } = await uploadImage(img[0]);
+      body = { doc: imageName, ...body };
     }
     const dateUpdate = new Date();
     body = { family_id: id, ...body };

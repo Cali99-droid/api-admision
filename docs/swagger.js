@@ -246,6 +246,81 @@ const swaggerDefinition = {
           },
         },
       },
+      spouseUpd: {
+        type: "object",
+        properties: {
+          success: {
+            type: "boolean",
+          },
+          data: {
+            type: "object",
+            properties: {
+              personUpdate: {
+                type: "object",
+                required: [
+                  "name",
+                  "lastname",
+                  "mLastname",
+                  "type_doc",
+                  "doc_number",
+                  "profession",
+                  "birthdate",
+                ],
+                properties: {
+                  name: {
+                    type: "string",
+                    example: "Julia",
+                  },
+                  lastname: {
+                    type: "string",
+                    example: "Flores",
+                  },
+                  mLastname: {
+                    type: "string",
+                    example: "Flores",
+                  },
+                  type_doc: {
+                    type: "string",
+                    example: "DNI o CE",
+                  },
+                  doc_number: {
+                    type: "string",
+                    example: 95848745,
+                  },
+                  profession: {
+                    type: "string",
+                    example: "doctor",
+                  },
+                  birthdate: {
+                    type: "string",
+                    format: "date",
+                    example: "2021-04-10",
+                  },
+                  user: {
+                    type: "object",
+                    properties: {
+                      email: {
+                        type: "string",
+                      },
+                      phone: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+              img1: {
+                type: "string",
+                format: "binary",
+              },
+              img2: {
+                type: "string",
+                format: "binary",
+              },
+            },
+          },
+        },
+      },
     },
   },
 };
