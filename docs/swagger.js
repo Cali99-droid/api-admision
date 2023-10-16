@@ -59,7 +59,7 @@ const swaggerDefinition = {
             type: "string",
           },
           doc_number: {
-            type: "integer",
+            type: "string",
           },
           email: {
             type: "string",

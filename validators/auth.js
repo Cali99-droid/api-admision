@@ -27,7 +27,6 @@ export const validatorRegister = [
     .exists()
     .notEmpty()
     .withMessage("El campo doc_number no puede estar vacío")
-    .isNumeric()
     .isLength({ min: 8, max: 8 })
     .withMessage("El campo doc_number debe ser de 8 caracteres"),
   body("phone")

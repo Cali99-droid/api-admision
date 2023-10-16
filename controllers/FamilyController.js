@@ -277,6 +277,11 @@ const getHome = async (req, res) => {
   });
 };
 
-const createIncome = async (req, res) => {};
+const createIncome = async (req, res) => {
+  let { body } = req;
+  const { user } = req;
+  const id = parseInt(req.params.id);
+  const { img } = req.files;
+};
 
 export { store, show, get, createHome, updateHome, getHome, createIncome };
