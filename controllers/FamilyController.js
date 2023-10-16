@@ -25,6 +25,7 @@ const store = async (req, res) => {
     });
     const data = {
       id: family.id,
+      name: family.name,
     };
     res.status(201).json({
       success: true,
