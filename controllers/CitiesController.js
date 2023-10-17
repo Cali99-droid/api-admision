@@ -14,6 +14,7 @@ const showProvince = async (req, res) => {
     select: {
       id: true,
       name: true,
+      region_id: true,
     },
   });
 
@@ -27,6 +28,7 @@ const showDistrict = async (req, res) => {
     select: {
       id: true,
       name: true,
+      province_id: true,
     },
   });
 

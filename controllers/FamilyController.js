@@ -45,20 +45,55 @@ const show = async (req, res) => {
     if (!user) {
       handleHttpError(res, "NOT_EXIST_USER");
     }
-    const data = await prisma.family.findMany({
+    const families = await prisma.family.findMany({
       where: {
         padreId: user.id,
       },
       select: {
         id: true,
         name: true,
-        home: true,
-        children: true,
+        home: {
+          select: {
+            id: true,
+            address: true,
+            doc: true,
+            district: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            children: true,
+          },
+        },
+        income: true,
       },
+    });
+    console.log(families);
+    const verificarDatos = (d) => {
+      let bool = true;
+
+      if (d.home.length < 1 || d.income.length < 1 || d._count.children > 1) {
+        return false;
+      }
+      return bool;
+    };
+    const data = families.map((f) => {
+      const object = {
+        id: f.id,
+        name: f.name,
+        district: f.home[0]?.district.name,
+        children: f._count.children,
+        filled: verificarDatos(f),
+      };
+      return object;
     });
     res.status(200).json({
       success: true,
-      data: data,
+      data,
     });
   } catch (error) {
     console.log(error);
@@ -243,10 +278,46 @@ const getHome = async (req, res) => {
 };
 
 const createIncome = async (req, res) => {
-  let { body } = req;
+  const range_id = parseInt(req.body.range_id);
   const { user } = req;
   const id = parseInt(req.params.id);
-  const { img } = req.files;
+
+  const existIncome = await prisma.income.findFirst({
+    where: {
+      family_id: id,
+    },
+  });
+  if (existIncome) {
+    handleHttpError(res, "INCOME_ALREADY_EXIST");
+    return;
+  }
+
+  const incomeCreate = await prisma.income.create({
+    data: {
+      range_id,
+      family_id: id,
+    },
+  });
+  //subir imagenes
+  const imageUrls = [];
+  for (const file of req.files) {
+    const { imageName } = await uploadImage(file);
+
+    imageUrls.push(imageName);
+  }
+  const docsIncome = await prisma.docsIncome.createMany({
+    data: imageUrls.map((name) => ({
+      name,
+      income_id: incomeCreate.id,
+    })),
+  });
+
+  const data = { incomeCreate, docsIncome };
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
 };
 
 export { store, show, get, createHome, updateHome, getHome, createIncome };
