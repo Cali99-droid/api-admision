@@ -43,3 +43,15 @@ export const validatorHome = [
     return validateResults(req, res, next);
   },
 ];
+
+export const validatorIncome = [
+  body("range_id")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo range_id no puede estar vacío"),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];

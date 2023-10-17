@@ -218,7 +218,7 @@ const update = async (req, res) => {
     });
 
     const data = {
-      personUpdate,
+      person,
       img1: image1.imageName,
       img2: image2.imageName,
     };

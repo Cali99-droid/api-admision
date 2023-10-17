@@ -13,6 +13,7 @@ import {
   validatorFamily,
   validatorGetFamily,
   validatorHome,
+  validatorIncome,
 } from "../validators/family.js";
 import { upload } from "../utils/handleUpload.js";
 
@@ -232,12 +233,12 @@ router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
  *
  * Route domicilio family
  * @openapi
- * /family/home/{id}:
+ * /family/income/{id}:
  *      post:
  *          tags:
  *              - family
- *          summary: "Crear datos de domicilio de una familia"
- *          description: "Esta ruta es para Crear datos de domicilio de una familia"
+ *          summary: "TODO - Crear datos de ingresos de una familia"
+ *          description: "Esta ruta es para Creardatos de ingresos de una familia"
  *          security:
  *            - bearerAuth: []
  *          requestBody:
@@ -245,32 +246,33 @@ router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
  *              multipart/form-data:
  *                schema:
  *                  type: object
- *                  required: address, district_id
+ *                  required: range_id
  *                  properties:
- *                    address:
- *                      type: string
- *                    reference:
- *                      type: string
- *                    district_id:
+ *                    range_id:
  *                      type: integer
- *
  *                    img:
  *                      type: string
  *                      format: binary
  *          parameters:
  *          - name: id
  *            in: path
- *            description: id de la familia a la cual se le asignará el domicilio creado
+ *            description: id de la familia a la cual se le asignará el ingreso creado
  *            required: true
  *          responses:
  *                  '201':
- *                      description: los datos de domicilio se creo de manera correcta
+ *                      description: los datos de ingresos se creo de manera correcta
  *                  '401':
  *                      description: Error por validación de datos
  *                  '403':
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/income/:id", validatorGetFamily, authMiddleware, createIncome);
+router.post(
+  "/income/:id",
+  validatorGetFamily,
+  validatorIncome,
+  authMiddleware,
+  createIncome
+);
 
 export default router;
