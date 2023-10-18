@@ -7,6 +7,7 @@ import {
   show,
   store,
   updateHome,
+  updateIncome,
 } from "../controllers/FamilyController.js";
 import { authMiddleware } from "../middleware/session.js";
 import {
@@ -270,9 +271,66 @@ router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
 router.post(
   "/income/:id",
   validatorGetFamily,
+  upload.array("images", 5),
   validatorIncome,
   authMiddleware,
   createIncome
+);
+
+/**
+ * http://localhost:3001/api
+ *
+ * Route ingresos family
+ * @openapi
+ * /family/income/{id}:
+ *      put:
+ *          tags:
+ *              - family
+ *          summary: "Actualizar datos de ingresos de una familia"
+ *          description: "Esta ruta es para Actualizar datos de ingresos de una familia"
+ *          security:
+ *            - bearerAuth: []
+ *          requestBody:
+ *            content:
+ *              multipart/form-data:
+ *                schema:
+ *                  type: object
+ *                  required: range_id
+ *                  properties:
+ *                    range_id:
+ *                      type: integer
+ *                                       
+ *                    images:
+ *                      type: array
+ *                      items:
+ *                        type: string
+ *                        format: binary
+ *          parameters:
+ *          - name: id
+ *            in: path
+ *            description: id de la familia a la cual se le actualizará los ingresos
+ *            required: true
+ *          responses:
+ *                  '201':
+ *                      description: los datos de ingresos se creo de manera correcta
+ *                      content:
+ *                        application/json:
+ *                          schema:
+
+ *                               $ref: '#/components/schemas/incomeUpd'
+ *                  '401':
+ *                      description: Error por validación de datos
+ *                  '403':
+ *                      description: No tiene permisos '403'
+ *
+ */
+router.put(
+  "/income/:id",
+  validatorGetFamily,
+  upload.array("images", 5),
+  validatorIncome,
+  authMiddleware,
+  updateIncome
 );
 
 export default router;

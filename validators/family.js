@@ -49,6 +49,7 @@ export const validatorIncome = [
     .trim()
     .exists()
     .notEmpty()
+    .isNumeric()
     .withMessage("El campo range_id no puede estar vacío"),
 
   (req, res, next) => {

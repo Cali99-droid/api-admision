@@ -321,6 +321,39 @@ const swaggerDefinition = {
           },
         },
       },
+      incomeUpd: {
+        type: "object",
+        properties: {
+          success: {
+            type: "boolean",
+          },
+          data: {
+            type: "object",
+            properties: {
+              incomeUpdate: {
+                type: "object",
+                properties: {
+                  id: {
+                    type: "integer",
+                  },
+                  range_id: {
+                    type: "integer",
+                  },
+                  family_id: {
+                    type: "integer",
+                  },
+                },
+              },
+              images: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+              },
+            },
+          },
+        },
+      },
     },
   },
 };

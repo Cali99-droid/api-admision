@@ -10467,6 +10467,25 @@ async function main() {
       },
     ],
   });
+  const range = await prisma.range.createMany({
+    data: [
+      {
+        name: "S/ 1000 a S/ 1500",
+      },
+      {
+        name: "S/ 1001 a S/ 2000",
+      },
+      {
+        name: "S/ 2001 a S/ 2500",
+      },
+      {
+        name: "S/ 2501 a S/ 3000",
+      },
+      {
+        name: "S/ 3000 a más",
+      },
+    ],
+  });
 }
 
 main()

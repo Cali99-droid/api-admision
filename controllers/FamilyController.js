@@ -217,6 +217,7 @@ const updateHome = async (req, res) => {
       const { imageName } = await uploadImage(img[0]);
       body = { doc: imageName, ...body };
     }
+
     const dateUpdate = new Date();
     body = { family_id: id, ...body };
     body = { update_time: dateUpdate, ...body };
@@ -235,7 +236,7 @@ const updateHome = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError("ERROR_CREATE_HOME");
+    handleHttpError(res, "ERROR_CREATE_HOME");
   }
 };
 
@@ -320,4 +321,89 @@ const createIncome = async (req, res) => {
   });
 };
 
-export { store, show, get, createHome, updateHome, getHome, createIncome };
+const updateIncome = async (req, res) => {
+  const range_id = parseInt(req.body.range_id);
+  const { user } = req;
+  const id = parseInt(req.params.id);
+  const family = await prisma.family.findUnique({
+    where: {
+      id: id,
+      AND: {
+        padreId: user.id,
+      },
+    },
+  });
+
+  if (!family) {
+    handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+    return;
+  }
+  const existIncome = await prisma.income.findFirst({
+    where: {
+      family_id: id,
+    },
+  });
+  if (!existIncome) {
+    handleHttpError(res, "INCOME_NOT_EXIST");
+    return;
+  }
+  const dateUpdate = new Date();
+  const incomeUpdate = await prisma.income.update({
+    data: {
+      range_id,
+      family_id: id,
+      update_time: dateUpdate,
+    },
+    where: {
+      id: existIncome.id,
+    },
+  });
+
+  const docs = await prisma.docsIncome.findMany({
+    where: {
+      income_id: existIncome.id,
+    },
+  });
+  if (docs.length > 0) {
+    docs.forEach(async (i) => {
+      await prisma.docsIncome.delete({
+        where: {
+          id: i.id,
+        },
+      });
+      deleteImage(i.name);
+    });
+  }
+
+  //subir imagenes
+  const images = [];
+  for (const file of req.files) {
+    const { imageName } = await uploadImage(file);
+
+    images.push(imageName);
+  }
+  const docsIncome = await prisma.docsIncome.createMany({
+    data: images.map((name) => ({
+      name,
+      income_id: incomeUpdate.id,
+    })),
+  });
+
+  const data = { incomeUpdate, images };
+
+  res.status(201).json({
+    success: true,
+    data,
+  });
+};
+
+export {
+  store,
+  show,
+  get,
+  createHome,
+  updateHome,
+  getHome,
+  createIncome,
+  updateIncome,
+};

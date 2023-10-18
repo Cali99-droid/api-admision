@@ -79,14 +79,15 @@ model home {
 }
 
 model income {
-  id          Int       @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   range_id    Int
   family_id   Int
-  doc         String?   @db.VarChar(60)
-  create_time DateTime? @default(now()) @db.Timestamp(0)
-  update_time DateTime? @db.Timestamp(0)
-  family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incomes_FAMILY1")
-  range       range     @relation(fields: [range_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incomes_range1")
+  doc         String?      @db.VarChar(60)
+  create_time DateTime?    @default(now()) @db.Timestamp(0)
+  update_time DateTime?    @db.Timestamp(0)
+  docsIncome  docsIncome[]
+  family      family       @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incomes_FAMILY1")
+  range       range        @relation(fields: [range_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_incomes_range1")
 
   @@index([family_id], map: "fk_incomes_FAMILY1_idx")
   @@index([range_id], map: "fk_incomes_range1_idx")
@@ -167,6 +168,17 @@ model user {
   person                      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_USER_PERSON")
 
   @@index([person_id], map: "fk_USER_PERSON_idx")
+}
+
+model docsIncome {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(60)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  update_time DateTime? @db.Timestamp(0)
+  income_id   Int
+  income      income    @relation(fields: [income_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_docsIncome_income1")
+
+  @@index([income_id], map: "fk_docsIncome_income1_idx")
 }
 
 enum person_gender {
