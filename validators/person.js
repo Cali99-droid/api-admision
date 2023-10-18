@@ -60,3 +60,29 @@ export const idValidationRules = [
     return validateResults(req, res, next);
   },
 ];
+
+export const childValidationRules = [
+  body("name").trim().exists().notEmpty().withMessage("el name es incorrecto"),
+  body("lastname").trim().isAlpha().withMessage("el lastname es incorrecto"),
+  body("mLastname").trim().isAlpha().withMessage("el mLastname es incorrecto"),
+  body("type_doc")
+    .isIn(["DNI", "CE"])
+    .withMessage("el tipo de documento debe ser DNI o CE"),
+  body("doc_number")
+    .trim()
+    .isNumeric()
+    .withMessage("el numero de documento debe ser numerico")
+    .isLength({ min: 8, max: 8 })
+    .withMessage("el numero de documento debe ser de 8 caracteres"),
+  body("gender")
+    .trim()
+    .isIn(["M", "F"])
+    .withMessage("el gender debe ser M o F")
+    .isAlpha()
+    .withMessage("el campo gender es incorrecto"),
+  body("birthdate").isISO8601().withMessage("el birthdate es incorrecto"),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];

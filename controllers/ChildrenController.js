@@ -1,37 +1,22 @@
-import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 const store = async (req, res) => {
   try {
     const { user } = req;
     const { img1, img2 } = req.files;
 
-    req = matchedData(req);
-
-    const { person, userData, id } = req;
-
+    const children = matchedData(req);
+    const { id } = children;
     const pers = await prisma.person.findFirst({
       where: {
-        doc_number: person.doc_number.toString(),
+        doc_number: children.doc_number.toString(),
       },
     });
-
     if (pers) {
       handleHttpError(res, "NUMBER_DOC_EXIST");
-      return;
-    }
-
-    const us = await prisma.user.findFirst({
-      where: {
-        email: userData.email,
-      },
-    });
-    if (us) {
-      handleHttpError(res, "EMAIL_EXIST");
       return;
     }
     const family = await prisma.family.findUnique({
@@ -39,113 +24,84 @@ const store = async (req, res) => {
         id: parseInt(id),
         AND: {
           padreId: user.id,
-          madreId: {
-            equals: null,
-          },
         },
       },
     });
-
     if (!family) {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE");
       return;
     }
-
     if (!img1 || !img2) {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
       return;
     }
-    person.birthdate = new Date(person.birthdate).toISOString();
-    person.doc_number = person.doc_number.toString();
-
+    children.birthdate = new Date(children.birthdate).toISOString();
+    children.doc_number = children.doc_number.toString();
     const image1 = await uploadImage(img1[0]);
     const image2 = await uploadImage(img2[0]);
+    delete children.id;
     const personCreate = await prisma.person.create({
-      data: person,
+      data: children,
     });
 
-    const userCreate = await prisma.user.create({
+    const childrenCreate = await prisma.children.create({
       data: {
-        email: userData.email,
-        phone: userData.phone.toString(),
+        family_id: parseInt(id),
         person_id: personCreate.id,
       },
-    });
-
-    const familyUpdateMarried = await prisma.family.update({
-      data: {
-        madreId: userCreate.id,
-      },
-      where: {
-        id: family.id,
+      select: {
+        person: true,
       },
     });
     const imgs = await prisma.doc.createMany({
       data: [
         {
           NAME: image1.imageName,
-          person_id: personCreate.id,
+          person_id: childrenCreate.person.id,
         },
         {
           NAME: image2.imageName,
-          person_id: personCreate.id,
+          person_id: childrenCreate.person.id,
         },
       ],
     });
-
-    const data = { id: personCreate.id };
-    res.status(201).json({
+    const data = { personCreate };
+    res.status(200).json({
       success: true,
-      data: data,
+      data,
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_CREATE_SPOUSE");
   }
 };
 
 const update = async (req, res) => {
   try {
     const { user } = req;
-
     const { img1, img2 } = req.files;
-    req = matchedData(req);
 
-    const { person, userData, id } = req;
-
-    const pers = await prisma.person.findUnique({
+    const children = matchedData(req);
+    const { id } = children;
+    const pers = await prisma.person.findFirst({
       where: {
         id: parseInt(id),
       },
     });
-
     if (!pers) {
       handleHttpError(res, "PERSON_DOES_NOT_EXIST");
       return;
     }
     const persDoc = await prisma.person.findFirst({
       where: {
-        doc_number: person.doc_number,
+        doc_number: children.doc_number,
       },
     });
-    if (persDoc.doc_number == person.doc_number && persDoc.id != id) {
+    if (persDoc.doc_number == children.doc_number && persDoc.id != id) {
       handleHttpError(res, "DOC_NUMBER_EXIST");
       return;
     }
 
-    const us = await prisma.user.findFirst({
-      where: {
-        email: userData.email,
-      },
-    });
-    if (us) {
-      if (us.person_id != id) {
-        handleHttpError(res, "EMAIL_EXIST");
-        return;
-      }
-    }
-
-    if (!img1 && !img2) {
+    if (!img1 || !img2) {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
       return;
     }
@@ -164,38 +120,18 @@ const update = async (req, res) => {
         deleteImage(i.NAME);
       });
     }
+
+    children.birthdate = new Date(children.birthdate).toISOString();
+    children.doc_number = children.doc_number.toString();
     const image1 = await uploadImage(img1[0]);
     const image2 = await uploadImage(img2[0]);
-
-    person.birthdate = new Date(person.birthdate).toISOString();
-    person.doc_number = person.doc_number.toString();
     const dateUpdate = new Date();
-    person.update_time = dateUpdate;
-
-    const personUpdate = await prisma.person.update({
-      data: person,
+    children.update_time = dateUpdate;
+    delete children.id;
+    const childrenUpdate = await prisma.person.update({
+      data: children,
       where: {
         id: parseInt(id),
-      },
-      include: {
-        user: {
-          select: {
-            email: true,
-            phone: true,
-          },
-        },
-      },
-    });
-
-    const userUpdate = await prisma.user.updateMany({
-      data: {
-        email: userData.email,
-        phone: userData.phone.toString(),
-        person_id: personUpdate.id,
-        update_time: dateUpdate,
-      },
-      where: {
-        person_id: parseInt(id),
       },
     });
 
@@ -203,30 +139,76 @@ const update = async (req, res) => {
       data: [
         {
           NAME: image1.imageName,
-          person_id: personUpdate.id,
-          update_time: dateUpdate,
+          person_id: parseInt(id),
         },
         {
           NAME: image2.imageName,
-          person_id: personUpdate.id,
-          update_time: dateUpdate,
+          person_id: parseInt(id),
         },
       ],
     });
-
     const data = {
-      person,
+      childrenUpdate,
       img1: image1.imageName,
       img2: image2.imageName,
     };
-    res.status(201).json({
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_CHILDREN");
+  }
+};
+
+const get = async (req, res) => {
+  try {
+    req = matchedData(req);
+    const id = parseInt(req.id);
+    const children = await prisma.children.findFirst({
+      where: {
+        person_id: id,
+      },
+    });
+    if (!children) {
+      handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
+      return;
+    }
+    const data = await prisma.person.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        type_doc: true,
+        doc_number: true,
+        lastname: true,
+        mLastname: true,
+        name: true,
+        gender: true,
+        birthdate: true,
+        doc: {
+          select: {
+            NAME: true,
+          },
+        },
+        children: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
       success: true,
       data: data,
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_UPDATE_SPOUSE");
+    handleHttpError(res, "ERROR_GET_CHILDREN");
   }
 };
 
-export { store, update };
+export { store, update, get };
