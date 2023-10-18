@@ -397,6 +397,50 @@ const updateIncome = async (req, res) => {
   });
 };
 
+const getIncome = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { user } = req;
+  const family = await prisma.family.findUnique({
+    where: {
+      id: id,
+      AND: {
+        padreId: user.id,
+      },
+    },
+  });
+
+  if (!family) {
+    handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+    return;
+  }
+
+  const income = await prisma.income.findFirst({
+    where: {
+      family_id: id,
+    },
+    select: {
+      id: true,
+      range_id: true,
+    },
+  });
+  const incomeDoc = await prisma.docsIncome.findMany({
+    where: {
+      income_id: income.id,
+    },
+    select: {
+      name: true,
+    },
+  });
+  const images = incomeDoc.map((i) => i.name);
+
+  const data = { income, images };
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+};
+
 export {
   store,
   show,
@@ -406,4 +450,5 @@ export {
   getHome,
   createIncome,
   updateIncome,
+  getIncome,
 };

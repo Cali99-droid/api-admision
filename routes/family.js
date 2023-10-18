@@ -4,6 +4,7 @@ import {
   createIncome,
   get,
   getHome,
+  getIncome,
   show,
   store,
   updateHome,
@@ -238,7 +239,7 @@ router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
  *      post:
  *          tags:
  *              - family
- *          summary: "TODO - Crear datos de ingresos de una familia"
+ *          summary: " Crear datos de ingresos de una familia"
  *          description: "Esta ruta es para Creardatos de ingresos de una familia"
  *          security:
  *            - bearerAuth: []
@@ -332,5 +333,33 @@ router.put(
   authMiddleware,
   updateIncome
 );
+
+/**
+ * @openapi
+ * /family/income/{id}:
+ *    get:
+ *      tags:
+ *        - family
+ *      summary: "Obtener datos de ingresos de familia "
+ *      description: obtiene los datos de ingresos de de una familia
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: id de la familia
+ *        required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna el objecto de  los datos de ingresos de de una familia.
+ *          content:
+ *             application/json:
+ *               schema:
+ *                   $ref: '#/components/schemas/incomeUpd'
+ *        '422':
+ *          description: Error de validacion.
+
+ */
+router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
 
 export default router;
