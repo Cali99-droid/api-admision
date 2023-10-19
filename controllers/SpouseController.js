@@ -83,11 +83,11 @@ const store = async (req, res) => {
     const imgs = await prisma.doc.createMany({
       data: [
         {
-          NAME: image1.imageName,
+          name: image1.imageName,
           person_id: personCreate.id,
         },
         {
-          NAME: image2.imageName,
+          name: image2.imageName,
           person_id: personCreate.id,
         },
       ],
@@ -161,7 +161,7 @@ const update = async (req, res) => {
             id: i.id,
           },
         });
-        deleteImage(i.NAME);
+        deleteImage(i.name);
       });
     }
     const image1 = await uploadImage(img1[0]);
@@ -202,12 +202,12 @@ const update = async (req, res) => {
     const imgs = await prisma.doc.createMany({
       data: [
         {
-          NAME: image1.imageName,
+          name: image1.imageName,
           person_id: personUpdate.id,
           update_time: dateUpdate,
         },
         {
-          NAME: image2.imageName,
+          name: image2.imageName,
           person_id: personUpdate.id,
           update_time: dateUpdate,
         },

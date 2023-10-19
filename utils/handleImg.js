@@ -6,7 +6,7 @@ export const uploadImage = async (img) => {
   try {
     const imgWebp = await sharp(img.buffer).webp().toBuffer();
     const ext = img.originalname.split(".").pop();
-    const imgName = `${Date.now()}.webp`;
+    const imgName = `https://caebucket.s3.us-west-2.amazonaws.com/admision/${Date.now()}.webp`;
 
     const result = await s3Client.send(
       new PutObjectCommand({

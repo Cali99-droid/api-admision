@@ -36,7 +36,7 @@ model district {
 
 model doc {
   id          Int       @id @default(autoincrement())
-  NAME        String    @db.VarChar(60)
+  name        String    @db.VarChar(200)
   person_id   Int
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
@@ -66,7 +66,7 @@ model home {
   id          Int       @id @default(autoincrement())
   address     String    @db.VarChar(255)
   reference   String?   @db.Text
-  doc         String?   @db.VarChar(60)
+  doc         String?   @db.VarChar(200)
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
   district_id String    @db.VarChar(6)
@@ -172,7 +172,7 @@ model user {
 
 model docsIncome {
   id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(60)
+  name        String    @db.VarChar(200)
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
   income_id   Int

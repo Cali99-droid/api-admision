@@ -153,15 +153,37 @@ const createHome = async (req, res) => {
         family_id: id,
       },
     });
-    if (homeExist) {
-      handleHttpError(res, "HOME_ALREADY_EXIST");
-      return;
-    }
 
     //subir imagen
-    if (img) {
-      const { imageName } = await uploadImage(img[0]);
-      body = { doc: imageName, ...body };
+    // if (img) {
+    //   if (homeExist.doc !== img[0].originalname) {
+    //     deleteImage(homeExist.doc);
+    //     const { imageName } = await uploadImage(img[0]);
+    //     homeExist = { doc: imageName, ...homeExist };
+    //   }
+    // }
+
+    if (homeExist) {
+      if (homeExist.doc !== img[0].originalname) {
+        deleteImage(homeExist.doc);
+        const { imageName } = await uploadImage(img[0]);
+        body = { doc: imageName, ...body };
+      } else {
+        const { imageName } = await uploadImage(img[0]);
+        body = { doc: imageName, ...body };
+      }
+
+      const homeUpd = await prisma.home.update({
+        data: body,
+        where: {
+          id: homeExist.id,
+        },
+      });
+      res.status(201).json({
+        success: true,
+        data: homeUpd,
+      });
+      return;
     }
 
     body = { family_id: id, ...body };
@@ -265,12 +287,34 @@ const getHome = async (req, res) => {
       id: true,
       address: true,
       reference: true,
-      district: true,
+      district: {
+        select: {
+          id: true,
+          province: {
+            select: {
+              id: true,
+              region: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
       doc: true,
     },
   });
-
-  const data = { home };
+  const city = home.district;
+  const data = {
+    id: home.id,
+    address: home.address,
+    reference: home.reference,
+    district: city.id,
+    province: city.province.id,
+    region: city.province.region.id,
+    img: home.doc,
+  };
 
   res.status(200).json({
     success: true,
