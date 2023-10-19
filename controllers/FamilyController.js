@@ -305,7 +305,10 @@ const getHome = async (req, res) => {
       doc: true,
     },
   });
-  const city = home?.district;
+  if (!home) {
+    handleHttpError(res, "HOME_NOT_EXIST", 404);
+    return;
+  }
   const data = {
     id: home.id,
     address: home.address,
