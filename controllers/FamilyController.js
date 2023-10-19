@@ -305,7 +305,7 @@ const getHome = async (req, res) => {
       doc: true,
     },
   });
-  const city = home.district;
+  const city = home?.district;
   const data = {
     id: home.id,
     address: home.address,
