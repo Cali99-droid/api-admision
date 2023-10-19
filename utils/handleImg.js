@@ -7,7 +7,7 @@ export const uploadImage = async (img) => {
     const imgWebp = await sharp(img.buffer).webp().toBuffer();
     const ext = img.originalname.split(".").pop();
     const imgName = `${Date.now()}.webp`;
-    const url = `https://caebucket.s3.us-west-2.amazonaws.com/admision/${imageName}`;
+    const url = `https://caebucket.s3.us-west-2.amazonaws.com/admision/${imgName}`;
     const result = await s3Client.send(
       new PutObjectCommand({
         Bucket: process.env.BUCKET_NAME,
@@ -26,23 +26,25 @@ export const uploadImage = async (img) => {
 
 export const deleteImage = async (url) => {
   let key;
-  if (url.length > 20) {
-    const urlParts = url.split("/");
-    key = urlParts.slice(3).join("/");
-  } else {
-    key = "admision/" + url;
-  }
+  if (url !== null) {
+    if (url.length > 20) {
+      const urlParts = url.split("/");
+      key = urlParts.slice(3).join("/");
+    } else {
+      key = "admision/" + url;
+    }
 
-  const params = {
-    Bucket: process.env.BUCKET_NAME,
-    Key: key,
-  };
-  const command = new DeleteObjectCommand(params);
-  try {
-    const response = await s3Client.send(command);
-    console.log("Objeto eliminado exitosamente:");
-  } catch (error) {
-    handleHttpError(res, "ERROR_UPDATE_IMAGE");
-    console.error("Error al eliminar el objeto:", error);
+    const params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: key,
+    };
+    const command = new DeleteObjectCommand(params);
+    try {
+      const response = await s3Client.send(command);
+      console.log("Objeto eliminado exitosamente:");
+    } catch (error) {
+      handleHttpError(res, "ERROR_UPDATE_IMAGE");
+      console.error("Error al eliminar el objeto:", error);
+    }
   }
 };
