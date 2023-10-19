@@ -13,6 +13,7 @@ export const uploadImage = async (img) => {
         Bucket: process.env.BUCKET_NAME,
         Key: "admision/" + imgName,
         Body: imgWebp,
+        ACL: "public-read",
       })
     );
     return {
