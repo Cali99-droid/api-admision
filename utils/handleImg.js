@@ -6,8 +6,8 @@ export const uploadImage = async (img) => {
   try {
     const imgWebp = await sharp(img.buffer).webp().toBuffer();
     const ext = img.originalname.split(".").pop();
-    const imgName = `https://caebucket.s3.us-west-2.amazonaws.com/admision/${Date.now()}.webp`;
-
+    const imgName = `${Date.now()}.webp`;
+    const url = `https://caebucket.s3.us-west-2.amazonaws.com/admision/${imageName}`;
     const result = await s3Client.send(
       new PutObjectCommand({
         Bucket: process.env.BUCKET_NAME,
@@ -17,7 +17,7 @@ export const uploadImage = async (img) => {
       })
     );
     return {
-      imageName: imgName,
+      imageName: url,
     };
   } catch (error) {
     console.log("error al subir imagen", error);
