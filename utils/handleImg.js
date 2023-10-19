@@ -23,10 +23,18 @@ export const uploadImage = async (img) => {
   }
 };
 
-export const deleteImage = async (key) => {
+export const deleteImage = async (url) => {
+  let key;
+  if (url.length > 20) {
+    const urlParts = url.split("/");
+    key = urlParts.slice(3).join("/");
+  } else {
+    key = "admision/" + url;
+  }
+
   const params = {
     Bucket: process.env.BUCKET_NAME,
-    Key: "admision/" + key,
+    Key: key,
   };
   const command = new DeleteObjectCommand(params);
   try {
