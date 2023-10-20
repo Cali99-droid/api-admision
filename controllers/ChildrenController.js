@@ -10,6 +10,11 @@ const store = async (req, res) => {
 
     const children = matchedData(req);
     const { id } = children;
+
+    if (!img1 || !img2) {
+      handleHttpError(res, "INSUFFICIENT_IMAGES");
+      return;
+    }
     const pers = await prisma.person.findFirst({
       where: {
         doc_number: children.doc_number.toString(),
@@ -19,22 +24,19 @@ const store = async (req, res) => {
       handleHttpError(res, "NUMBER_DOC_EXIST");
       return;
     }
-    const family = await prisma.family.findUnique({
-      where: {
-        id: parseInt(id),
-        AND: {
-          padreId: user.id,
-        },
-      },
-    });
-    if (!family) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
-      return;
-    }
-    if (!img1 || !img2) {
-      handleHttpError(res, "INSUFFICIENT_IMAGES");
-      return;
-    }
+    // const family = await prisma.family.findUnique({
+    //   where: {
+    //     id: parseInt(id),
+    //     AND: {
+    //       padreId: user.id,
+    //     },
+    //   },
+    // });
+    // if (!family) {
+    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+    //   return;
+    // }
+
     children.birthdate = new Date(children.birthdate).toISOString();
     children.doc_number = children.doc_number.toString();
     const image1 = await uploadImage(img1[0]);

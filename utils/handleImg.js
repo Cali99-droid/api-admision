@@ -7,11 +7,12 @@ export const uploadImage = async (img) => {
     const imgWebp = await sharp(img.buffer).webp().toBuffer();
     const ext = img.originalname.split(".").pop();
     const imgName = `${Date.now()}.webp`;
-    const url = `https://caebucket.s3.us-west-2.amazonaws.com/admision/${imgName}`;
+    const awsUrl = process.env.AWS_URL_BUCKET;
+    const url = `${awsUrl}/${imgName}`;
     const result = await s3Client.send(
       new PutObjectCommand({
         Bucket: process.env.BUCKET_NAME,
-        Key: "admision/" + imgName,
+        Key: process.env.FOLDER_IMG_NAME + imgName,
         Body: imgWebp,
         ACL: "public-read",
       })

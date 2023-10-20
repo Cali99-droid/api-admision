@@ -1,10 +1,10 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
-import s3Client from "../utils/aws.js";
-import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+
 import prisma from "../utils/prisma.js";
-import sharp from "sharp";
+
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
+import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 
 const store = async (req, res) => {
   try {
@@ -101,25 +101,57 @@ const show = async (req, res) => {
   }
 };
 
+/***
+ * trae una familia en especifico
+ *
+ *  */
 const get = async (req, res) => {
   try {
     req = matchedData(req);
     const id = parseInt(req.id);
 
-    const data = await prisma.family.findUnique({
+    const family = await prisma.family.findUnique({
       where: {
         id,
       },
       select: {
         id: true,
         name: true,
-        conyugue: true,
-        children: true,
+        conyugue: {
+          select: {
+            id: true,
+            email: true,
+            phone: true,
+            role: true,
+            person: {},
+          },
+        },
+        children: {
+          select: {
+            person: true,
+          },
+        },
       },
     });
+    if (!family) {
+      handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
+    }
+    //formatear
+    let spouse = {};
+    spouse = family.conyugue.person;
+    spouse = { email: family.conyugue.email, ...spouse };
+    spouse = { phone: family.conyugue.phone, ...spouse };
+    spouse = { role: family.conyugue.role, ...spouse };
+
+    const data = {
+      id: family.id,
+      family: family.name,
+      spouse,
+      children: family.children,
+    };
     res.status(200).json({
       success: true,
-      data: data,
+      data,
     });
   } catch (error) {
     console.log(error);
@@ -127,75 +159,61 @@ const get = async (req, res) => {
   }
 };
 
-const createHome = async (req, res) => {
+const saveHome = async (req, res) => {
   try {
-    let { body } = req;
     const { user } = req;
     const id = parseInt(req.params.id);
     const { img } = req.files;
+    let dataHome = matchedData(req);
 
-    const family = await prisma.family.findUnique({
-      where: {
-        id: id,
-        AND: {
-          padreId: user.id,
-        },
-      },
-    });
-
-    if (!family) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+    //**Verificar que la familia exista y pertenezca al usuario  */
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
       return;
     }
 
+    //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
       where: {
         family_id: id,
       },
     });
 
-    //subir imagen
-    // if (img) {
-    //   if (homeExist.doc !== img[0].originalname) {
-    //     deleteImage(homeExist.doc);
-    //     const { imageName } = await uploadImage(img[0]);
-    //     homeExist = { doc: imageName, ...homeExist };
-    //   }
-    // }
+    //** Si ya existe se actualiza */
 
     if (homeExist) {
       if (homeExist.doc !== img[0].originalname) {
         deleteImage(homeExist.doc);
         const { imageName } = await uploadImage(img[0]);
-        body = { doc: imageName, ...body };
+        dataHome = { doc: imageName, ...dataHome };
       } else {
         const { imageName } = await uploadImage(img[0]);
-        body = { doc: imageName, ...body };
+        dataHome = { doc: imageName, ...dataHome };
       }
-
-      const homeUpd = await prisma.home.update({
-        data: body,
+      delete dataHome.id;
+      const data = await prisma.home.update({
+        data: dataHome,
         where: {
           id: homeExist.id,
         },
       });
       res.status(201).json({
         success: true,
-        data: homeUpd,
+        data,
       });
       return;
     }
-
+    //** Si no existe se crea */
     const { imageName } = await uploadImage(img[0]);
     body = { doc: imageName, ...body };
     body = { family_id: id, ...body };
 
-    const home = await prisma.home.create({
+    const data = await prisma.home.create({
       data: body,
     });
-    const data = { id: home.id };
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       data,
     });
@@ -267,17 +285,10 @@ const updateHome = async (req, res) => {
 const getHome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
-  const family = await prisma.family.findUnique({
-    where: {
-      id: id,
-      AND: {
-        padreId: user.id,
-      },
-    },
-  });
 
-  if (!family) {
-    handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+  const verify = await existFamilyUser(id, user.id);
+  if (!verify) {
+    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
     return;
   }
 
@@ -333,15 +344,72 @@ const createIncome = async (req, res) => {
   const { user } = req;
   const id = parseInt(req.params.id);
 
+  //**Verificar que la familia exista y pertenezca al usuario  */
+  // const verify = await existFamilyUser(id, user.id);
+  // if (!verify) {
+  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+  //   return;
+  // }
+
   const existIncome = await prisma.income.findFirst({
     where: {
       family_id: id,
     },
   });
+  //** si ya existe se actualiza */
   if (existIncome) {
-    handleHttpError(res, "INCOME_ALREADY_EXIST");
+    const dateUpdate = new Date();
+    const incomeUpdate = await prisma.income.update({
+      data: {
+        range_id,
+        family_id: id,
+        update_time: dateUpdate,
+      },
+      where: {
+        id: existIncome.id,
+      },
+    });
+    //** Actualizamos la imagenes */
+    const docs = await prisma.docsIncome.findMany({
+      where: {
+        income_id: existIncome.id,
+      },
+    });
+
+    if (docs.length > 0) {
+      docs.forEach(async (i) => {
+        await prisma.docsIncome.delete({
+          where: {
+            id: i.id,
+          },
+        });
+        deleteImage(i.name);
+      });
+    }
+
+    //** subir imagenes
+    const images = [];
+    for (const file of req.files) {
+      const { imageName } = await uploadImage(file);
+
+      images.push(imageName);
+    }
+    //**Alamcenar nombres en la base de datos */
+    const docsIncome = await prisma.docsIncome.createMany({
+      data: images.map((name) => ({
+        name,
+        income_id: incomeUpdate.id,
+      })),
+    });
+    const data = { incomeUpdate, docsIncome };
+    res.status(201).json({
+      success: true,
+      data,
+    });
     return;
   }
+
+  //**Si no existe se crea */
 
   const incomeCreate = await prisma.income.create({
     data: {
@@ -450,19 +518,19 @@ const updateIncome = async (req, res) => {
 const getIncome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
-  const family = await prisma.family.findUnique({
-    where: {
-      id: id,
-      AND: {
-        padreId: user.id,
-      },
-    },
-  });
+  // const family = await prisma.family.findUnique({
+  //   where: {
+  //     id: id,
+  //     AND: {
+  //       padreId: user.id,
+  //     },
+  //   },
+  // });
 
-  if (!family) {
-    handleHttpError(res, "FAMILY_NOT_AVAILABLE");
-    return;
-  }
+  // if (!family) {
+  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+  //   return;
+  // }
 
   const income = await prisma.income.findFirst({
     where: {
@@ -473,6 +541,10 @@ const getIncome = async (req, res) => {
       range_id: true,
     },
   });
+  if (!income) {
+    handleHttpError(res, "NOT_EXIST_INCOME", 404);
+  }
+
   const incomeDoc = await prisma.docsIncome.findMany({
     where: {
       income_id: income.id,
@@ -483,7 +555,7 @@ const getIncome = async (req, res) => {
   });
   const images = incomeDoc.map((i) => i.name);
 
-  const data = { income, images };
+  const data = { images, ...income };
 
   res.status(200).json({
     success: true,
@@ -495,7 +567,7 @@ export {
   store,
   show,
   get,
-  createHome,
+  saveHome,
   updateHome,
   getHome,
   createIncome,

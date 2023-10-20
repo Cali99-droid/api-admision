@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  createHome,
   createIncome,
   get,
   getHome,
   getIncome,
+  saveHome,
   show,
   store,
   updateHome,
@@ -88,11 +88,8 @@ router.get("/", authMiddleware, show);
  *        required: true
  *      responses:
  *        '200':
- *          description: Retorna el objecto de la family.
- *          content:
- *             application/json:
- *               schema:
- *                   $ref: '#/components/schemas/family'
+ *          description: Retorna el objecto de la familia incluyendo hijos y conyugue.
+ *
  *        '422':
  *          description: Error de validacion.
  */
@@ -148,7 +145,7 @@ router.post(
   upload.fields([{ name: "img" }]),
   authMiddleware,
   validatorHome,
-  createHome
+  saveHome
 );
 
 /**
@@ -227,6 +224,8 @@ router.put(
  *                   $ref: '#/components/schemas/home'
  *        '422':
  *          description: Error de validacion.
+ *        '404':
+ *          descripction: no existen los datos
 
  */
 router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);

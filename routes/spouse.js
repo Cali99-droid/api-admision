@@ -87,7 +87,7 @@ const router = express.Router();
  *       description: id de la familia a la cual se le asignará el conyugue creado
  *       required: true
  *     responses:
- *       '200':
+ *       '201':
  *         description: Respuesta exitosa
  *       '401':
  *         description: Error por validación de datos
