@@ -69,6 +69,7 @@ const store = async (req, res) => {
         email: userData.email,
         phone: userData.phone.toString(),
         person_id: personCreate.id,
+        role: parseInt(userData.role),
       },
     });
 

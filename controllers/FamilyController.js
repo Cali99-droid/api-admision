@@ -186,6 +186,8 @@ const createHome = async (req, res) => {
       return;
     }
 
+    const { imageName } = await uploadImage(img[0]);
+    body = { doc: imageName, ...body };
     body = { family_id: id, ...body };
 
     const home = await prisma.home.create({
