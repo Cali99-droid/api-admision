@@ -122,8 +122,7 @@ const get = async (req, res) => {
             id: true,
             email: true,
             phone: true,
-            role: true,
-            person: {},
+            person: true,
           },
         },
         children: {

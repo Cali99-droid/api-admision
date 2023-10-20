@@ -1,5 +1,5 @@
 import express from "express";
-import { store, update } from "../controllers/SpouseController.js";
+import { get, store, update } from "../controllers/SpouseController.js";
 import { authMiddleware } from "../middleware/session.js";
 import {
   idValidationRules,
@@ -177,5 +177,36 @@ router.put(
   personValidationRules,
   update
 );
+
+// router.get("/:id", (req, res) => {
+//   res.status(200).json({
+//     success: true,
+//     data: "hola loco",
+//   });
+// });
+
+/**
+ * @openapi
+ * /spouse/{id}:
+ *    get:
+ *      tags:
+ *        - spouse
+ *      summary: "detalle conyugue "
+ *      description: obtiene el detalle de un conyugue
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: id del conyugue
+ *        required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna el objecto del conyugue.
+ *
+ *        '422':
+ *          description: Error de validacion.
+ */
+router.get("/:id", authMiddleware, idValidationRules, get);
 
 export default router;

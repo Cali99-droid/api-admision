@@ -34,6 +34,7 @@ const store = async (req, res) => {
       handleHttpError(res, "EMAIL_EXIST");
       return;
     }
+    // si la familia no tiene un conyugue
     const family = await prisma.family.findUnique({
       where: {
         id: parseInt(id),
@@ -47,10 +48,10 @@ const store = async (req, res) => {
     });
 
     if (!family) {
+      //
       handleHttpError(res, "FAMILY_NOT_AVAILABLE");
       return;
     }
-
     if (!img1 || !img2) {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
       return;
@@ -229,4 +230,35 @@ const update = async (req, res) => {
   }
 };
 
-export { store, update };
+const get = async (req, res) => {
+  try {
+    req = matchedData(req);
+
+    const id = parseInt(req.id);
+    const spouse = await prisma.person.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+    if (!spouse) {
+      handleHttpError(res, "SPOUSE_DOES_NOT_EXIST", 404);
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      data: spouse,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERR_GET_FAMILY");
+  }
+};
+export { store, update, get };

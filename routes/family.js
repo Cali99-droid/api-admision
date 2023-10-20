@@ -251,9 +251,11 @@ router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
  *                  properties:
  *                    range_id:
  *                      type: integer
- *                    img:
- *                      type: string
- *                      format: binary
+ *                    images:
+ *                      type: array
+ *                      items:
+ *                        type: string
+ *                        format: binary
  *          parameters:
  *          - name: id
  *            in: path
