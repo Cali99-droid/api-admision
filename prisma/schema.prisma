@@ -46,20 +46,20 @@ model doc {
 }
 
 model family {
-  id          Int        @id @default(autoincrement())
-  name        String     @db.VarChar(255)
-  padreId     Int?
-  madreId     Int?
-  create_time DateTime?  @default(now()) @db.Timestamp(0)
-  update_time DateTime?  @db.Timestamp(0)
-  children    children[]
-  padre       user?      @relation("family_padreIdTouser", fields: [padreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
-  conyugue    user?      @relation("family_madreIdTouser", fields: [madreId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
-  home        home[]
-  income      income[]
+  id                            Int        @id @default(autoincrement())
+  name                          String     @db.VarChar(255)
+  mainParent                    Int?       @map("main_parent")
+  parent                        Int?
+  create_time                   DateTime?  @default(now()) @db.Timestamp(0)
+  update_time                   DateTime?  @db.Timestamp(0)
+  children                      children[]
+  user_family_main_parentTouser user?      @relation("family_main_parentTouser", fields: [mainParent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
+  user_family_parentTouser      user?      @relation("family_parentTouser", fields: [parent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
+  home                          home[]
+  income                        income[]
 
-  @@index([padreId], map: "fk_family_USER1_idx")
-  @@index([madreId], map: "fk_family_USER2_idx")
+  @@index([mainParent], map: "fk_family_USER1_idx")
+  @@index([parent], map: "fk_family_USER2_idx")
 }
 
 model home {
@@ -106,6 +106,7 @@ model person {
   gender       person_gender?
   profession   String?          @db.VarChar(255)
   type_doc     person_type_doc?
+  role         person_role?
   creaate_time DateTime?        @default(now()) @db.Timestamp(0)
   update_time  DateTime?        @db.Timestamp(0)
   children     children[]
@@ -150,22 +151,22 @@ model school {
 }
 
 model user {
-  id                          Int       @id @default(autoincrement())
-  email                       String    @unique(map: "email_UNIQUE") @db.VarChar(200)
-  phone                       String    @db.Char(9)
-  password                    String?   @db.VarChar(60)
-  confirmed_email             Int?      @default(0) @db.TinyInt
-  confirmed_phone             Int?      @default(0) @db.TinyInt
-  create_time                 DateTime? @default(now()) @db.Timestamp(0)
-  update_time                 DateTime? @db.Timestamp(0)
-  role                        Int       @default(1)
-  token                       String?   @db.VarChar(60)
-  code                        String?   @db.Char(5)
-  mauticId                    Int?
-  person_id                   Int
-  family_family_padreIdTouser family[]  @relation("family_padreIdTouser")
-  family_family_madreIdTouser family[]  @relation("family_madreIdTouser")
-  person                      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_USER_PERSON")
+  id                              Int       @id @default(autoincrement())
+  email                           String    @unique(map: "email_UNIQUE") @db.VarChar(200)
+  phone                           String    @db.Char(9)
+  password                        String?   @db.VarChar(60)
+  confirmed_email                 Int?      @default(0) @db.TinyInt
+  confirmed_phone                 Int?      @default(0) @db.TinyInt
+  create_time                     DateTime? @default(now()) @db.Timestamp(0)
+  update_time                     DateTime? @db.Timestamp(0)
+  role                            Int       @default(1)
+  token                           String?   @db.VarChar(60)
+  code                            String?   @db.Char(5)
+  mauticId                        Int?
+  person_id                       Int
+  family_family_main_parentTouser family[]  @relation("family_main_parentTouser")
+  family_family_parentTouser      family[]  @relation("family_parentTouser")
+  person                          person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_USER_PERSON")
 
   @@index([person_id], map: "fk_USER_PERSON_idx")
 }
@@ -189,4 +190,9 @@ enum person_gender {
 enum person_type_doc {
   DNI
   CE
+}
+
+enum person_role {
+  P
+  M
 }

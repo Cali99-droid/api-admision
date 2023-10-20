@@ -21,7 +21,7 @@ const store = async (req, res) => {
     // }
     const family = await prisma.family.create({
       data: {
-        padreId: user.id,
+        mainParent: user.id,
         name,
       },
     });
@@ -47,7 +47,7 @@ const show = async (req, res) => {
     }
     const families = await prisma.family.findMany({
       where: {
-        padreId: user.id,
+        mainParent: user.id,
       },
       select: {
         id: true,
@@ -233,7 +233,7 @@ const updateHome = async (req, res) => {
       where: {
         id: id,
         AND: {
-          padreId: user.id,
+          mainParent: user.id,
         },
       },
     });
@@ -447,7 +447,7 @@ const updateIncome = async (req, res) => {
     where: {
       id: id,
       AND: {
-        padreId: user.id,
+        mainParent: user.id,
       },
     },
   });
@@ -522,7 +522,7 @@ const getIncome = async (req, res) => {
   //   where: {
   //     id: id,
   //     AND: {
-  //       padreId: user.id,
+  //       mainParent: user.id,
   //     },
   //   },
   // });

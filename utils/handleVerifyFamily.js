@@ -5,7 +5,7 @@ export const existFamilyUser = async (id, userId) => {
     where: {
       id: id,
       AND: {
-        padreId: userId,
+        mainParent: userId,
       },
     },
   });

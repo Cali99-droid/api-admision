@@ -5,14 +5,16 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 export const uploadImage = async (img) => {
   try {
     const imgWebp = await sharp(img.buffer).webp().toBuffer();
-    const ext = img.originalname.split(".").pop();
+    // const ext = img.originalname.split(".").pop();
     const imgName = `${Date.now()}.webp`;
     const awsUrl = process.env.AWS_URL_BUCKET;
-    const url = `${awsUrl}/${imgName}`;
+    const folder = process.env.FOLDER_IMG_NAME;
+    const url = `${awsUrl}/${folder}/${imgName}`;
+    const key = `${folder}/${imgName}`;
     const result = await s3Client.send(
       new PutObjectCommand({
         Bucket: process.env.BUCKET_NAME,
-        Key: process.env.FOLDER_IMG_NAME + imgName,
+        Key: key,
         Body: imgWebp,
         ACL: "public-read",
       })

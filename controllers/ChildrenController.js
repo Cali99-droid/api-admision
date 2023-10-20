@@ -28,7 +28,7 @@ const store = async (req, res) => {
     //   where: {
     //     id: parseInt(id),
     //     AND: {
-    //       padreId: user.id,
+    //       mainParent: user.id,
     //     },
     //   },
     // });

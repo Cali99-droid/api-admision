@@ -59,8 +59,7 @@ const router = express.Router();
  *                 type: string
  *               userData[phone]:
  *                 type: integer
- *               userData[role]:
- *                 type: integer
+ *
  *               person[name]:
  *                 type: string
  *               person[lastname]:
@@ -74,6 +73,8 @@ const router = express.Router();
  *               person[profession]:
  *                 type: string
  *               person[birthdate]:
+ *                 type: string
+ *               person[role]:
  *                 type: string
  *               img1:
  *                 type: string

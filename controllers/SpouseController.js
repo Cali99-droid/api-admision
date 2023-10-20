@@ -38,8 +38,8 @@ const store = async (req, res) => {
       where: {
         id: parseInt(id),
         AND: {
-          padreId: user.id,
-          madreId: {
+          mainParent: user.id,
+          parent: {
             equals: null,
           },
         },
@@ -69,13 +69,12 @@ const store = async (req, res) => {
         email: userData.email,
         phone: userData.phone.toString(),
         person_id: personCreate.id,
-        role: parseInt(userData.role),
       },
     });
 
     const familyUpdateMarried = await prisma.family.update({
       data: {
-        madreId: userCreate.id,
+        parent: userCreate.id,
       },
       where: {
         id: family.id,
@@ -94,7 +93,7 @@ const store = async (req, res) => {
       ],
     });
 
-    const data = { id: personCreate.id };
+    const data = { personCreate };
     res.status(201).json({
       success: true,
       data: data,
@@ -114,6 +113,10 @@ const update = async (req, res) => {
 
     const { person, userData, id } = req;
 
+    if (!img1 && !img2) {
+      handleHttpError(res, "INSUFFICIENT_IMAGES");
+      return;
+    }
     const pers = await prisma.person.findUnique({
       where: {
         id: parseInt(id),
@@ -146,10 +149,6 @@ const update = async (req, res) => {
       }
     }
 
-    if (!img1 && !img2) {
-      handleHttpError(res, "INSUFFICIENT_IMAGES");
-      return;
-    }
     const docs = await prisma.doc.findMany({
       where: {
         person_id: parseInt(id),

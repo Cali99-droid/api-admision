@@ -29,6 +29,9 @@ export const personValidationRules = [
     .isAlpha()
     .withMessage("el campo profession es incorrecto"),
   body("person.birthdate").isISO8601().withMessage("el name es incorrecto"),
+  body("person.role")
+    .isIn(["M", "P", ""])
+    .withMessage("el tipo de documento debe ser M o P"),
 
   (req, res, next) => {
     return validateResults(req, res, next);
@@ -40,7 +43,6 @@ export const userValidationRules = [
     .trim()
     .isEmail()
     .withMessage("el email es incorrecto"),
-  body("userData[role]").trim().isNumeric().withMessage("el rol es incorrecto"),
   body("userData.phone")
     .isMobilePhone("es-PE")
     .withMessage("el telefono no tiene el formato PE"), // Ajusta la región según corresponda
