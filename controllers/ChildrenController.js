@@ -98,9 +98,11 @@ const update = async (req, res) => {
         doc_number: children.doc_number,
       },
     });
-    if (persDoc.doc_number == children.doc_number && persDoc.id != id) {
-      handleHttpError(res, "DOC_NUMBER_EXIST");
-      return;
+    if (persDoc) {
+      if (persDoc.doc_number == children.doc_number && persDoc.id != id) {
+        handleHttpError(res, "DOC_NUMBER_EXIST");
+        return;
+      }
     }
 
     if (!img1 || !img2) {
