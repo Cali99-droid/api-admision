@@ -67,7 +67,7 @@ const store = async (req, res) => {
         },
       ],
     });
-    const data = { personCreate, chidren_id: childrenCreate.id };
+    const data = { personCreate, chidrenId: childrenCreate.id };
     res.status(200).json({
       success: true,
       data,

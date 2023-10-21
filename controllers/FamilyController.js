@@ -138,10 +138,12 @@ const get = async (req, res) => {
     }
     //formatear
     let spouse = {};
-    spouse = family.conyugue.person;
-    spouse = { email: family.conyugue.email, ...spouse };
-    spouse = { phone: family.conyugue.phone, ...spouse };
-    spouse = { role: family.conyugue.role, ...spouse };
+    if (family.conyugue) {
+      spouse = family.conyugue.person;
+      spouse = { email: family.conyugue.email, ...spouse };
+      spouse = { phone: family.conyugue.phone, ...spouse };
+      spouse = { role: family.conyugue.role, ...spouse };
+    }
 
     const data = {
       id: family.id,
