@@ -127,6 +127,7 @@ const get = async (req, res) => {
         },
         children: {
           select: {
+            id: true,
             person: true,
           },
         },
