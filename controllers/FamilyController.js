@@ -167,7 +167,7 @@ const saveHome = async (req, res) => {
     const id = parseInt(req.params.id);
     const { img } = req.files;
     let dataHome = matchedData(req);
-
+console.log(dataHome)
     //**Verificar que la familia exista y pertenezca al usuario  */
     const verify = await existFamilyUser(id, user.id);
     if (!verify) {
