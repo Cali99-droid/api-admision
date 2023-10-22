@@ -208,11 +208,11 @@ const saveHome = async (req, res) => {
     }
     //** Si no existe se crea */
     const { imageName } = await uploadImage(img[0]);
-    body = { doc: imageName, ...body };
-    body = { family_id: id, ...body };
+    dataHome = { doc: imageName, ...dataHome };
+    dataHome = { family_id: id, ...dataHome };
 
     const data = await prisma.home.create({
-      data: body,
+      data: dataHome,
     });
 
     res.status(201).json({
