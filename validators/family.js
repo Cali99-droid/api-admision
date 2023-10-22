@@ -31,6 +31,11 @@ export const validatorHome = [
     .exists()
     .notEmpty()
     .withMessage("El campo address no puede estar vacío"),
+  body("reference")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo reference no puede estar vacío"),
   body("district_id")
     .trim()
     .exists()
