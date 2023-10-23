@@ -4,8 +4,7 @@ import validateResults from "../utils/handleValidator.js";
 export const personValidationRules = [
   body("person.name")
     .trim()
-    .exists()
-    .notEmpty()
+     .isAlpha()
     .withMessage("el name es incorrecto"),
   body("person.lastname")
     .trim()
