@@ -185,7 +185,7 @@ const saveHome = async (req, res) => {
     //** Si ya existe se actualiza */
 
     if (homeExist) {
-      if(typeof img !== "string"){
+      if(img){
           if (homeExist.doc !== img[0].originalname) {
             deleteImage(homeExist.doc);
             const { imageName } = await uploadImage(img[0]);
@@ -195,8 +195,6 @@ const saveHome = async (req, res) => {
             dataHome = { doc: imageName, ...dataHome };
           }
      
-      }else{
-         dataHome = { doc: img, ...dataHome };
       }
       
       
