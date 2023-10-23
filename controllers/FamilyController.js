@@ -554,7 +554,7 @@ const getIncome = async (req, res) => {
 
   const incomeDoc = await prisma.docsIncome.findMany({
     where: {
-      income_id: income.id,
+      income_id: income?.id,
     },
     select: {
       name: true,
