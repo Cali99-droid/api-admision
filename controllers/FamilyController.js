@@ -185,19 +185,17 @@ const saveHome = async (req, res) => {
     //** Si ya existe se actualiza */
 
     if (homeExist) {
-      if(img){
-          if (homeExist.doc !== img[0].originalname) {
-            deleteImage(homeExist.doc);
-            const { imageName } = await uploadImage(img[0]);
-            dataHome = { doc: imageName, ...dataHome };
-          } else {
-            const { imageName } = await uploadImage(img[0]);
-            dataHome = { doc: imageName, ...dataHome };
-          }
-     
+      if (img) {
+        if (homeExist.doc !== img[0].originalname) {
+          deleteImage(homeExist.doc);
+          const { imageName } = await uploadImage(img[0]);
+          dataHome = { doc: imageName, ...dataHome };
+        } else {
+          const { imageName } = await uploadImage(img[0]);
+          dataHome = { doc: imageName, ...dataHome };
+        }
       }
-      
-      
+
       delete dataHome.id;
       const data = await prisma.home.update({
         data: dataHome,
@@ -366,6 +364,37 @@ const createIncome = async (req, res) => {
   //** si ya existe se actualiza */
   if (existIncome) {
     const dateUpdate = new Date();
+
+    //** Actualizamos la imagenes */
+    const images = [];
+    if (req.files.length > 0) {
+      const docs = await prisma.docsIncome.findMany({
+        where: {
+          income_id: existIncome.id,
+        },
+      });
+
+      if (docs.length > 0) {
+        docs.forEach(async (i) => {
+          await prisma.docsIncome.delete({
+            where: {
+              id: i.id,
+            },
+          });
+          deleteImage(i.name);
+        });
+      }
+
+      //** subir imagenes
+
+      for (const file of req.files) {
+        const { imageName } = await uploadImage(file);
+
+        images.push(imageName);
+      }
+      //**Alamcenar nombres en la base de datos */
+    }
+
     const incomeUpdate = await prisma.income.update({
       data: {
         range_id,
@@ -375,39 +404,20 @@ const createIncome = async (req, res) => {
       where: {
         id: existIncome.id,
       },
-    });
-    //** Actualizamos la imagenes */
-    const docs = await prisma.docsIncome.findMany({
-      where: {
-        income_id: existIncome.id,
+      include: {
+        docsIncome: true,
       },
     });
-
-    if (docs.length > 0) {
-      docs.forEach(async (i) => {
-        await prisma.docsIncome.delete({
-          where: {
-            id: i.id,
-          },
-        });
-        deleteImage(i.name);
+    let docsIncome;
+    if (images.length > 0) {
+      docsIncome = await prisma.docsIncome.createMany({
+        data: images.map((name) => ({
+          name,
+          income_id: incomeUpdate.id,
+        })),
       });
     }
 
-    //** subir imagenes
-    const images = [];
-    for (const file of req.files) {
-      const { imageName } = await uploadImage(file);
-
-      images.push(imageName);
-    }
-    //**Alamcenar nombres en la base de datos */
-    const docsIncome = await prisma.docsIncome.createMany({
-      data: images.map((name) => ({
-        name,
-        income_id: incomeUpdate.id,
-      })),
-    });
     const data = { incomeUpdate, docsIncome };
     res.status(201).json({
       success: true,
@@ -422,6 +432,9 @@ const createIncome = async (req, res) => {
     data: {
       range_id,
       family_id: id,
+    },
+    include: {
+      docsIncome: true,
     },
   });
   //subir imagenes
@@ -550,6 +563,7 @@ const getIncome = async (req, res) => {
   });
   if (!income) {
     handleHttpError(res, "NOT_EXIST_INCOME", 404);
+    return;
   }
 
   const incomeDoc = await prisma.docsIncome.findMany({
