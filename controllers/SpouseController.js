@@ -252,9 +252,18 @@ const get = async (req, res) => {
       handleHttpError(res, "SPOUSE_DOES_NOT_EXIST", 404);
       return;
     }
+    const email = spouse.user[0].email;
+    const phone = spouse.user[0].phone;
+    delete spouse.user;
+    const data = {
+      ...spouse,
+      email,
+      phone,
+    };
+
     res.status(200).json({
       success: true,
-      data: spouse,
+      data: data,
     });
   } catch (error) {
     console.log(error);

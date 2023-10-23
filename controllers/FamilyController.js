@@ -138,7 +138,7 @@ const get = async (req, res) => {
     }
     //formatear
     let spouse = {};
-    if (family.conyugue) {
+    if (family?.conyugue) {
       spouse = family.conyugue.person;
       spouse = { email: family.conyugue.email, ...spouse };
       spouse = { phone: family.conyugue.phone, ...spouse };

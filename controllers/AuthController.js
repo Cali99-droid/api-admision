@@ -159,15 +159,13 @@ const login = async (req, res) => {
     // user.set("password", undefined, { strict: false });
     const data = {
       token: await tokenSign(user),
-      user: {
-        id: user.id,
-        personId: user.person_id,
-        role: user.role,
-        email: user.email,
-        name: user.person.name,
-        lastname: user.person.lastname,
-        mLastname: user.person.mLastname,
-      },
+      id: user.id,
+      personId: user.person_id,
+      role: user.role,
+      email: user.email,
+      name: user.person.name,
+      lastname: user.person.lastname,
+      mLastname: user.person.mLastname,
     };
     res.status(201).json({
       success: true,
