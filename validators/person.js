@@ -5,7 +5,7 @@ export const personValidationRules = [
   body("person.name")
     .trim()
      .isAlpha()
-    .withMessage("el name es incorrecto !"),
+    .withMessage("el name es incorrectoss !"),
   body("person.lastname")
     .trim()
     .isAlpha()
@@ -63,7 +63,7 @@ export const idValidationRules = [
 ];
 
 export const childValidationRules = [
-  body("name").trim().exists().notEmpty().withMessage("el name es incorrecto"),
+  body("name").trim().exists().notEmpty().withMessage("el name es incorrecto children"),
   body("lastname").trim().isAlpha().withMessage("el lastname es incorrecto"),
   body("mLastname").trim().isAlpha().withMessage("el mLastname es incorrecto"),
   body("type_doc")
