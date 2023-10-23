@@ -5,7 +5,7 @@ export const personValidationRules = [
   body("person.name")
     .trim()
      .isAlpha()
-    .withMessage("el name es incorrecto"),
+    .withMessage("el name es incorrecto !"),
   body("person.lastname")
     .trim()
     .isAlpha()
