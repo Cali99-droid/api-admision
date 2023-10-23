@@ -27,11 +27,14 @@ const store = async (req, res) => {
     });
 
     if (schoolExists) {
-      if (schoolExists.lib_doc !== img[0].originalname) {
-        deleteImage(schoolExists.lib_doc);
-        const { imageName } = await uploadImage(img[0]);
-        school = { lib_doc: imageName, ...school };
+      if(img){
+         if (schoolExists.lib_doc !== img[0].originalname) {
+          deleteImage(schoolExists.lib_doc);
+          const { imageName } = await uploadImage(img[0]);
+          school = { lib_doc: imageName, ...school };
+        } 
       }
+      
       const dateUpdate = new Date();
       school = { update_time: dateUpdate, ...school };
       const schoolUpdate = await prisma.school.update({
