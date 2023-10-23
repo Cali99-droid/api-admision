@@ -167,7 +167,7 @@ const saveHome = async (req, res) => {
     const id = parseInt(req.params.id);
     const { img } = req.files;
     let dataHome = matchedData(req);
-console.log(dataHome)
+
     //**Verificar que la familia exista y pertenezca al usuario  */
     const verify = await existFamilyUser(id, user.id);
     if (!verify) {
@@ -185,14 +185,21 @@ console.log(dataHome)
     //** Si ya existe se actualiza */
 
     if (homeExist) {
-      if (homeExist.doc !== img[0].originalname) {
-        deleteImage(homeExist.doc);
-        const { imageName } = await uploadImage(img[0]);
-        dataHome = { doc: imageName, ...dataHome };
-      } else {
-        const { imageName } = await uploadImage(img[0]);
-        dataHome = { doc: imageName, ...dataHome };
+      if(img[0]){
+          if (homeExist.doc !== img[0].originalname) {
+            deleteImage(homeExist.doc);
+            const { imageName } = await uploadImage(img[0]);
+            dataHome = { doc: imageName, ...dataHome };
+          } else {
+            const { imageName } = await uploadImage(img[0]);
+            dataHome = { doc: imageName, ...dataHome };
+          }
+     
+      }else{
+         dataHome = { doc: img, ...dataHome };
       }
+      
+      
       delete dataHome.id;
       const data = await prisma.home.update({
         data: dataHome,
