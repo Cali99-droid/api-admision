@@ -72,7 +72,7 @@ const show = async (req, res) => {
         income: true,
       },
     });
-    console.log(families);
+
     const verificarDatos = (d) => {
       let bool = true;
 
