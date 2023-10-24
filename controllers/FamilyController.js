@@ -584,6 +584,32 @@ const getIncome = async (req, res) => {
   });
 };
 
+const getSpouse = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  const family = await prisma.family.findFirst({
+    where: {
+      id: id,
+    },
+    select: {
+      parent: true,
+    },
+  });
+  if (!family) {
+    handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+    return;
+  }
+  // if (!family.parent) {
+  //   handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+  //   return;
+  // }
+  const data = { idSpouse: family.parent };
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+};
 export {
   store,
   show,
@@ -594,4 +620,5 @@ export {
   createIncome,
   updateIncome,
   getIncome,
+  getSpouse,
 };
