@@ -94,7 +94,7 @@ const store = async (req, res) => {
       ],
     });
 
-    const data = { personCreate };
+    const data = { id: personCreate.id };
     res.status(201).json({
       success: true,
       data: data,
@@ -133,7 +133,8 @@ const update = async (req, res) => {
         doc_number: person.doc_number,
       },
     });
-    if (persDoc.doc_number == person.doc_number && persDoc.id != id) {
+
+    if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
       handleHttpError(res, "DOC_NUMBER_EXIST");
       return;
     }
@@ -219,7 +220,7 @@ const update = async (req, res) => {
     }
 
     const data = {
-      person,
+      id: personUpdate.id,
       // img1: image1.imageName,
       // img2: image2.imageName,
     };

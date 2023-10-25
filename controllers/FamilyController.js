@@ -131,6 +131,22 @@ const get = async (req, res) => {
             person: true,
           },
         },
+        home: {
+          select: {
+            id: true,
+            address: true,
+          },
+        },
+        income: {
+          select: {
+            id: true,
+            range: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
     if (!family) {
@@ -143,13 +159,21 @@ const get = async (req, res) => {
       spouse = { email: family.conyugue.email, ...spouse };
       spouse = { phone: family.conyugue.phone, ...spouse };
       spouse = { role: family.conyugue.role, ...spouse };
+      spouse = { home: family.home[0]?.address ?? null, ...spouse };
+      spouse = { role: family.income[0].range.name ?? null, ...spouse };
     }
-
+    const home = { id: family.home[0]?.id, address: family.home[0]?.address };
+    const income = {
+      id: family.income[0]?.id,
+      income: family.income[0]?.range.name,
+    };
     const data = {
       id: family.id,
       family: family.name,
       spouse,
       children: family.children,
+      home,
+      income,
     };
     res.status(200).json({
       success: true,
