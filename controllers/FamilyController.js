@@ -122,7 +122,18 @@ const get = async (req, res) => {
             id: true,
             email: true,
             phone: true,
-            person: true,
+            person: {
+              select: {
+                id: true,
+                name: true,
+                lastname: true,
+                mLastname: true,
+                doc_number: true,
+                birthdate: true,
+                profession: true,
+                type_doc: true,
+              },
+            },
           },
         },
         children: {
