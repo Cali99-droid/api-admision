@@ -128,10 +128,6 @@ const get = async (req, res) => {
                 name: true,
                 lastname: true,
                 mLastname: true,
-                doc_number: true,
-                birthdate: true,
-                profession: true,
-                type_doc: true,
               },
             },
           },
@@ -139,7 +135,14 @@ const get = async (req, res) => {
         children: {
           select: {
             id: true,
-            person: true,
+            person: {
+              select: {
+                id: true,
+                name: true,
+                lastname: true,
+                mLastname: true,
+              },
+            },
           },
         },
         home: {
@@ -170,8 +173,6 @@ const get = async (req, res) => {
       spouse = { email: family.conyugue.email, ...spouse };
       spouse = { phone: family.conyugue.phone, ...spouse };
       spouse = { role: family.conyugue.role, ...spouse };
-      spouse = { home: family.home[0]?.address ?? null, ...spouse };
-      spouse = { role: family.income[0].range.name ?? null, ...spouse };
     }
     const home = { id: family.home[0]?.id, address: family.home[0]?.address };
     const income = {
