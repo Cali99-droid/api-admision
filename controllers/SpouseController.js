@@ -260,10 +260,10 @@ const get = async (req, res) => {
       handleHttpError(res, "SPOUSE_DOES_NOT_EXIST", 404);
       return;
     }
-    const email = spouse.user[0].email ?? null;
-    const phone = spouse.user[0].phone ?? null;
-    const img1 = spouse.doc[0].name ?? null;
-    const img2 = spouse.doc[1].name ?? null;
+    const email = spouse.user[0]?.email ?? null;
+    const phone = spouse.user[0]?.phone ?? null;
+    const img1 = spouse.doc[0]?.name ?? null;
+    const img2 = spouse.doc[1]?.name ?? null;
     delete spouse.user;
     delete spouse.doc;
     const data = {
