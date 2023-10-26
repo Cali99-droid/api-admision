@@ -2,18 +2,9 @@ import { body, check } from "express-validator";
 import validateResults from "../utils/handleValidator.js";
 
 export const personValidationRules = [
-  body("person.name")
-    .trim()
-     .isAlpha()
-    .withMessage("el name es incorrectoss !"),
-  body("person.lastname")
-    .trim()
-    .isAlpha()
-    .withMessage("el lastname es incorrecto"),
-  body("person.mLastname")
-    .trim()
-    .isAlpha()
-    .withMessage("el mLastname es incorrecto"),
+  body("person.name").isAlpha().withMessage("el name es incorrectoss !"),
+  body("person.lastname").isAlpha().withMessage("el lastname es incorrecto"),
+  body("person.mLastname").isAlpha().withMessage("el mLastname es incorrecto"),
   body("person.type_doc")
     .isIn(["DNI", "CE"])
     .withMessage("el tipo de documento debe ser DNI o CE"),
@@ -24,10 +15,11 @@ export const personValidationRules = [
     .isLength({ min: 8, max: 8 })
     .withMessage("el numero de documento debe ser de 8 caracteres"),
   body("person.profession")
-    .trim()
     .isAlpha()
     .withMessage("el campo profession es incorrecto"),
-  body("person.birthdate").isISO8601().withMessage("el name es incorrecto"),
+  body("person.birthdate")
+    .isISO8601()
+    .withMessage("la fecha debe estar en formato ISO8601"),
   body("person.role")
     .isIn(["M", "P", ""])
     .withMessage("el tipo de documento debe ser M o P"),
@@ -63,7 +55,11 @@ export const idValidationRules = [
 ];
 
 export const childValidationRules = [
-  body("name").trim().exists().notEmpty().withMessage("el name es incorrecto children"),
+  body("name")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("el name es incorrecto children"),
   body("lastname").trim().isAlpha().withMessage("el lastname es incorrecto"),
   body("mLastname").trim().isAlpha().withMessage("el mLastname es incorrecto"),
   body("type_doc")
