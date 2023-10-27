@@ -218,9 +218,21 @@ const get = async (req, res) => {
 /**retorna segun la familia */
 const show = async (req, res) => {
   try {
-    console.log("agfas");
+    const { user } = req;
     const data = matchedData(req);
     const { id } = data;
+    const isMyFamily = await prisma.family.findFirst({
+      where: {
+        id: parseInt(id),
+        AND: {
+          mainParent: user.id,
+        },
+      },
+    });
+    if (!isMyFamily) {
+      handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+      return;
+    }
     const childrens = await prisma.children.findMany({
       where: {
         family_id: parseInt(id),
