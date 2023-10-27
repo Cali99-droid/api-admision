@@ -67,7 +67,7 @@ const store = async (req, res) => {
         },
       ],
     });
-    const data = { personCreate, chidrenId: childrenCreate.id };
+    const data = { id: personCreate.id };
     res.status(200).json({
       success: true,
       data,
@@ -151,11 +151,12 @@ const update = async (req, res) => {
         },
       ],
     });
-    const data = {
-      childrenUpdate,
-      img1: image1.imageName,
-      img2: image2.imageName,
-    };
+    // const data = {
+    //   childrenUpdate,
+    //   img1: image1.imageName,
+    //   img2: image2.imageName,
+    // };
+    const data = { id: childrenUpdate.id };
     res.status(200).json({
       success: true,
       data,
@@ -252,7 +253,7 @@ const show = async (req, res) => {
     });
     res.status(200).json({
       success: true,
-      data: childrens,
+      data: { childrens },
     });
   } catch (error) {
     console.log(error);
