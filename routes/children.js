@@ -4,7 +4,7 @@ import { upload } from "../utils/handleUpload.js";
 import { validatorGetFamily } from "../validators/family.js";
 import { childValidationRules } from "../validators/person.js";
 
-import { get, store, update } from "../controllers/ChildrenController.js";
+import { get, show, store, update } from "../controllers/ChildrenController.js";
 
 const router = express.Router();
 
@@ -151,5 +151,8 @@ router.put(
  *          description: Error de validacion.
  */
 router.get("/:id", authMiddleware, validatorGetFamily, get);
+
+/**Trae todos los hijos de una familia */
+router.get("/family/:id", authMiddleware, validatorGetFamily, show);
 
 export default router;

@@ -215,4 +215,37 @@ const get = async (req, res) => {
   }
 };
 
-export { store, update, get };
+/**retorna segun la familia */
+const show = async (req, res) => {
+  try {
+    console.log("agfas");
+    const data = matchedData(req);
+    const { id } = data;
+    const childrens = await prisma.children.findMany({
+      where: {
+        family_id: parseInt(id),
+      },
+      select: {
+        person: {
+          select: {
+            id: true,
+            name: true,
+            lastname: true,
+            mLastname: true,
+            gender: true,
+            create_time: true,
+          },
+        },
+      },
+    });
+    res.status(200).json({
+      success: true,
+      data: childrens,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_CHILDRENS");
+  }
+};
+
+export { store, update, get, show };
