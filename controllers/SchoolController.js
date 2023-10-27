@@ -8,18 +8,27 @@ const store = async (req, res) => {
     const { user } = req;
     const { img } = req.files;
     const id = parseInt(req.params.id);
-
     let school = matchedData(req);
-    school = { children_id: id, ...school };
-    const children = await prisma.children.findUnique({
+    const children = await prisma.person.findUnique({
       where: {
         id,
+      },
+      include: {
+        children: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
     if (!children) {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
+    const idChildren = children.children[0]?.id;
+
+    school = { children_id: idChildren, ...school };
+
     const schoolExists = await prisma.school.findFirst({
       where: {
         children_id: id,
@@ -27,14 +36,14 @@ const store = async (req, res) => {
     });
 
     if (schoolExists) {
-      if(img){
-         if (schoolExists.lib_doc !== img[0].originalname) {
+      if (img) {
+        if (schoolExists.lib_doc !== img[0].originalname) {
           deleteImage(schoolExists.lib_doc);
           const { imageName } = await uploadImage(img[0]);
           school = { lib_doc: imageName, ...school };
-        } 
+        }
       }
-      
+
       const dateUpdate = new Date();
       school = { update_time: dateUpdate, ...school };
       const schoolUpdate = await prisma.school.update({
