@@ -220,8 +220,8 @@ const get = async (req, res) => {
 const show = async (req, res) => {
   try {
     const { user } = req;
-    const data = matchedData(req);
-    const { id } = data;
+    const params = matchedData(req);
+    const { id } = params;
     const isMyFamily = await prisma.family.findFirst({
       where: {
         id: parseInt(id),
@@ -251,9 +251,14 @@ const show = async (req, res) => {
         },
       },
     });
+
+    const data = childrens.map((e) => {
+      const { person } = e;
+      return person;
+    });
     res.status(200).json({
       success: true,
-      data: { childrens },
+      data,
     });
   } catch (error) {
     console.log(error);
