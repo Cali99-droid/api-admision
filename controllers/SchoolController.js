@@ -155,6 +155,7 @@ const show = async (req, res) => {
   try {
     const schools = await client.schools.findMany({
       select: {
+        id: true,
         ubigean: true,
         name: true,
       },
