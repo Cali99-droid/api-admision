@@ -3,7 +3,7 @@ import { authMiddleware } from "../middleware/session.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorGetFamily } from "../validators/family.js";
 import { childValidationRules } from "../validators/person.js";
-import { get, store, update } from "../controllers/SchoolController.js";
+import { get, show, store, update } from "../controllers/SchoolController.js";
 import { validatorSchool } from "../validators/school.js";
 
 const router = express.Router();

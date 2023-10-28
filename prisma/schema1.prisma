@@ -1,0 +1,24 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma-db-1/client"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DB_URL")
+}
+
+model schools {
+    id           Int     @id @default(autoincrement())
+    name         String  @db.VarChar(255)
+    level        String? @db.VarChar(255)
+    director     String? @db.VarChar(45)
+    telephone    String? @db.VarChar(45)
+    email        String? @db.VarChar(45)
+    web          String? @db.VarChar(45)
+    address      String? @db.VarChar(45)
+    ubigean      String? @db.VarChar(45)
+    region       String? @db.VarChar(45)
+    ugel         String? @db.VarChar(45)
+    registration String? @db.VarChar(45)
+}

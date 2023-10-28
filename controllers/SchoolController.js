@@ -2,6 +2,7 @@ import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import prisma from "../utils/prisma.js";
+import client from "../utils/client.js";
 
 const store = async (req, res) => {
   try {
@@ -150,4 +151,22 @@ const get = async (req, res) => {
   }
 };
 
-export { store, update, get };
+const show = async (req, res) => {
+  try {
+    const schools = await client.schools.findMany({
+      select: {
+        ubigean: true,
+        name: true,
+      },
+    });
+    res.status(200).json({
+      success: true,
+      data: schools,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_SCHOLS");
+  }
+};
+
+export { store, update, get, show };
