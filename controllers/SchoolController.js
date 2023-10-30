@@ -166,7 +166,7 @@ const show = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_GET_SCHOLS");
+    handleHttpError(res, "ERROR_GET_SCHOOLS");
   }
 };
 

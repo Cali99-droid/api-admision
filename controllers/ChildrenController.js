@@ -180,7 +180,7 @@ const get = async (req, res) => {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
-    const data = await prisma.person.findUnique({
+    const childrenExist = await prisma.person.findUnique({
       where: {
         id,
       },
@@ -198,14 +198,18 @@ const get = async (req, res) => {
             name: true,
           },
         },
-        children: {
-          select: {
-            id: true,
-          },
-        },
       },
     });
 
+    const img1 = childrenExist.doc[0]?.name ?? null;
+    const img2 = childrenExist.doc[1]?.name ?? null;
+
+    delete childrenExist.doc;
+    const data = {
+      ...childrenExist,
+      img1,
+      img2,
+    };
     res.status(200).json({
       success: true,
       data: data,
