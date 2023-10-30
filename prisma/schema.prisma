@@ -19,6 +19,7 @@ model children {
   create_time DateTime? @default(now()) @db.Timestamp(0)
   person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
   family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
+  vacant      vacant[]
 
   @@index([person_id], map: "fk_children_PERSON1_idx")
   @@index([family_id], map: "fk_children_family1_idx")
@@ -165,6 +166,18 @@ model docsIncome {
   income      income    @relation(fields: [income_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_docsIncome_income1")
 
   @@index([income_id], map: "fk_docsIncome_income1_idx")
+}
+
+model vacant {
+  id          Int      @id @default(autoincrement())
+  year        String?  @db.VarChar(45)
+  campus      String?  @db.VarChar(45)
+  level       String?  @db.VarChar(45)
+  grade       String?  @db.VarChar(45)
+  children_id Int
+  children    children @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_vacant_children1")
+
+  @@index([children_id], map: "fk_vacant_children1_idx")
 }
 
 enum person_gender {
