@@ -1,23 +1,28 @@
 import { body, check } from "express-validator";
 import validateResults from "../utils/handleValidator.js";
 export const validatorSchool = [
-  body("name")
+  body("schoolId")
     .trim()
     .exists()
     .notEmpty()
-    .withMessage("El campo name no puede estar vacío"),
+    .withMessage("El campo schoolId no puede estar vacío")
+    .isNumeric()
+    .withMessage("El campo schoolId debe ser un numero "),
+
   body("grade")
     .trim()
     .exists()
     .notEmpty()
-    .withMessage("El campo grade no puede estar vacío"),
-  body("district_id")
+    .withMessage("El campo grade no puede estar vacío")
+    .isNumeric()
+    .withMessage("El campo schoolId debe ser un numero "),
+  body("level")
     .trim()
     .exists()
     .notEmpty()
-    .withMessage("El campo district_id no puede estar vacío")
+    .withMessage("El campo level no puede estar vacío")
     .isNumeric()
-    .withMessage("El campo district_id debe ser un numero "),
+    .withMessage("El campo level debe ser un numero "),
 
   (req, res, next) => {
     return validateResults(req, res, next);

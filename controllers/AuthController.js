@@ -63,7 +63,7 @@ const registerUser = async (req, res) => {
         token,
         code,
         mauticId: contact.id,
-        // mauticId: 0,
+        mauticId: 0,
       },
     });
     const data = { id: user.id, email: user.email, name: person.name };

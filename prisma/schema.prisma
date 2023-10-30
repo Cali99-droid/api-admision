@@ -11,11 +11,14 @@ model children {
   id          Int       @id @default(autoincrement())
   family_id   Int
   person_id   Int
+  schoolId    Int?
+  grade       Int?
+  level       Int?
+  doc         String?   @db.VarChar(255)
   update_time DateTime? @db.Timestamp(0)
   create_time DateTime? @default(now()) @db.Timestamp(0)
   person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
   family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
-  school      school[]
 
   @@index([person_id], map: "fk_children_PERSON1_idx")
   @@index([family_id], map: "fk_children_family1_idx")
@@ -27,7 +30,6 @@ model district {
   province_id String   @db.VarChar(4)
   province    province @relation(fields: [province_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_DISTRICT_PROVINCE1")
   home        home[]
-  school      school[]
 
   @@index([province_id], map: "fk_district_province1_idx")
 }
@@ -131,22 +133,6 @@ model region {
   id       String     @id @db.VarChar(2)
   name     String     @db.VarChar(60)
   province province[]
-}
-
-model school {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(45)
-  grade       String?   @db.VarChar(45)
-  lib_doc     String?   @db.VarChar(150)
-  create_time DateTime? @default(now()) @db.Timestamp(0)
-  update_time DateTime? @db.Timestamp(0)
-  district_id String    @db.VarChar(6)
-  children_id Int
-  children    children  @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_school_children1")
-  district    district  @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_SCHOOL_DISTRICT1")
-
-  @@index([district_id], map: "fk_school_district1_idx")
-  @@index([children_id], map: "fk_school_children1_idx")
 }
 
 model user {

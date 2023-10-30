@@ -15,71 +15,49 @@ const store = async (req, res) => {
         id,
       },
       include: {
-        children: {
-          select: {
-            id: true,
-          },
-        },
+        children: true,
       },
     });
     if (!children) {
+      handleHttpError(res, "NOT_EXIST_PERSON", 404);
+      return;
+    }
+    if (!children.children[0]?.id) {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
-    const idChildren = children.children[0]?.id;
+    const child = children.children[0];
 
-    school = { children_id: idChildren, ...school };
+    if (img) {
+      if (child.doc !== img[0].originalname) {
+        deleteImage(child.doc);
+        const { imageName } = await uploadImage(img[0]);
+        school = { doc: imageName, ...school };
+      }
+    }
 
-    const schoolExists = await prisma.school.findFirst({
+    const dateUpdate = new Date();
+
+    const schoolUpdate = await prisma.children.update({
+      data: {
+        schoolId: parseInt(school.schoolId),
+        grade: parseInt(school.grade),
+        level: parseInt(school.level),
+        doc: school.doc,
+        update_time: dateUpdate,
+      },
       where: {
-        children_id: id,
+        id: child.id,
       },
     });
 
-    if (schoolExists) {
-      if (img) {
-        if (schoolExists.lib_doc !== img[0].originalname) {
-          deleteImage(schoolExists.lib_doc);
-          const { imageName } = await uploadImage(img[0]);
-          school = { lib_doc: imageName, ...school };
-        }
-      }
-
-      const dateUpdate = new Date();
-      school = { update_time: dateUpdate, ...school };
-      const schoolUpdate = await prisma.school.update({
-        data: school,
-        where: {
-          id: schoolExists.id,
-        },
-      });
-
-      res.status(201).json({
-        success: true,
-        data: { schoolUpdate },
-      });
-      return;
-    }
-
-    //subir imagen
-    if (img) {
-      const { imageName } = await uploadImage(img[0]);
-      school = { lib_doc: imageName, ...school };
-    } else {
-      handleHttpError(res, "INSUFFICIENT_IMAGES");
-      return;
-    }
-
-    const schoolCreate = await prisma.school.create({
-      data: school,
-    });
-
-    const data = { schoolCreate };
     res.status(201).json({
       success: true,
-      data,
+      data: { id: schoolUpdate.id },
     });
+    return;
   } catch (error) {
+    handleHttpError(res, "ERROR_UPDATE_SCHOOL");
     console.log(error);
   }
 };
@@ -131,19 +109,32 @@ const get = async (req, res) => {
   try {
     req = matchedData(req);
     const id = parseInt(req.id);
-    const school = await prisma.school.findUnique({
+    const children = await prisma.person.findUnique({
       where: {
         id,
       },
+      include: {
+        children: true,
+      },
     });
-    if (!school) {
-      handleHttpError(res, "NOT_EXIST", 404);
+    if (!children) {
+      handleHttpError(res, "NOT_EXIST_PERSON", 404);
       return;
     }
-
+    if (!children.children[0]?.id) {
+      handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
+      return;
+    }
+    const child = children.children[0];
+    const data = {
+      schoolId: child.schoolId,
+      grade: child.grade,
+      level: child.level,
+      doc: child.doc,
+    };
     res.status(200).json({
       success: true,
-      data: school,
+      data,
     });
   } catch (error) {
     console.log(error);
