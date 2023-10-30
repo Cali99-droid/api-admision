@@ -1,7 +1,7 @@
 import express from "express";
 
 import { authMiddleware } from "../middleware/session.js";
-import { get, store } from "../controllers/VAcantController.js";
+import { get, store } from "../controllers/VacantController.js";
 import { validatorGetFamily } from "../validators/family.js";
 import { validatorVacant } from "../validators/vacant.js";
 
