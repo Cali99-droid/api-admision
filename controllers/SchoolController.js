@@ -149,6 +149,7 @@ const show = async (req, res) => {
         id: true,
         ubigean: true,
         name: true,
+        level: true,
       },
     });
     res.status(200).json({
