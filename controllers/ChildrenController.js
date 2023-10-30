@@ -105,30 +105,43 @@ const update = async (req, res) => {
       }
     }
 
-    if (!img1 || !img2) {
-      handleHttpError(res, "INSUFFICIENT_IMAGES");
-      return;
-    }
-    const docs = await prisma.doc.findMany({
-      where: {
-        person_id: parseInt(id),
-      },
-    });
-    if (docs.length > 0) {
-      docs.forEach(async (i, index) => {
-        await prisma.doc.delete({
-          where: {
-            id: i.id,
-          },
-        });
-        deleteImage(i.name);
+    if (img1 || img2) {
+      const docs = await prisma.doc.findMany({
+        where: {
+          person_id: parseInt(id),
+        },
       });
+      if (docs.length > 0) {
+        docs.forEach(async (i, index) => {
+          await prisma.doc.delete({
+            where: {
+              id: i.id,
+            },
+          });
+          deleteImage(i.name);
+        });
+      }
+      const image1 = await uploadImage(img1[0]);
+      const image2 = await uploadImage(img2[0]);
+      const imgs = await prisma.doc.createMany({
+        data: [
+          {
+            name: image1.imageName,
+            person_id: parseInt(id),
+          },
+          {
+            name: image2.imageName,
+            person_id: parseInt(id),
+          },
+        ],
+      });
+      // handleHttpError(res, "INSUFFICIENT_IMAGES");
+      // return;
     }
 
     children.birthdate = new Date(children.birthdate).toISOString();
     children.doc_number = children.doc_number.toString();
-    const image1 = await uploadImage(img1[0]);
-    const image2 = await uploadImage(img2[0]);
+
     const dateUpdate = new Date();
     children.update_time = dateUpdate;
     delete children.id;
@@ -139,18 +152,6 @@ const update = async (req, res) => {
       },
     });
 
-    const imgs = await prisma.doc.createMany({
-      data: [
-        {
-          name: image1.imageName,
-          person_id: parseInt(id),
-        },
-        {
-          name: image2.imageName,
-          person_id: parseInt(id),
-        },
-      ],
-    });
     // const data = {
     //   childrenUpdate,
     //   img1: image1.imageName,
