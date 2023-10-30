@@ -162,4 +162,55 @@ const show = async (req, res) => {
   }
 };
 
-export { store, update, get, show };
+const showSchoolByName = async (req, res) => {
+  try {
+    const { name } = req.params;
+
+    const schools = await client.schools.findMany({
+      select: {
+        id: true,
+        ubigean: true,
+        name: true,
+        level: true,
+      },
+      where: {
+        name: {
+          contains: name,
+        },
+      },
+    });
+    res.status(200).json({
+      success: true,
+      data: schools,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_SCHOOLS");
+  }
+};
+const showSchoolByDistrict = async (req, res) => {
+  try {
+    const { ubigean } = req.params;
+
+    const schools = await client.schools.findMany({
+      select: {
+        id: true,
+        ubigean: true,
+        name: true,
+        level: true,
+      },
+      where: {
+        ubigean,
+      },
+    });
+    res.status(200).json({
+      success: true,
+      data: schools,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_SCHOOLS");
+  }
+};
+
+export { store, update, get, show, showSchoolByName, showSchoolByDistrict };
