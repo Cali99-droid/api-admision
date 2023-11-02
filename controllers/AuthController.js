@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
-import generateId from "../utils/handleToken.js";
+import generateId, { generateCode } from "../utils/handleToken.js";
 import createContact from "../mautic/mauticApi.js";
 import { compare, encrypt } from "../utils/handlePassword.js";
 import { matchedData } from "express-validator";
@@ -38,7 +38,7 @@ const registerUser = async (req, res) => {
 
     const surnames = lastname + " " + mLastname;
     //generar token
-    const token = generateId();
+    const token = generateCode();
     const { contact } = await createContact(
       name,
       email,

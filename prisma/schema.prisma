@@ -169,13 +169,16 @@ model docsIncome {
 }
 
 model vacant {
-  id          Int      @id @default(autoincrement())
-  year        String?  @db.VarChar(45)
-  campus      String?  @db.VarChar(45)
-  level       String?  @db.VarChar(45)
-  grade       String?  @db.VarChar(45)
+  id          Int       @id @default(autoincrement())
+  year        String?   @db.VarChar(45)
+  campus      String?   @db.VarChar(45)
+  level       String?   @db.VarChar(45)
+  grade       String?   @db.VarChar(45)
   children_id Int
-  children    children @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_vacant_children1")
+  status      String?   @db.VarChar(45)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  update_time DateTime? @db.Timestamp(0)
+  children    children  @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_vacant_children1")
 
   @@index([children_id], map: "fk_vacant_children1_idx")
 }
