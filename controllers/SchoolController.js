@@ -151,6 +151,7 @@ const get = async (req, res) => {
     //   handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
     //   return;
     // }
+    //nooo
 
     const data = {
       schoolId: children.schoolId,
