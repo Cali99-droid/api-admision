@@ -44,6 +44,7 @@ const store = async (req, res) => {
         grade: parseInt(school.grade),
         level: parseInt(school.level),
         doc: school.doc,
+        district_id: school.district_id,
         update_time: dateUpdate,
       },
       where: {
@@ -109,28 +110,56 @@ const get = async (req, res) => {
   try {
     req = matchedData(req);
     const id = parseInt(req.id);
-    const children = await prisma.person.findUnique({
+
+    const children = await prisma.children.findFirst({
       where: {
-        id,
+        person_id: id,
       },
       include: {
-        children: true,
+        district: {
+          include: {
+            province: true,
+          },
+        },
       },
     });
+    // const children = await prisma.person.findUnique({
+    //   where: {
+    //     id,
+    //   },
+    //   include: {
+    //     children: {
+    //       include: {
+    //         district: {
+    //           include: {
+    //             province: {
+    //               include: {
+    //                 region: true,
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
     if (!children) {
-      handleHttpError(res, "NOT_EXIST_PERSON", 404);
-      return;
-    }
-    if (!children.children[0]?.id) {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
-    const child = children.children[0];
+    // if (!children.children[0]?.id) {
+    //   handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
+    //   return;
+    // }
+
     const data = {
-      schoolId: child.schoolId,
-      grade: child.grade,
-      level: child.level,
-      doc: child.doc,
+      schoolId: children.schoolId,
+      grade: children.grade,
+      level: children.level,
+      doc: children.doc,
+      district_id: children.district_id,
+      province_id: children.district.province_id,
+      region_id: children.district.province.region_id,
     };
     res.status(200).json({
       success: true,

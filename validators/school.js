@@ -7,6 +7,12 @@ export const validatorSchool = [
     .notEmpty()
     .withMessage("El campo schoolId no puede estar vacío"),
 
+  body("district_id")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo district_id no puede estar vacío"),
+
   body("grade")
     .trim()
     .exists()
