@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { body, matchedData } from "express-validator";
 import { generateCode } from "../utils/handleToken.js";
+import sendMessage from "../message/api.js";
 
 const prisma = new PrismaClient();
 
@@ -43,7 +44,7 @@ const store = async (req, res) => {
   }
 };
 
-const get = async (req, res) => {
+const send = async (req, res) => {
   try {
     req = matchedData(req);
     const id = parseInt(req.id);
@@ -78,16 +79,29 @@ const get = async (req, res) => {
       },
     });
 
-    res.status(201).json({
-      success: true,
-      data: {
-        code: userToConfirm.code,
-      },
-    });
+    const body = `Hola ${person.name} ingresa el siguiente codigo para validar tu telefono: *${userToConfirm.code}* . Si no soclicitaste este mensaje porfavor ignoraló. `;
+
+    const resp = await sendMessage(userToConfirm.phone, body);
+    console.log("respuesta", resp);
+    if (resp) {
+      res.status(201).json({
+        success: true,
+        data: {
+          phone: userToConfirm.phone,
+        },
+      });
+    } else {
+      res.status(201).json({
+        success: false,
+        data: {
+          phone: userToConfirm.phone,
+        },
+      });
+    }
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_GET_CODE");
+    handleHttpError(res, "ERROR_SEND_MESSAGE");
   }
 };
 
-export { store, get };
+export { store, send };
