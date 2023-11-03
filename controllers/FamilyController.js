@@ -638,15 +638,22 @@ const getSpouse = async (req, res) => {
       parent: true,
     },
   });
+
   if (!family) {
     handleHttpError(res, "NOT_EXIST_FAMILY", 404);
     return;
   }
+  const user = await prisma.user.findFirst({
+    where: {
+      id: family.parent,
+    },
+  });
+  console.log(user);
   // if (!family.parent) {
   //   handleHttpError(res, "NOT_EXIST_FAMILY", 404);
   //   return;
   // }
-  const data = { idSpouse: family.parent };
+  const data = { idSpouse: user.person_id };
 
   res.status(200).json({
     success: true,

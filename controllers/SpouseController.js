@@ -148,7 +148,7 @@ const update = async (req, res) => {
     });
 
     if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
-      handleHttpError(res, "DOC_NUMBER_EXIST");
+      handleHttpError(res, "DATA_EXIST");
       return;
     }
 
