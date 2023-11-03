@@ -67,8 +67,11 @@ export const childValidationRules = [
     .exists()
     .notEmpty()
     .withMessage("el name es incorrecto children"),
-  body("lastname").trim().isAlpha().withMessage("el lastname es incorrecto"),
-  body("mLastname").trim().isAlpha().withMessage("el mLastname es incorrecto"),
+  body("lastname").exists().notEmpty().withMessage("el lastname es incorrecto"),
+  body("mLastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el mLastname es incorrecto"),
   body("type_doc")
     .isIn(["DNI", "CE"])
     .withMessage("el tipo de documento debe ser DNI o CE"),
