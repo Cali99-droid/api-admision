@@ -107,12 +107,19 @@ const show = async (req, res) => {
  *  */
 const get = async (req, res) => {
   try {
+    const { user } = req;
+    if (!user) {
+      handleHttpError(res, "NOT_EXIST_USER");
+    }
     req = matchedData(req);
     const id = parseInt(req.id);
 
     const family = await prisma.family.findUnique({
       where: {
         id,
+        AND: {
+          mainParent: user.id,
+        },
       },
       select: {
         id: true,
