@@ -629,7 +629,7 @@ const getIncome = async (req, res) => {
 
 const getSpouse = async (req, res) => {
   const id = parseInt(req.params.id);
-
+  let idSp = null;
   const family = await prisma.family.findFirst({
     where: {
       id: id,
@@ -643,17 +643,20 @@ const getSpouse = async (req, res) => {
     handleHttpError(res, "NOT_EXIST_FAMILY", 404);
     return;
   }
-  const user = await prisma.user.findFirst({
-    where: {
-      id: family.parent,
-    },
-  });
-  console.log(user);
+  if (family.parent) {
+    const user = await prisma.user.findFirst({
+      where: {
+        id: family.parent,
+      },
+    });
+    idSp = user.id;
+  }
+
   // if (!family.parent) {
   //   handleHttpError(res, "NOT_EXIST_FAMILY", 404);
   //   return;
   // }
-  const data = { idSpouse: user.person_id };
+  const data = { idSpouse: idSp };
 
   res.status(200).json({
     success: true,

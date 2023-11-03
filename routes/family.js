@@ -360,7 +360,7 @@ router.put(
  *                   $ref: '#/components/schemas/incomeUpd'
  *        '422':
  *          description: Error de validacion.
-
+ 
  */
 router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
 
