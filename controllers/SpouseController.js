@@ -27,13 +27,25 @@ const store = async (req, res) => {
 
     const us = await prisma.user.findFirst({
       where: {
-        email: userData.email,
+        OR: [
+          {
+            email: {
+              equals: userData.email,
+            },
+          },
+          {
+            phone: {
+              equals: userData.phone,
+            },
+          },
+        ],
       },
     });
     if (us) {
-      handleHttpError(res, "EMAIL_EXIST");
+      handleHttpError(res, "DATA_EXIST");
       return;
     }
+
     // si la familia no tiene un conyugue
     const family = await prisma.family.findUnique({
       where: {
@@ -56,6 +68,7 @@ const store = async (req, res) => {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
       return;
     }
+
     person.birthdate = new Date(person.birthdate).toISOString();
     person.doc_number = person.doc_number.toString();
 
@@ -141,12 +154,23 @@ const update = async (req, res) => {
 
     const us = await prisma.user.findFirst({
       where: {
-        email: userData.email,
+        OR: [
+          {
+            email: {
+              equals: userData.email,
+            },
+          },
+          {
+            phone: {
+              equals: userData.phone,
+            },
+          },
+        ],
       },
     });
     if (us) {
       if (us.person_id != id) {
-        handleHttpError(res, "EMAIL_EXIST");
+        handleHttpError(res, "DATA_EXIST");
         return;
       }
     }
