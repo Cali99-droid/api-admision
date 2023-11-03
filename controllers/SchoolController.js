@@ -159,8 +159,8 @@ const get = async (req, res) => {
       level: children.level,
       img: children.doc,
       district_id: children?.district_id,
-      province_id: children?.district.province_id,
-      region_id: children?.district.province.region_id,
+      province_id: children?.district.province_id ?? '',
+      region_id: children?.district.province.region_id ?? '',
     };
     res.status(200).json({
       success: true,
