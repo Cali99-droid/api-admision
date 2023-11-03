@@ -41,6 +41,7 @@ const store = async (req, res) => {
         ],
       },
     });
+
     if (us) {
       handleHttpError(res, "DATA_EXIST");
       return;
