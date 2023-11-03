@@ -2,8 +2,14 @@ import { body, check } from "express-validator";
 import validateResults from "../utils/handleValidator.js";
 
 export const personValidationRules = [
-  body("person.name").exists().withMessage("el name es obligatorio !"),
-  body("person.lastname").exists().withMessage("el lastname es obligatorio"),
+  body("person.name")
+    .exists()
+    .notEmpty()
+    .withMessage("el name es obligatorio !"),
+  body("person.lastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el lastname es obligatorio"),
   body("person.mLastname").exists().withMessage("el mLastname es obligatorio"),
   body("person.type_doc")
     .isIn(["DNI", "CE"])
@@ -15,7 +21,8 @@ export const personValidationRules = [
     .isLength({ min: 8, max: 8 })
     .withMessage("el numero de documento debe ser de 8 caracteres"),
   body("person.profession")
-    .isAlpha()
+    .exists()
+    .notEmpty()
     .withMessage("el campo profession es incorrecto"),
   body("person.birthdate")
     .isISO8601()
