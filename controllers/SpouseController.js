@@ -248,6 +248,7 @@ const get = async (req, res) => {
           select: {
             email: true,
             phone: true,
+            confirmed_phone: true,
           },
         },
         doc: {
@@ -263,6 +264,7 @@ const get = async (req, res) => {
     }
     const email = spouse.user[0]?.email ?? null;
     const phone = spouse.user[0]?.phone ?? null;
+    const confirmedPhone = spouse.user[0]?.confirmed_phone ?? null;
     const img1 = spouse.doc[0]?.name ?? null;
     const img2 = spouse.doc[1]?.name ?? null;
     delete spouse.user;
@@ -271,6 +273,7 @@ const get = async (req, res) => {
       ...spouse,
       email,
       phone,
+      confirmedPhone,
       img1,
       img2,
     };
