@@ -2,9 +2,9 @@ import { body, check } from "express-validator";
 import validateResults from "../utils/handleValidator.js";
 
 export const personValidationRules = [
-  body("person.name").isAlpha().withMessage("el name es incorrectoss !"),
-  body("person.lastname").isAlpha().withMessage("el lastname es incorrecto"),
-  body("person.mLastname").isAlpha().withMessage("el mLastname es incorrecto"),
+  body("person.name").exists().withMessage("el name es obligatorio !"),
+  body("person.lastname").exists().withMessage("el lastname es obligatorio"),
+  body("person.mLastname").exists().withMessage("el mLastname es obligatorio"),
   body("person.type_doc")
     .isIn(["DNI", "CE"])
     .withMessage("el tipo de documento debe ser DNI o CE"),
