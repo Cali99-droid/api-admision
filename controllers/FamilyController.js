@@ -649,7 +649,8 @@ const getSpouse = async (req, res) => {
         id: family.parent,
       },
     });
-    idSp = user.id;
+    idSp = user.person_id;
+    console.log(user);
   }
 
   // if (!family.parent) {
