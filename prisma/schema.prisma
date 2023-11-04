@@ -153,6 +153,7 @@ model user {
   token                           String?   @db.VarChar(60)
   code                            String?   @db.Char(5)
   mauticId                        Int?
+  agree                           Int?      @default(0)
   person_id                       Int
   family_family_main_parentTouser family[]  @relation("family_main_parentTouser")
   family_family_parentTouser      family[]  @relation("family_parentTouser")

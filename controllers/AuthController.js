@@ -21,18 +21,29 @@ const registerUser = async (req, res) => {
     });
 
     if (existsDoc) {
-      handleHttpError(res, "EXIST_DOCUMENT_NUMBER");
+      handleHttpError(res, "EXIST_DATA");
       return;
     }
 
     const existsEmail = await prisma.user.findFirst({
       where: {
-        email,
+        OR: [
+          {
+            email: {
+              equals: userData.email,
+            },
+          },
+          {
+            phone: {
+              equals: userData.phone,
+            },
+          },
+        ],
       },
     });
 
     if (existsEmail) {
-      handleHttpError(res, "EXIST_EMAIL");
+      handleHttpError(res, "EXIST_DATA");
       return;
     }
 
@@ -166,6 +177,7 @@ const login = async (req, res) => {
       name: user.person.name,
       lastname: user.person.lastname,
       mLastname: user.person.mLastname,
+      agree: user.agree,
     };
     res.status(201).json({
       success: true,

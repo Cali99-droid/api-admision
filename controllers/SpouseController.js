@@ -43,7 +43,7 @@ const store = async (req, res) => {
     });
 
     if (us) {
-      handleHttpError(res, "DATA_EXIST");
+      handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
       return;
     }
 
@@ -67,6 +67,18 @@ const store = async (req, res) => {
     }
     if (!img1 || !img2) {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
+      return;
+    }
+
+    const pe = await prisma.person.findFirst({
+      where: {
+        id: user.person_id,
+      },
+    });
+    // console.log(pe);
+    // console.log(person);
+    if (pe.role === person.role) {
+      handleHttpError(res, "REPEAT_ROLE");
       return;
     }
 
@@ -128,6 +140,42 @@ const update = async (req, res) => {
 
     const { person, userData, id } = req;
 
+    if (user.person_id != id) {
+      console.log("entro diferente id");
+      const pe = await prisma.person.findFirst({
+        where: {
+          id: user.person_id,
+        },
+      });
+
+      if (pe.role === person.role) {
+        handleHttpError(res, "REPEAT_ROLE");
+        return;
+      }
+    } else {
+      const spouse = await prisma.family.findFirst({
+        where: {
+          mainParent: user.id,
+        },
+      });
+      const us = await prisma.user.findFirst({
+        where: {
+          id: spouse.parent,
+        },
+        include: {
+          person: true,
+        },
+      });
+      console.log(us);
+      if (us.person.role === person.role) {
+        handleHttpError(res, "REPEAT_ROLE");
+        return;
+      }
+    }
+
+    // console.log(pe);
+    // console.log(person);
+
     // if (!img1 && !img2) {
     //   handleHttpError(res, "INSUFFICIENT_IMAGES");
     //   return;
@@ -142,6 +190,7 @@ const update = async (req, res) => {
       handleHttpError(res, "PERSON_DOES_NOT_EXIST");
       return;
     }
+
     const persDoc = await prisma.person.findFirst({
       where: {
         doc_number: person.doc_number,
@@ -149,7 +198,7 @@ const update = async (req, res) => {
     });
 
     if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
-      handleHttpError(res, "DATA_EXIST");
+      handleHttpError(res, "DOC_NUMBER_EXIST");
       return;
     }
 
@@ -171,7 +220,8 @@ const update = async (req, res) => {
     });
     if (us) {
       if (us.person_id != id) {
-        handleHttpError(res, "DATA_EXIST");
+        console.log(us);
+        handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
         return;
       }
     }
