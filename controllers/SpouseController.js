@@ -158,7 +158,7 @@ const update = async (req, res) => {
           mainParent: user.id,
         },
       });
-      if(spouse.parent){
+      if(spouse?.parent){
             const us = await prisma.user.findFirst({
             where: {
               id: spouse.parent,
