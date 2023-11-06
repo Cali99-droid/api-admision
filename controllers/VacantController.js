@@ -95,7 +95,7 @@ const get = async (req, res) => {
       },
     });
     const data = {
-      id: vacant.id,
+      id: vacant?.id,
       grade: vacant.grade,
       level: vacant.level,
       campus: vacant.campus,
