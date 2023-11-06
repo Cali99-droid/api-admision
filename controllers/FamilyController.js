@@ -664,6 +664,76 @@ const getSpouse = async (req, res) => {
     data,
   });
 };
+
+const getStatus = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  try {
+    const family = await prisma.family.findFirst({
+      where: {
+        id: id,
+      },
+      select: {
+        parent: true,
+        income: true,
+        home: true,
+        children: {
+          include: {
+            vacant: true,
+          },
+        },
+      },
+    });
+
+    if (!family) {
+      handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+      return;
+    }
+    const dataVacantChildren = family.children.map((c) => {
+      if (c.vacant.length > 0) {
+        return {
+          id: c.person_id,
+          status: true,
+        };
+      } else {
+        return {
+          id: c.person_id,
+          status: false,
+        };
+      }
+    });
+    const dataSchoolChildren = family.children.map((c) => {
+      if (c.schoolId) {
+        return {
+          id: c.person_id,
+          status: true,
+        };
+      } else {
+        return {
+          id: c.person_id,
+          status: false,
+        };
+      }
+    });
+
+    const status = {
+      parent: family.parent !== null,
+      income: family.income.length > 0,
+      home: family.home.length > 0,
+      children: family.children.length > 0,
+      school: dataSchoolChildren.length <= 0 ? false : dataSchoolChildren,
+      vacant: dataVacantChildren <= 0 ? false : dataVacantChildren,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: status,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATUS");
+  }
+};
 export {
   store,
   show,
@@ -675,4 +745,5 @@ export {
   updateIncome,
   getIncome,
   getSpouse,
+  getStatus,
 };

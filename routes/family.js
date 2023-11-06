@@ -5,6 +5,7 @@ import {
   getHome,
   getIncome,
   getSpouse,
+  getStatus,
   saveHome,
   show,
   store,
@@ -366,4 +367,5 @@ router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
 
 router.get("/spouse/:id", validatorGetFamily, authMiddleware, getSpouse);
 
+router.get("/status/:id", validatorGetFamily, authMiddleware, getStatus);
 export default router;
