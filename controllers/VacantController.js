@@ -96,11 +96,11 @@ const get = async (req, res) => {
     });
     const data = {
       id: vacant?.id,
-      grade: vacant.grade,
-      level: vacant.level,
-      campus: vacant.campus,
-      year: vacant.year,
-      children_id: vacant.children_id,
+      grade: vacant?.grade,
+      level: vacant?.level,
+      campus: vacant?.campus,
+      year: vacant?.year,
+      children_id: vacant?.children_id,
     };
     res.status(200).json({
       success: true,
