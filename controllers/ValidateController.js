@@ -91,7 +91,7 @@ const send = async (req, res) => {
         },
       });
     } else {
-      res.status(201).json({
+      res.status(401).json({
         success: false,
         data: {
           phone: userToConfirm.phone,
