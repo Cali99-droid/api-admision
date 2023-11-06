@@ -158,19 +158,22 @@ const update = async (req, res) => {
           mainParent: user.id,
         },
       });
-      const us = await prisma.user.findFirst({
-        where: {
-          id: spouse.parent,
-        },
-        include: {
-          person: true,
-        },
-      });
-      console.log(us);
-      if (us.person.role === person.role) {
-        handleHttpError(res, "REPEAT_ROLE");
-        return;
+      if(spouse?.parent){
+            const us = await prisma.user.findFirst({
+            where: {
+              id: spouse.parent,
+            },
+            include: {
+              person: true,
+            },
+          });
+        
+          if (us.person.role === person.role) {
+            handleHttpError(res, "REPEAT_ROLE");
+            return;
+          }
       }
+      
     }
 
     // console.log(pe);
@@ -220,7 +223,7 @@ const update = async (req, res) => {
     });
     if (us) {
       if (us.person_id != id) {
-        console.log(us);
+     
         handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
         return;
       }

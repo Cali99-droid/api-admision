@@ -30,12 +30,12 @@ const registerUser = async (req, res) => {
         OR: [
           {
             email: {
-              equals: userData.email,
+              equals: email,
             },
           },
           {
             phone: {
-              equals: userData.phone,
+              equals: phone,
             },
           },
         ],
