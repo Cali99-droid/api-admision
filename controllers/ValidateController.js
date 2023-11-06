@@ -80,8 +80,8 @@ const send = async (req, res) => {
     });
 
     const body = `Hola ${person.name} ingresa el siguiente codigo para validar tu telefono: *${userToConfirm.code}* . Si no soclicitaste este mensaje porfavor ignoraló. `;
-
-    const resp = await sendMessage(userToConfirm.phone, body);
+    const number = `51` + userToConfirm.phone;
+    const resp = await sendMessage(number, body);
     console.log("respuesta", resp);
     if (resp) {
       res.status(201).json({
