@@ -667,11 +667,14 @@ const getSpouse = async (req, res) => {
 
 const getStatus = async (req, res) => {
   const id = parseInt(req.params.id);
-
+  const { user } = req;
   try {
     const family = await prisma.family.findFirst({
       where: {
         id: id,
+        AND: {
+          mainParent: user.id,
+        },
       },
       select: {
         parent: true,
