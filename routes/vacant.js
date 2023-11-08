@@ -13,6 +13,6 @@ const router = express.Router();
 
 router.post("/:id", validatorGetFamily, validatorVacant, authMiddleware, store);
 router.get("/:id", validatorGetFamily, authMiddleware, get);
-router.get("/check/available", authMiddleware, getVacantAvailable);
+router.get("/check/available", getVacantAvailable);
 
 export default router;
