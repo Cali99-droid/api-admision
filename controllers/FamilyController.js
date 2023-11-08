@@ -696,12 +696,14 @@ const getStatus = async (req, res) => {
     const dataVacantChildren = family.children.map((c) => {
       if (c.vacant.length > 0) {
         return {
+          name: "vacant",
           id: c.person_id,
           status: true,
           validateStatus: false,
         };
       } else {
         return {
+          name: "vacant",
           id: c.person_id,
           status: false,
           validateStatus: false,
@@ -711,12 +713,14 @@ const getStatus = async (req, res) => {
     const dataSchoolChildren = family.children.map((c) => {
       if (c.schoolId) {
         return {
+          name: "school",
           id: c.person_id,
           formStatus: true,
           validateStatus: false,
         };
       } else {
         return {
+          name: "school",
           id: c.person_id,
           status: false,
           validateStatus: false,
@@ -724,33 +728,37 @@ const getStatus = async (req, res) => {
       }
     });
 
-    const status = {
-      mainParent: {
+    const status = [
+      {
+        name: "mainParent",
         formStatus: family.mainParent !== null,
         validateStatus: false,
       },
-      parent: {
+      {
+        name: "parent",
         formStatus: family.parent !== null,
         validateStatus: false,
       },
-      income: {
+      {
+        name: "income",
         formStatus: family.income.length > 0,
         validateStatus: false,
       },
-      home: {
+      {
+        name: "home",
         formStatus: family.home.length > 0,
         validateStatus: false,
       },
-      children: family.children.length > 0,
-      school:
-        dataSchoolChildren.length <= 0
-          ? { formStatus: false, validateStatus: false }
-          : dataSchoolChildren,
-      vacant:
-        dataVacantChildren <= 0
-          ? { formStatus: false, validateStatus: false }
-          : dataVacantChildren,
-    };
+      // { children: family.children.length > 0 },
+
+      dataSchoolChildren.length <= 0
+        ? [{ name: "school", formStatus: false, validateStatus: false }]
+        : dataSchoolChildren,
+
+      dataVacantChildren <= 0
+        ? [{ name: "vacant", formStatus: false, validateStatus: false }]
+        : dataVacantChildren,
+    ];
 
     res.status(200).json({
       success: true,
