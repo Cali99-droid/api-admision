@@ -146,7 +146,7 @@ const getVacantAvailable = async (req, res) => {
         sucursal: v.sucursal,
         nivel: v.nivel,
         nom: v.nom,
-        vacantes: v.vacantes,
+        vacantes: v.vacantes > 0 ? true : false,
       };
     });
     // const token = loginResponse.data.token;
