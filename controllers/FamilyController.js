@@ -677,6 +677,7 @@ const getStatus = async (req, res) => {
         },
       },
       select: {
+        mainParent: true,
         parent: true,
         income: true,
         home: true,
@@ -697,11 +698,13 @@ const getStatus = async (req, res) => {
         return {
           id: c.person_id,
           status: true,
+          validateStatus: false,
         };
       } else {
         return {
           id: c.person_id,
           status: false,
+          validateStatus: false,
         };
       }
     });
@@ -709,23 +712,44 @@ const getStatus = async (req, res) => {
       if (c.schoolId) {
         return {
           id: c.person_id,
-          status: true,
+          formStatus: true,
+          validateStatus: false,
         };
       } else {
         return {
           id: c.person_id,
           status: false,
+          validateStatus: false,
         };
       }
     });
 
     const status = {
-      parent: family.parent !== null,
-      income: family.income.length > 0,
-      home: family.home.length > 0,
+      mainParent: {
+        formStatus: family.mainParent !== null,
+        validateStatus: false,
+      },
+      parent: {
+        formStatus: family.parent !== null,
+        validateStatus: false,
+      },
+      income: {
+        formStatus: family.income.length > 0,
+        validateStatus: false,
+      },
+      home: {
+        formStatus: family.home.length > 0,
+        validateStatus: false,
+      },
       children: family.children.length > 0,
-      school: dataSchoolChildren.length <= 0 ? false : dataSchoolChildren,
-      vacant: dataVacantChildren <= 0 ? false : dataVacantChildren,
+      school:
+        dataSchoolChildren.length <= 0
+          ? { formStatus: false, validateStatus: false }
+          : dataSchoolChildren,
+      vacant:
+        dataVacantChildren <= 0
+          ? { formStatus: false, validateStatus: false }
+          : dataVacantChildren,
     };
 
     res.status(200).json({
