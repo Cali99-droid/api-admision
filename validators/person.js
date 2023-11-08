@@ -15,7 +15,6 @@ export const personValidationRules = [
     .isIn(["DNI", "CE"])
     .withMessage("el tipo de documento debe ser DNI o CE"),
   body("person.doc_number")
-    .trim()
     .isNumeric()
     .withMessage("el numero de documento es incorrecto")
     .isLength({ min: 8, max: 8 })
