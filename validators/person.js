@@ -75,7 +75,6 @@ export const childValidationRules = [
     .isIn(["DNI", "CE"])
     .withMessage("el tipo de documento debe ser DNI o CE"),
   body("doc_number")
-    .trim()
     .isNumeric()
     .withMessage("el numero de documento debe ser numerico")
     .isLength({ min: 8, max: 8 })
