@@ -696,13 +696,13 @@ const getStatus = async (req, res) => {
       if (c.vacant.length > 0) {
         return {
           id: c.person_id,
-          status: true,
+          formStatus: true,
           validateStatus: false,
         };
       } else {
         return {
           id: c.person_id,
-          status: false,
+          formStatus: false,
           validateStatus: false,
         };
       }
@@ -717,7 +717,7 @@ const getStatus = async (req, res) => {
       } else {
         return {
           id: c.person_id,
-          status: false,
+          formStatus: false,
           validateStatus: false,
         };
       }
