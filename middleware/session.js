@@ -23,6 +23,13 @@ export const authMiddleware = async (req, res, next) => {
       where: {
         id: dataToken["id"],
       },
+      include: {
+        user_roles: {
+          select: {
+            roles_id: true,
+          },
+        },
+      },
     });
     req.user = user;
     next();

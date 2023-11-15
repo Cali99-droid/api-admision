@@ -360,11 +360,14 @@ const getHome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
 
-  const verify = await existFamilyUser(id, user.id);
-  if (!verify) {
-    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-    return;
+  if (user.user_roles.length === 0) {
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+      return;
+    }
   }
+  // if(user.user_roles[0]?.roles_id)
 
   const home = await prisma.home.findFirst({
     where: {
@@ -374,6 +377,7 @@ const getHome = async (req, res) => {
       id: true,
       address: true,
       reference: true,
+      validate: true,
       district: {
         select: {
           id: true,
@@ -401,6 +405,7 @@ const getHome = async (req, res) => {
     id: home.id,
     address: home.address,
     reference: home.reference,
+    validate: home.validate,
     district: city.id,
     province: city.province.id,
     region: city.province.region.id,
@@ -419,11 +424,11 @@ const createIncome = async (req, res) => {
   const id = parseInt(req.params.id);
 
   //**Verificar que la familia exista y pertenezca al usuario  */
-  // const verify = await existFamilyUser(id, user.id);
-  // if (!verify) {
-  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-  //   return;
-  // }
+  const verify = await existFamilyUser(id, user.id);
+  if (!verify) {
+    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+    return;
+  }
 
   const existIncome = await prisma.income.findFirst({
     where: {
@@ -607,19 +612,22 @@ const updateIncome = async (req, res) => {
 const getIncome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
-  // const family = await prisma.family.findUnique({
-  //   where: {
-  //     id: id,
-  //     AND: {
-  //       mainParent: user.id,
-  //     },
-  //   },
-  // });
 
-  // if (!family) {
-  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE");
-  //   return;
-  // }
+  if (user.user_roles.length === 0) {
+    const family = await prisma.family.findUnique({
+      where: {
+        id: id,
+        AND: {
+          mainParent: user.id,
+        },
+      },
+    });
+
+    if (!family) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+      return;
+    }
+  }
 
   const income = await prisma.income.findFirst({
     where: {
@@ -628,6 +636,7 @@ const getIncome = async (req, res) => {
     select: {
       id: true,
       range_id: true,
+      validate: true,
     },
   });
   if (!income) {
@@ -723,13 +732,13 @@ const getStatus = async (req, res) => {
         return {
           id: c.person_id,
           formStatus: true,
-          validateStatus: false,
+          validateStatus: c.validate,
         };
       } else {
         return {
           id: c.person_id,
           formStatus: false,
-          validateStatus: false,
+          validateStatus: c.validate,
         };
       }
     });
