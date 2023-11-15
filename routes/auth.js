@@ -111,5 +111,6 @@ router.post("/login", validatorLogin, login);
  *
  */
 router.post("/forgot-password", validatorResetPass, forgotPassword);
+// router.post("/check", validatorResetPass, forgotPassword);
 
 export default router;

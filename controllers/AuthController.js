@@ -132,8 +132,11 @@ const confirmEmail = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+    const role = req.body.role;
+    let selRol;
     req = matchedData(req);
     const { password, email } = req;
+
     const user = await prisma.user.findFirst({
       where: {
         email,
@@ -146,8 +149,31 @@ const login = async (req, res) => {
             mLastname: true,
           },
         },
+        user_roles: {
+          select: {
+            roles: true,
+          },
+        },
       },
     });
+
+    if (role) {
+      if (user.user_roles.length > 0) {
+        user.user_roles.forEach((rol) => {
+          if (rol.roles.id === role) {
+            selRol = role;
+          }
+        });
+
+        if (!selRol) {
+          handleHttpError(res, "NOT_HAVE_ROL", 403);
+          return;
+        }
+      } else {
+        handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
+        return;
+      }
+    }
 
     if (!user) {
       handleHttpError(res, "EMAIL_NOT_EXIST", 404);
@@ -172,7 +198,7 @@ const login = async (req, res) => {
       token: await tokenSign(user),
       id: user.id,
       personId: user.person_id,
-      role: user.role,
+      role: selRol ?? 0,
       email: user.email,
       name: user.person.name,
       lastname: user.person.lastname,

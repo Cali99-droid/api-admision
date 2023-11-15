@@ -10,6 +10,16 @@ const store = async (req, res) => {
   try {
     const { user } = req;
     const { name } = matchedData(req);
+    const secretaries = await prisma.user.findMany({
+      where: {
+        role: 2,
+      },
+      select: {
+        id: true,
+      },
+      orderBy: { familiy_secretary: { _count: "asc" } },
+    });
+    const secretariaMenosOcupada = secretaries[0];
     // const userExists = await prisma.user.findFirst({
     //   where: {
     //     id,
@@ -25,6 +35,14 @@ const store = async (req, res) => {
         name,
       },
     });
+    const familyAsig = await prisma.familiy_secretary.create({
+      data: {
+        user_id: secretariaMenosOcupada.id,
+        family_id: family.id,
+      },
+    });
+    // console.log(secretariaMenosOcupada);
+    // console.log(familyAsig);
     const data = {
       id: family.id,
       name: family.name,
@@ -771,6 +789,50 @@ const getStatus = async (req, res) => {
     handleHttpError(res, "ERROR_GET_STATUS");
   }
 };
+
+const setFamilyToSecretary = async (req, res) => {
+  const families = await prisma.family.findMany();
+
+  const secretaries = await prisma.user.findMany({
+    where: {
+      role: 2,
+    },
+  });
+  // Obtener la cantidad actual de familias asignadas a cada secretaria
+  const familySecretaryRelations = await prisma.familiy_secretary.findMany();
+  const asignaments = {};
+  secretaries.forEach((secretary) => {
+    const assignedFamilies = familySecretaryRelations.filter(
+      (rel) => rel.user_id === secretary.id
+    );
+    asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
+  });
+
+  // Asignar las familias no asignadas
+  families.forEach((family) => {
+    const secretariaIds = Object.keys(asignaments);
+    const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
+      asignaments[a].length < asignaments[b].length ? a : b
+    );
+    asignaments[secretariaMenosOcupada].push(family.id);
+  });
+  // Actualizar la base de datos con las asignaciones
+  const updatePromises = Object.entries(asignaments).map(
+    ([user_id, familiaIds]) => {
+      const data = familiaIds.map((id) => {
+        return { user_id: parseInt(user_id), family_id: id };
+      });
+
+      return prisma.familiy_secretary.createMany({
+        data,
+      });
+    }
+  );
+
+  await Promise.all(updatePromises);
+
+  res.json({ message: "Familias asignadas con éxito." });
+};
 export {
   store,
   show,
@@ -783,4 +845,5 @@ export {
   getIncome,
   getSpouse,
   getStatus,
+  setFamilyToSecretary,
 };
