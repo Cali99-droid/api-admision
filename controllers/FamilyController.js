@@ -12,7 +12,11 @@ const store = async (req, res) => {
     const { name } = matchedData(req);
     const secretaries = await prisma.user.findMany({
       where: {
-        role: 2,
+        user_roles: {
+          some: {
+            roles_id: 2,
+          },
+        },
       },
       select: {
         id: true,
@@ -20,6 +24,10 @@ const store = async (req, res) => {
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
     const secretariaMenosOcupada = secretaries[0];
+    // return res.status(201).json({
+    //   success: true,
+    //   data: secretariaMenosOcupada,
+    // });
     // const userExists = await prisma.user.findFirst({
     //   where: {
     //     id,
