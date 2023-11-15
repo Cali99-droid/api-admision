@@ -167,7 +167,6 @@ const get = async (req, res) => {
         },
         children: {
           select: {
-            id: true,
             person: {
               select: {
                 id: true,
@@ -207,16 +206,29 @@ const get = async (req, res) => {
       spouse = { phone: family.conyugue.phone, ...spouse };
       spouse = { role: family.conyugue.role, ...spouse };
     }
-    const home = { id: family.home[0]?.id, address: family.home[0]?.address };
-    const income = {
-      id: family.income[0]?.id,
-      income: family.income[0]?.range.name,
-    };
+    let home;
+    if (family.home) {
+      home = { id: family.home[0]?.id, address: family.home[0]?.address };
+    }
+    let income;
+    if (family.home) {
+      income = {
+        id: family.income[0]?.id,
+        income: family.income[0]?.range.name,
+      };
+    }
+    const children = family.children.map(({ person }) => ({
+      id: person.id,
+      name: person.name,
+      lastname: person.lastname,
+      mLastname: person.mLastname,
+    }));
+
     const data = {
       id: family.id,
       family: family.name,
       spouse,
-      children: family.children,
+      children,
       home,
       income,
     };
