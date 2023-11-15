@@ -793,11 +793,16 @@ const getStatus = async (req, res) => {
 const setFamilyToSecretary = async (req, res) => {
   const families = await prisma.family.findMany();
 
-  const secretaries = await prisma.user.findMany({
+  const data = await prisma.user_roles.findMany({
     where: {
-      role: 2,
+      roles_id: 2,
+    },
+    select: {
+      user: true,
     },
   });
+  const secretaries = data.map((dat) => dat.user);
+
   // Obtener la cantidad actual de familias asignadas a cada secretaria
   const familySecretaryRelations = await prisma.familiy_secretary.findMany();
   const asignaments = {};
