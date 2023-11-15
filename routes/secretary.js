@@ -5,6 +5,7 @@ import {
   getFamilies,
   getFamily,
   validateHome,
+  validateIncome,
 } from "../controllers/SecretaryController.js";
 import { validatorGetFamily } from "../validators/family.js";
 
@@ -18,6 +19,6 @@ router.get(
   getFamily
 );
 router.post("/validate-home/:id", sessionSecretaryMiddleware, validateHome);
-router.post("/validate-income/:id", sessionSecretaryMiddleware, validateHome);
+router.post("/validate-income/:id", sessionSecretaryMiddleware, validateIncome);
 
 export default router;

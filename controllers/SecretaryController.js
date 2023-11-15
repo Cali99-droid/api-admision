@@ -73,6 +73,22 @@ const getFamily = async (req, res) => {
       select: {
         id: true,
         name: true,
+        mainConyugue: {
+          select: {
+            id: true,
+            email: true,
+            phone: true,
+            person: {
+              select: {
+                id: true,
+                name: true,
+                lastname: true,
+                mLastname: true,
+                role: true,
+              },
+            },
+          },
+        },
         conyugue: {
           select: {
             id: true,
@@ -84,6 +100,7 @@ const getFamily = async (req, res) => {
                 name: true,
                 lastname: true,
                 mLastname: true,
+                role: true,
               },
             },
           },
@@ -118,16 +135,24 @@ const getFamily = async (req, res) => {
         },
       },
     });
+    console.log(family.mainConyugue);
     if (!family) {
       handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
     //formatear
+    let mainSpouse = {};
+    if (family?.mainConyugue) {
+      mainSpouse = family.mainConyugue.person;
+      mainSpouse = { email: family.mainConyugue.email, ...mainSpouse };
+      mainSpouse = { phone: family.mainConyugue.phone, ...mainSpouse };
+      mainSpouse = { role: family.mainConyugue.person.role, ...mainSpouse };
+    }
     let spouse = {};
     if (family?.conyugue) {
       spouse = family.conyugue.person;
       spouse = { email: family.conyugue.email, ...spouse };
       spouse = { phone: family.conyugue.phone, ...spouse };
-      spouse = { role: family.conyugue.role, ...spouse };
+      spouse = { role: family.conyugue.person.role, ...spouse };
     }
     let home;
     if (family.home) {
@@ -150,6 +175,7 @@ const getFamily = async (req, res) => {
     const data = {
       id: family.id,
       family: family.name,
+      mainSpouse,
       spouse,
       children,
       home,
@@ -196,5 +222,36 @@ const validateHome = async (req, res) => {
     handleHttpError(res, "ERROR_VALIDATE_HOME");
   }
 };
+const validateIncome = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const dataIncome = await prisma.income.findFirst({
+      where: {
+        family_id: id,
+      },
+    });
 
-export { getFamilies, validateHome, getFamily };
+    if (!dataIncome) {
+      handleHttpError(res, "INCOME_NOT_EXIST", 404);
+      return;
+    }
+
+    const validateIncome = await prisma.home.update({
+      data: {
+        validate: 1,
+      },
+      where: {
+        id: dataIncome.id,
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data: validateHome.id,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_VALIDATE_HOME");
+  }
+};
+
+export { getFamilies, validateHome, validateIncome, getFamily };

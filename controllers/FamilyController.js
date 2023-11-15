@@ -211,7 +211,7 @@ const get = async (req, res) => {
       home = { id: family.home[0]?.id, address: family.home[0]?.address };
     }
     let income;
-    if (family.home) {
+    if (family.income) {
       income = {
         id: family.income[0]?.id,
         income: family.income[0]?.range.name,
