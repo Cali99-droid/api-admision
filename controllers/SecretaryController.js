@@ -1,3 +1,4 @@
+import { matchedData } from "express-validator";
 import prisma from "../utils/prisma.js";
 
 const getFamilies = async (req, res) => {
@@ -56,6 +57,113 @@ const getFamilies = async (req, res) => {
     handleHttpError(res, "ERROR_GET_FAMILIES");
   }
 };
+const getFamily = async (req, res) => {
+  try {
+    const { user } = req;
+    if (!user) {
+      handleHttpError(res, "NOT_EXIST_USER");
+    }
+    req = matchedData(req);
+    const id = parseInt(req.id);
+
+    const family = await prisma.family.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        name: true,
+        conyugue: {
+          select: {
+            id: true,
+            email: true,
+            phone: true,
+            person: {
+              select: {
+                id: true,
+                name: true,
+                lastname: true,
+                mLastname: true,
+              },
+            },
+          },
+        },
+        children: {
+          select: {
+            person: {
+              select: {
+                id: true,
+                name: true,
+                lastname: true,
+                mLastname: true,
+              },
+            },
+          },
+        },
+        home: {
+          select: {
+            id: true,
+            address: true,
+          },
+        },
+        income: {
+          select: {
+            id: true,
+            range: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!family) {
+      handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
+    }
+    //formatear
+    let spouse = {};
+    if (family?.conyugue) {
+      spouse = family.conyugue.person;
+      spouse = { email: family.conyugue.email, ...spouse };
+      spouse = { phone: family.conyugue.phone, ...spouse };
+      spouse = { role: family.conyugue.role, ...spouse };
+    }
+    let home;
+    if (family.home) {
+      home = { id: family.home[0]?.id, address: family.home[0]?.address };
+    }
+    let income;
+    if (family.home) {
+      income = {
+        id: family.income[0]?.id,
+        income: family.income[0]?.range.name,
+      };
+    }
+    const children = family.children.map(({ person }) => ({
+      id: person.id,
+      name: person.name,
+      lastname: person.lastname,
+      mLastname: person.mLastname,
+    }));
+
+    const data = {
+      id: family.id,
+      family: family.name,
+      spouse,
+      children,
+      home,
+      income,
+    };
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_FAMILY");
+  }
+};
 
 const validateHome = async (req, res) => {
   try {
@@ -89,4 +197,4 @@ const validateHome = async (req, res) => {
   }
 };
 
-export { getFamilies, validateHome };
+export { getFamilies, validateHome, getFamily };
