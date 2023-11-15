@@ -19,15 +19,26 @@ const getFamilies = async (req, res) => {
         },
       },
     });
-
+    const verifyLevel = (level) => {
+      switch (level) {
+        case "1":
+          return "Inicial";
+        case "2":
+          return "Primaria";
+        case "3":
+          return "Secundaria";
+        default:
+          break;
+      }
+    };
     const data = families.map((f) => {
       return {
         id: f.family.id,
         name: f.family.name,
         vacant: f.family.children.map((child) => {
           const vacant = {
-            level: child.vacant[0].level,
-            register: child.vacant[0].grade,
+            level: verifyLevel(child.vacant[0].level),
+            grade: child.vacant[0].grade,
           };
           return vacant;
         }),
