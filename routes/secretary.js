@@ -18,5 +18,6 @@ router.get(
   getFamily
 );
 router.post("/validate-home/:id", sessionSecretaryMiddleware, validateHome);
+router.post("/validate-income/:id", sessionSecretaryMiddleware, validateHome);
 
 export default router;
