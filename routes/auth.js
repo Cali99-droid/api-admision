@@ -8,6 +8,7 @@ import {
 import {
   confirmEmail,
   forgotPassword,
+  getRoles,
   login,
   registerUser,
 } from "../controllers/AuthController.js";
@@ -112,5 +113,5 @@ router.post("/login", validatorLogin, login);
  */
 router.post("/forgot-password", validatorResetPass, forgotPassword);
 // router.post("/check", validatorResetPass, forgotPassword);
-
+router.get("/roles", getRoles);
 export default router;

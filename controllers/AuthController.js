@@ -258,4 +258,18 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-export { registerUser, confirmEmail, login, forgotPassword };
+const getRoles = async (req, res) => {
+  try {
+    const roles = await prisma.roles.findMany();
+    const data = roles.map(({ id, rol }) => ({ id, name: rol }));
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_ROL");
+  }
+};
+
+export { registerUser, confirmEmail, login, forgotPassword, getRoles };
