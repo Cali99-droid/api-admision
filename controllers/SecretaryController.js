@@ -1,5 +1,7 @@
 import { matchedData } from "express-validator";
 import prisma from "../utils/prisma.js";
+import { handleHttpError } from "../utils/handleHttpError.js";
+import sendMessage from "../message/api.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -38,8 +40,8 @@ const getFamilies = async (req, res) => {
         name: f.family.name,
         vacant: f.family.children.map((child) => {
           const vacant = {
-            level: verifyLevel(child.vacant[0].level),
-            grade: child.vacant[0].grade,
+            level: verifyLevel(child.vacant[0]?.level) || null,
+            grade: child.vacant[0]?.grade || null,
           };
           return vacant;
         }),
@@ -121,11 +123,13 @@ const getFamily = async (req, res) => {
           select: {
             id: true,
             address: true,
+            validate: true,
           },
         },
         income: {
           select: {
             id: true,
+            validate: true,
             range: {
               select: {
                 name: true,
@@ -135,7 +139,7 @@ const getFamily = async (req, res) => {
         },
       },
     });
-    console.log(family.mainConyugue);
+
     if (!family) {
       handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
@@ -156,13 +160,18 @@ const getFamily = async (req, res) => {
     }
     let home;
     if (family.home) {
-      home = { id: family.home[0]?.id, address: family.home[0]?.address };
+      home = {
+        id: family.home[0]?.id,
+        address: family.home[0]?.address,
+        validate: family.home[0]?.validate === 0 ? false : true,
+      };
     }
     let income;
-    if (family.home) {
+    if (family.income) {
       income = {
         id: family.income[0]?.id,
         income: family.income[0]?.range.name,
+        validate: family.income[0]?.validate === 0 ? false : true,
       };
     }
     const children = family.children.map(({ person }) => ({
@@ -236,7 +245,7 @@ const validateIncome = async (req, res) => {
       return;
     }
 
-    const validateIncome = await prisma.home.update({
+    const validateIncome = await prisma.income.update({
       data: {
         validate: 1,
       },
@@ -246,7 +255,7 @@ const validateIncome = async (req, res) => {
     });
     res.status(201).json({
       success: true,
-      data: validateHome.id,
+      data: validateIncome.id,
     });
   } catch (error) {
     console.log(error);
@@ -254,4 +263,178 @@ const validateIncome = async (req, res) => {
   }
 };
 
-export { getFamilies, validateHome, validateIncome, getFamily };
+const validateChildren = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const dataChild = await prisma.children.findFirst({
+      where: {
+        person_id: id,
+      },
+    });
+    if (!dataChild) {
+      handleHttpError(res, "CHILD_NOT_EXIST", 404);
+      return;
+    }
+    const validateChild = await prisma.children.update({
+      data: {
+        validate: 1,
+      },
+      where: {
+        id: dataChild.id,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: validateChild.id,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_VALIDATE_CHILD");
+  }
+};
+const validateSchool = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const dataChild = await prisma.children.findFirst({
+      where: {
+        person_id: id,
+      },
+    });
+    if (!dataChild) {
+      handleHttpError(res, "CHILD_NOT_EXIST", 404);
+      return;
+    }
+    const validateChild = await prisma.children.update({
+      data: {
+        validateSchool: 1,
+      },
+      where: {
+        id: dataChild.id,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: validateChild.id,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_VALIDATE_CHILD");
+  }
+};
+const validateSpouse = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const dataPerson = await prisma.person.findFirst({
+      where: {
+        id: id,
+      },
+    });
+    if (!dataPerson) {
+      handleHttpError(res, "CHILD_NOT_EXIST", 404);
+      return;
+    }
+    const validatePerson = await prisma.person.update({
+      data: {
+        validate: 1,
+      },
+      where: {
+        id,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: validatePerson.id,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_VALIDATE_CHILD");
+  }
+};
+
+const sendMessageSecretary = async (req, res) => {
+  try {
+    const { user } = req;
+    const data = matchedData(req);
+
+    const userToSend = await prisma.user.findFirst({
+      where: {
+        person_id: parseInt(data.id),
+      },
+    });
+
+    if (!user) {
+      handleHttpError(res, "NOT_EXISTS_USER", 404);
+      return;
+    }
+
+    const body = data.message;
+    const number = `51` + userToSend.phone;
+    const resp = await sendMessage(number, body);
+
+    if (resp) {
+      const saveMessage = await prisma.chat.create({
+        data: {
+          message: body,
+          person_id: parseInt(data.id),
+          user_id: user.id,
+        },
+      });
+      res.status(201).json({
+        success: true,
+        data: {
+          phone: userToSend.phone,
+        },
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        data: {
+          phone: userToConfirm.phone,
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_SEND_MESSAGE");
+  }
+};
+
+const getMessage = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const data = await prisma.chat.findMany({
+      where: {
+        person_id: id,
+      },
+      select: {
+        message: true,
+        create_time: true,
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_MESSAGE");
+  }
+};
+
+export {
+  getFamilies,
+  getFamily,
+  validateHome,
+  validateIncome,
+  validateChildren,
+  validateSchool,
+  validateSpouse,
+  sendMessageSecretary,
+  getMessage,
+};

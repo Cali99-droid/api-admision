@@ -8,21 +8,22 @@ datasource db {
 }
 
 model children {
-  id          Int       @id @default(autoincrement())
-  family_id   Int
-  person_id   Int
-  schoolId    Int?
-  grade       Int?
-  level       Int?
-  doc         String?   @db.VarChar(255)
-  validate    Int?      @default(0) @db.TinyInt
-  update_time DateTime? @db.Timestamp(0)
-  create_time DateTime? @default(now()) @db.Timestamp(0)
-  district_id String?   @db.VarChar(6)
-  person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
-  district    district? @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_district1")
-  family      family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
-  vacant      vacant[]
+  id             Int       @id @default(autoincrement())
+  family_id      Int
+  person_id      Int
+  schoolId       Int?
+  grade          Int?
+  level          Int?
+  doc            String?   @db.VarChar(255)
+  validate       Int?      @default(0) @db.TinyInt
+  validateSchool Int?      @default(0)
+  update_time    DateTime? @db.Timestamp(0)
+  create_time    DateTime? @default(now()) @db.Timestamp(0)
+  district_id    String?   @db.VarChar(6)
+  person         person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
+  district       district? @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_district1")
+  family         family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
+  vacant         vacant[]
 
   @@index([person_id], map: "fk_children_PERSON1_idx")
   @@index([family_id], map: "fk_children_family1_idx")
@@ -115,8 +116,10 @@ model person {
   profession   String?          @db.VarChar(255)
   type_doc     person_type_doc?
   role         person_role?
+  validate     Int?             @default(0)
   create_time  DateTime?        @default(now()) @db.Timestamp(0)
   update_time  DateTime?        @db.Timestamp(0)
+  chat         chat[]
   children     children[]
   doc          doc[]
   user         user[]
@@ -159,6 +162,7 @@ model user {
   mauticId                        Int?
   agree                           Int?                @default(0)
   person_id                       Int
+  chat                            chat[]
   familiy_secretary               familiy_secretary[]
   family_family_main_parentTouser family[]            @relation("family_main_parentTouser")
   family_family_parentTouser      family[]            @relation("family_parentTouser")
@@ -245,6 +249,19 @@ model user_roles {
 
   @@index([roles_id], map: "fk_user_roles_roles1_idx")
   @@index([user_id], map: "fk_user_roles_user1_idx")
+}
+
+model chat {
+  id          Int       @id @default(autoincrement())
+  message     String?   @db.LongText
+  user_id     Int
+  person_id   Int
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chat_person1")
+  user        user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chat_user1")
+
+  @@index([person_id], map: "fk_chat_person1_idx")
+  @@index([user_id], map: "fk_chat_user1_idx")
 }
 
 enum person_gender {
