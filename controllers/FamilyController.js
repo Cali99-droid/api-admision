@@ -5,6 +5,7 @@ import prisma from "../utils/prisma.js";
 
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import { existFamilyUser } from "../utils/handleVerifyFamily.js";
+import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 
 const store = async (req, res) => {
   try {
@@ -724,6 +725,16 @@ const getStatus = async (req, res) => {
       },
       select: {
         mainParent: true,
+        mainConyugue: {
+          select: {
+            person: true,
+          },
+        },
+        conyugue: {
+          select: {
+            person: true,
+          },
+        },
         parent: true,
         income: true,
         home: true,
@@ -744,28 +755,29 @@ const getStatus = async (req, res) => {
         return {
           id: c.person_id,
           formStatus: true,
-          validateStatus: c.validate,
+          validateStatus: handleVerifyValidate(c.validate),
         };
       } else {
         return {
           id: c.person_id,
           formStatus: false,
-          validateStatus: c.validate,
+          validateStatus: handleVerifyValidate(c.validate),
         };
       }
     });
     const dataSchoolChildren = family.children.map((c) => {
+      // console.log(c.schoolId);
       if (c.schoolId) {
         return {
           id: c.person_id,
           formStatus: true,
-          validateStatus: false,
+          validateStatus: handleVerifyValidate(c.validateSchool),
         };
       } else {
         return {
           id: c.person_id,
           formStatus: false,
-          validateStatus: false,
+          validateStatus: handleVerifyValidate(c.validateSchool),
         };
       }
     });
@@ -774,22 +786,24 @@ const getStatus = async (req, res) => {
       {
         name: "mainParent",
         formStatus: family.mainParent !== null,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(
+          family.mainConyugue.person.validate
+        ),
       },
       {
         name: "parent",
         formStatus: family.parent !== null,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(family.conyugue.person.validate),
       },
       {
         name: "income",
         formStatus: family.income.length > 0,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(family.income[0].validate),
       },
       {
         name: "home",
         formStatus: family.home.length > 0,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(family.home[0].validate),
       },
       {
         name: "school",
