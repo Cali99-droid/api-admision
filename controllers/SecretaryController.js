@@ -43,7 +43,7 @@ const getFamilies = async (req, res) => {
           const vacant = {
             level: verifyLevel(child.vacant[0]?.level) || null,
             grade: child.vacant[0]?.grade || null,
-            local: child.vacant[0]?.campus || null,
+            campus: child.vacant[0]?.campus || null,
           };
           return vacant;
         }),
