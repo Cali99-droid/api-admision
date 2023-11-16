@@ -2,6 +2,7 @@ import { matchedData } from "express-validator";
 import prisma from "../utils/prisma.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import sendMessage from "../message/api.js";
+import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -87,6 +88,7 @@ const getFamily = async (req, res) => {
                 lastname: true,
                 mLastname: true,
                 role: true,
+                validate: true,
               },
             },
           },
@@ -103,18 +105,21 @@ const getFamily = async (req, res) => {
                 lastname: true,
                 mLastname: true,
                 role: true,
+                validate: true,
               },
             },
           },
         },
         children: {
           select: {
+            validate: true,
             person: {
               select: {
                 id: true,
                 name: true,
                 lastname: true,
                 mLastname: true,
+                validate: true,
               },
             },
           },
@@ -145,15 +150,21 @@ const getFamily = async (req, res) => {
     }
     //formatear
     let mainSpouse = {};
+
     if (family?.mainConyugue) {
       mainSpouse = family.mainConyugue.person;
+      mainSpouse.validate = handleVerifyValidate(
+        family.mainConyugue.person.validate
+      );
       mainSpouse = { email: family.mainConyugue.email, ...mainSpouse };
       mainSpouse = { phone: family.mainConyugue.phone, ...mainSpouse };
       mainSpouse = { role: family.mainConyugue.person.role, ...mainSpouse };
     }
+
     let spouse = {};
     if (family?.conyugue) {
       spouse = family.conyugue.person;
+      spouse.validate = handleVerifyValidate(family.conyugue.person.validate);
       spouse = { email: family.conyugue.email, ...spouse };
       spouse = { phone: family.conyugue.phone, ...spouse };
       spouse = { role: family.conyugue.person.role, ...spouse };
@@ -174,18 +185,20 @@ const getFamily = async (req, res) => {
         validate: family.income[0]?.validate === 0 ? false : true,
       };
     }
-    const children = family.children.map(({ person }) => ({
-      id: person.id,
-      name: person.name,
-      lastname: person.lastname,
-      mLastname: person.mLastname,
+
+    const children = family.children.map((child, { person }) => ({
+      id: child.person.id,
+      name: child.person.name,
+      lastname: child.person.lastname,
+      mLastname: child.person.mLastname,
+      validate: handleVerifyValidate(child.validate),
     }));
 
+    const parents = [mainSpouse, spouse];
     const data = {
       id: family.id,
       family: family.name,
-      mainSpouse,
-      spouse,
+      parents,
       children,
       home,
       income,
