@@ -5,11 +5,30 @@ import prisma from "../utils/prisma.js";
 
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import { existFamilyUser } from "../utils/handleVerifyFamily.js";
+import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 
 const store = async (req, res) => {
   try {
     const { user } = req;
     const { name } = matchedData(req);
+    const secretaries = await prisma.user.findMany({
+      where: {
+        user_roles: {
+          some: {
+            roles_id: 2,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+      orderBy: { familiy_secretary: { _count: "asc" } },
+    });
+    const secretariaMenosOcupada = secretaries[0];
+    // return res.status(201).json({
+    //   success: true,
+    //   data: secretariaMenosOcupada,
+    // });
     // const userExists = await prisma.user.findFirst({
     //   where: {
     //     id,
@@ -25,6 +44,14 @@ const store = async (req, res) => {
         name,
       },
     });
+    const familyAsig = await prisma.familiy_secretary.create({
+      data: {
+        user_id: secretariaMenosOcupada.id,
+        family_id: family.id,
+      },
+    });
+    // console.log(secretariaMenosOcupada);
+    // console.log(familyAsig);
     const data = {
       id: family.id,
       name: family.name,
@@ -141,7 +168,6 @@ const get = async (req, res) => {
         },
         children: {
           select: {
-            id: true,
             person: {
               select: {
                 id: true,
@@ -181,16 +207,29 @@ const get = async (req, res) => {
       spouse = { phone: family.conyugue.phone, ...spouse };
       spouse = { role: family.conyugue.role, ...spouse };
     }
-    const home = { id: family.home[0]?.id, address: family.home[0]?.address };
-    const income = {
-      id: family.income[0]?.id,
-      income: family.income[0]?.range.name,
-    };
+    let home;
+    if (family.home) {
+      home = { id: family.home[0]?.id, address: family.home[0]?.address };
+    }
+    let income;
+    if (family.income) {
+      income = {
+        id: family.income[0]?.id,
+        income: family.income[0]?.range.name,
+      };
+    }
+    const children = family.children.map(({ person }) => ({
+      id: person.id,
+      name: person.name,
+      lastname: person.lastname,
+      mLastname: person.mLastname,
+    }));
+
     const data = {
       id: family.id,
       family: family.name,
       spouse,
-      children: family.children,
+      children,
       home,
       income,
     };
@@ -334,11 +373,14 @@ const getHome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
 
-  const verify = await existFamilyUser(id, user.id);
-  if (!verify) {
-    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-    return;
+  if (user.user_roles.length === 0) {
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+      return;
+    }
   }
+  // if(user.user_roles[0]?.roles_id)
 
   const home = await prisma.home.findFirst({
     where: {
@@ -348,6 +390,7 @@ const getHome = async (req, res) => {
       id: true,
       address: true,
       reference: true,
+      validate: true,
       district: {
         select: {
           id: true,
@@ -375,6 +418,7 @@ const getHome = async (req, res) => {
     id: home.id,
     address: home.address,
     reference: home.reference,
+    validate: home.validate,
     district: city.id,
     province: city.province.id,
     region: city.province.region.id,
@@ -393,11 +437,11 @@ const createIncome = async (req, res) => {
   const id = parseInt(req.params.id);
 
   //**Verificar que la familia exista y pertenezca al usuario  */
-  // const verify = await existFamilyUser(id, user.id);
-  // if (!verify) {
-  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-  //   return;
-  // }
+  const verify = await existFamilyUser(id, user.id);
+  if (!verify) {
+    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+    return;
+  }
 
   const existIncome = await prisma.income.findFirst({
     where: {
@@ -581,19 +625,22 @@ const updateIncome = async (req, res) => {
 const getIncome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
-  // const family = await prisma.family.findUnique({
-  //   where: {
-  //     id: id,
-  //     AND: {
-  //       mainParent: user.id,
-  //     },
-  //   },
-  // });
 
-  // if (!family) {
-  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE");
-  //   return;
-  // }
+  if (user.user_roles.length === 0) {
+    const family = await prisma.family.findUnique({
+      where: {
+        id: id,
+        AND: {
+          mainParent: user.id,
+        },
+      },
+    });
+
+    if (!family) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+      return;
+    }
+  }
 
   const income = await prisma.income.findFirst({
     where: {
@@ -602,6 +649,7 @@ const getIncome = async (req, res) => {
     select: {
       id: true,
       range_id: true,
+      validate: true,
     },
   });
   if (!income) {
@@ -677,6 +725,16 @@ const getStatus = async (req, res) => {
       },
       select: {
         mainParent: true,
+        mainConyugue: {
+          select: {
+            person: true,
+          },
+        },
+        conyugue: {
+          select: {
+            person: true,
+          },
+        },
         parent: true,
         income: true,
         home: true,
@@ -697,28 +755,29 @@ const getStatus = async (req, res) => {
         return {
           id: c.person_id,
           formStatus: true,
-          validateStatus: false,
+          validateStatus: handleVerifyValidate(c.validate),
         };
       } else {
         return {
           id: c.person_id,
           formStatus: false,
-          validateStatus: false,
+          validateStatus: handleVerifyValidate(c.validate),
         };
       }
     });
     const dataSchoolChildren = family.children.map((c) => {
+      // console.log(c.schoolId);
       if (c.schoolId) {
         return {
           id: c.person_id,
           formStatus: true,
-          validateStatus: false,
+          validateStatus: handleVerifyValidate(c.validateSchool),
         };
       } else {
         return {
           id: c.person_id,
           formStatus: false,
-          validateStatus: false,
+          validateStatus: handleVerifyValidate(c.validateSchool),
         };
       }
     });
@@ -727,22 +786,24 @@ const getStatus = async (req, res) => {
       {
         name: "mainParent",
         formStatus: family.mainParent !== null,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(
+          family.mainConyugue.person.validate
+        ),
       },
       {
         name: "parent",
         formStatus: family.parent !== null,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(family.conyugue.person.validate),
       },
       {
         name: "income",
         formStatus: family.income.length > 0,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(family.income[0].validate),
       },
       {
         name: "home",
         formStatus: family.home.length > 0,
-        validateStatus: false,
+        validateStatus: handleVerifyValidate(family.home[0].validate),
       },
       {
         name: "school",
@@ -771,6 +832,55 @@ const getStatus = async (req, res) => {
     handleHttpError(res, "ERROR_GET_STATUS");
   }
 };
+
+const setFamilyToSecretary = async (req, res) => {
+  const families = await prisma.family.findMany();
+
+  const data = await prisma.user_roles.findMany({
+    where: {
+      roles_id: 2,
+    },
+    select: {
+      user: true,
+    },
+  });
+  const secretaries = data.map((dat) => dat.user);
+
+  // Obtener la cantidad actual de familias asignadas a cada secretaria
+  const familySecretaryRelations = await prisma.familiy_secretary.findMany();
+  const asignaments = {};
+  secretaries.forEach((secretary) => {
+    const assignedFamilies = familySecretaryRelations.filter(
+      (rel) => rel.user_id === secretary.id
+    );
+    asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
+  });
+
+  // Asignar las familias no asignadas
+  families.forEach((family) => {
+    const secretariaIds = Object.keys(asignaments);
+    const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
+      asignaments[a].length < asignaments[b].length ? a : b
+    );
+    asignaments[secretariaMenosOcupada].push(family.id);
+  });
+  // Actualizar la base de datos con las asignaciones
+  const updatePromises = Object.entries(asignaments).map(
+    ([user_id, familiaIds]) => {
+      const data = familiaIds.map((id) => {
+        return { user_id: parseInt(user_id), family_id: id };
+      });
+
+      return prisma.familiy_secretary.createMany({
+        data,
+      });
+    }
+  );
+
+  await Promise.all(updatePromises);
+
+  res.json({ message: "Familias asignadas con éxito." });
+};
 export {
   store,
   show,
@@ -783,4 +893,5 @@ export {
   getIncome,
   getSpouse,
   getStatus,
+  setFamilyToSecretary,
 };

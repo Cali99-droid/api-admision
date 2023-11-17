@@ -7,6 +7,7 @@ import {
   getSpouse,
   getStatus,
   saveHome,
+  setFamilyToSecretary,
   show,
   store,
   updateHome,
@@ -368,4 +369,5 @@ router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
 router.get("/spouse/:id", validatorGetFamily, authMiddleware, getSpouse);
 
 router.get("/status/:id", validatorGetFamily, authMiddleware, getStatus);
+router.post("/assignament", authMiddleware, setFamilyToSecretary);
 export default router;
