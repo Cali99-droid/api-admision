@@ -41,7 +41,7 @@ const getFamilies = async (req, res) => {
         name: f.family.name,
         vacant: f.family.children.map((child) => {
           const vacant = {
-            level: verifyLevel(child.vacant[0]?.level) || null,
+            level: child.vacant[0]?.level || null,
             grade: child.vacant[0]?.grade || null,
             campus: child.vacant[0]?.campus || null,
           };
