@@ -38,18 +38,41 @@ const store = async (req, res) => {
     //   handleHttpError(res, "USER_NOT_EXIST", 404);
     //   return;
     // }
+    const AnotherFamily = await prisma.family.findFirst({
+      where: {
+        mainParent: user.id,
+      },
+    });
     const family = await prisma.family.create({
       data: {
         mainParent: user.id,
         name,
       },
     });
-    const familyAsig = await prisma.familiy_secretary.create({
-      data: {
-        user_id: secretariaMenosOcupada.id,
-        family_id: family.id,
-      },
-    });
+    if (AnotherFamily) {
+      console.log("asignando como existente");
+      const existFamilySecretary = await prisma.familiy_secretary.findFirst({
+        where: {
+          family_id: AnotherFamily.id,
+        },
+      });
+
+      const familyAsig = await prisma.familiy_secretary.create({
+        data: {
+          user_id: existFamilySecretary.user_id,
+          family_id: family.id,
+        },
+      });
+    } else {
+      console.log("asignando como nuevo");
+      const familyAsig = await prisma.familiy_secretary.create({
+        data: {
+          user_id: secretariaMenosOcupada.id,
+          family_id: family.id,
+        },
+      });
+    }
+
     // console.log(secretariaMenosOcupada);
     // console.log(familyAsig);
     const data = {
@@ -793,17 +816,23 @@ const getStatus = async (req, res) => {
       {
         name: "parent",
         formStatus: family.parent !== null,
-        validateStatus: handleVerifyValidate(family.conyugue.person.validate),
+        validateStatus: family.conyugue?.person?.validate
+          ? handleVerifyValidate(family.conyugue.person?.validate)
+          : false,
       },
       {
         name: "income",
         formStatus: family.income.length > 0,
-        validateStatus: handleVerifyValidate(family.income[0].validate),
+        validateStatus: family.income[0]?.validate
+          ? handleVerifyValidate(family.income[0].validate)
+          : false,
       },
       {
         name: "home",
         formStatus: family.home.length > 0,
-        validateStatus: handleVerifyValidate(family.home[0].validate),
+        validateStatus: family.home[0]?.validate
+          ? handleVerifyValidate(family.home[0].validate)
+          : false,
       },
       {
         name: "school",
