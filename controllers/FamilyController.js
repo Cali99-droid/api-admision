@@ -816,17 +816,23 @@ const getStatus = async (req, res) => {
       {
         name: "parent",
         formStatus: family.parent !== null,
-        validateStatus: handleVerifyValidate(family.conyugue.person.validate),
+        validateStatus: family.conyugue?.person?.validate
+          ? handleVerifyValidate(family.conyugue.person?.validate)
+          : false,
       },
       {
         name: "income",
         formStatus: family.income.length > 0,
-        validateStatus: handleVerifyValidate(family.income[0].validate),
+        validateStatus: family.income[0]?.validate
+          ? handleVerifyValidate(family.income[0].validate)
+          : false,
       },
       {
         name: "home",
         formStatus: family.home.length > 0,
-        validateStatus: handleVerifyValidate(family.home[0].validate),
+        validateStatus: family.home[0]?.validate
+          ? handleVerifyValidate(family.home[0].validate)
+          : false,
       },
       {
         name: "school",
