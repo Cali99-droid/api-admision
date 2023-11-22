@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 4000;
  */
 cron.schedule("0 0 */2 * *", async () => {
   const threeDaysAgo = new Date();
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 2);
 
   try {
     const unconfirmedUsers = await prisma.user.findMany({
