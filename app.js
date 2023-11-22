@@ -4,7 +4,8 @@ import cors from "cors";
 import router from "./routes/index.js";
 import openApiConfigration from "./docs/swagger.js";
 import swaggerUI from "swagger-ui-express";
-
+import cron from "node-cron";
+import prisma from "./utils/prisma.js";
 const app = express();
 
 app.use(express.json());
@@ -24,7 +25,51 @@ const corsOptions = {
 };
 app.use(cors());
 const PORT = process.env.PORT || 4000;
+/**
+ * Cron para eliminar usuario no confirmados
+ */
+cron.schedule("* * * * *", async () => {
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
+  try {
+    const unconfirmedUsers = await prisma.user.findMany({
+      where: {
+        confirmed_email: 0,
+        create_time: { lt: threeDaysAgo },
+        mauticId: {
+          not: null,
+        },
+      },
+    });
+    console.log(unconfirmedUsers);
+    if (unconfirmedUsers.length === 0) {
+      console.log("No unconfirmed users to clean up.");
+      return;
+    }
+    console.log(`Cleaning up ${unconfirmedUsers.length} unconfirmed users...`);
+    const personIds = unconfirmedUsers.map((user) => user.person_id);
+    console.log(personIds);
+    await prisma.person
+      .deleteMany({
+        where: {
+          id: {
+            in: personIds,
+          },
+        },
+      })
+      .then(
+        () => console.log("Completed Unconfirmed users cleaned up."),
+        (r) => {
+          console.log("error" + r);
+        }
+      );
+
+    console.log("Unconfirmed users cleaned up.");
+  } catch (error) {
+    console.error("Error al eliminar usuarios:", error);
+  }
+});
 /**
  * Definir ruta de documentación
  */
