@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 4000;
 /**
  * Cron para eliminar usuario no confirmados
  */
-cron.schedule("* * * * *", async () => {
+cron.schedule("0 0 */3 * *", async () => {
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
