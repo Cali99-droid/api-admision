@@ -6,6 +6,10 @@ import openApiConfigration from "./docs/swagger.js";
 import swaggerUI from "swagger-ui-express";
 import cron from "node-cron";
 import prisma from "./utils/prisma.js";
+import morganBody from "morgan-body";
+import { IncomingWebhook } from "@slack/webhook";
+import loggerStream from "./utils/handleLogger.js";
+
 const app = express();
 
 app.use(express.json());
@@ -70,6 +74,15 @@ cron.schedule("0 0 * * *", async () => {
     console.error("Error al eliminar usuarios:", error);
   }
 });
+
+morganBody(app, {
+  noColors: true,
+  stream: loggerStream,
+  skip: function (req, res) {
+    return res.statusCode < 400;
+  },
+});
+
 /**
  * Definir ruta de documentación
  */
