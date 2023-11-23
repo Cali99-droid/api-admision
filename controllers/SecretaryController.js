@@ -19,10 +19,16 @@ const getFamilies = async (req, res) => {
                 vacant: true,
               },
             },
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
           },
         },
       },
     });
+
     const verifyLevel = (level) => {
       switch (level) {
         case "1":
@@ -38,7 +44,14 @@ const getFamilies = async (req, res) => {
     const data = families.map((f) => {
       return {
         id: f.family.id,
+
         name: f.family.name,
+        email: f.family.mainConyugue.email,
+        phone: f.family.mainConyugue.phone,
+        nameParent:
+          f.family.mainConyugue.person.name +
+          " " +
+          f.family.mainConyugue.person.lastname,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,

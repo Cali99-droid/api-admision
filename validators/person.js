@@ -29,6 +29,9 @@ export const personValidationRules = [
   body("person.role")
     .isIn(["M", "P", ""])
     .withMessage("el tipo de documento debe ser M o P"),
+  body("person.ubigeo").optional(),
+  body("person.issuance_doc").optional().isISO8601(),
+  body("person.civil_status").optional(),
 
   (req, res, next) => {
     return validateResults(req, res, next);
