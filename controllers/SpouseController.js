@@ -137,7 +137,76 @@ const update = async (req, res) => {
 
     const { img1, img2 } = req.files;
     req = matchedData(req);
-    console.log(req);
+
+    //si la imagen 1 no se actualiza
+    if (req.img1 && img2) {
+      console.log("se reemplaza imagen 2");
+      const person = await prisma.doc.findFirst({
+        where: {
+          name: req.img1,
+        },
+        select: {
+          person_id: true,
+        },
+      });
+      const imageReplace = await prisma.doc.findFirst({
+        where: {
+          person_id: person.person_id,
+          NOT: [
+            {
+              name: req.img1,
+            },
+          ],
+        },
+      });
+      console.log(imageReplace);
+      const image2 = await uploadImage(img2[0]);
+      const replaceImg = await prisma.doc.update({
+        data: {
+          name: image2.imageName,
+        },
+        where: {
+          id: imageReplace.id,
+        },
+      });
+      deleteImage(imageReplace.name);
+      // console.log(imageReplace);
+      // console.log("llego imagen ", req.img2);
+    }
+    if (req.img2 && img1) {
+      console.log("se reemplaza imagen 1");
+      const person = await prisma.doc.findFirst({
+        where: {
+          name: req.img2,
+        },
+        select: {
+          person_id: true,
+        },
+      });
+      const imageReplace = await prisma.doc.findFirst({
+        where: {
+          person_id: person.person_id,
+          NOT: [
+            {
+              name: req.img2,
+            },
+          ],
+        },
+      });
+      console.log(imageReplace);
+      const image1 = await uploadImage(img1[0]);
+      const replaceImg = await prisma.doc.update({
+        data: {
+          name: image1.imageName,
+        },
+        where: {
+          id: imageReplace.id,
+        },
+      });
+      deleteImage(imageReplace.name);
+      // console.log(imageReplace);
+      // console.log("llego imagen ", req.img2);
+    }
     const { person, userData, id } = req;
 
     if (user.person_id != id) {
@@ -266,7 +335,7 @@ const update = async (req, res) => {
     });
 
     //** Si vienen imagenes actualizar */
-    console.log(img1);
+
     if (img1 && img2) {
       const docs = await prisma.doc.findMany({
         where: {

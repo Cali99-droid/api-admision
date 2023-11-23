@@ -32,7 +32,9 @@ export const personValidationRules = [
   body("person.ubigeo").optional(),
   body("person.issuance_doc").optional().isISO8601(),
   body("person.civil_status").optional(),
-  body("person.validate").optional(),
+  body("person.validate").optional().isNumeric(),
+  body("img1").optional(),
+  body("img2").optional(),
 
   (req, res, next) => {
     return validateResults(req, res, next);
