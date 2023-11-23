@@ -231,7 +231,9 @@ const update = async (req, res) => {
     if (person.issuance_doc) {
       person.issuance_doc = new Date(person.issuance_doc).toISOString();
     }
-
+    if (person.validate) {
+      person.validate = parseInt(person.validate);
+    }
     person.doc_number = person.doc_number.toString();
     const dateUpdate = new Date();
     person.update_time = dateUpdate;
@@ -264,6 +266,7 @@ const update = async (req, res) => {
     });
 
     //** Si vienen imagenes actualizar */
+    console.log(img1);
     if (img1 && img2) {
       const docs = await prisma.doc.findMany({
         where: {
