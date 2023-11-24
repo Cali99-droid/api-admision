@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 const deleteImg = async (req, res) => {
   try {
     const { name } = req.body;
-    console.log(name);
+
     const doc = await prisma.docsIncome.findFirst({
       where: {
         name,
@@ -16,6 +16,7 @@ const deleteImg = async (req, res) => {
     });
     if (!doc) {
       handleHttpError(res, "ERROR_DELETE_IMG");
+      return;
     }
     const docs = await prisma.docsIncome.delete({
       where: {
