@@ -225,6 +225,14 @@ const update = async (req, res) => {
         id: parseInt(id),
       },
     });
+    const actChild = await prisma.children.updateMany({
+      data: {
+        validate: children.validate ? children.validate : 0,
+      },
+      where: {
+        person_id: childrenUpdate.id,
+      },
+    });
 
     // const data = {
     //   childrenUpdate,

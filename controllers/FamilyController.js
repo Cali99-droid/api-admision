@@ -456,6 +456,7 @@ const getHome = async (req, res) => {
 
 const createIncome = async (req, res) => {
   const range_id = parseInt(req.body.range_id);
+  const validate = req.body.validate ? req.body.validate : 0;
   const { user } = req;
   const id = parseInt(req.params.id);
 
@@ -510,6 +511,7 @@ const createIncome = async (req, res) => {
         range_id,
         family_id: id,
         update_time: dateUpdate,
+        validate,
       },
       where: {
         id: existIncome.id,
@@ -542,6 +544,7 @@ const createIncome = async (req, res) => {
     data: {
       range_id,
       family_id: id,
+      validate,
     },
     include: {
       docsIncome: true,

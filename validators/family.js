@@ -43,6 +43,7 @@ export const validatorHome = [
     .withMessage("El campo district no puede estar vacío")
     .isNumeric()
     .withMessage("El campo district debe ser un numero "),
+  body("validate").optional().isNumeric(),
 
   (req, res, next) => {
     return validateResults(req, res, next);
@@ -56,6 +57,7 @@ export const validatorIncome = [
     .notEmpty()
     .isNumeric()
     .withMessage("El campo range_id no puede estar vacío"),
+  body("validate").optional().isNumeric(),
 
   (req, res, next) => {
     return validateResults(req, res, next);

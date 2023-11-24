@@ -46,6 +46,7 @@ const store = async (req, res) => {
         doc: school.doc,
         district_id: school.district_id,
         update_time: dateUpdate,
+        validateSchool: school.validate ? school.validate : 0,
       },
       where: {
         id: child.id,
@@ -159,7 +160,7 @@ const get = async (req, res) => {
       level: children.level,
       img: children.doc,
       district_id: children?.district_id,
-      province_id: children.district?.province_id ,
+      province_id: children.district?.province_id,
       region_id: children?.district?.province?.region_id,
     };
     res.status(200).json({
