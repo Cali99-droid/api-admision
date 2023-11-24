@@ -25,11 +25,15 @@ const deleteImg = async (req, res) => {
     });
     deleteImage(name);
 
+    const data = await prisma.docsIncome.findMany({
+      where: {
+        income_id: doc.income_id,
+      },
+    });
+
     res.status(201).json({
       success: true,
-      data: {
-        id: name,
-      },
+      data,
     });
   } catch (error) {
     console.log(error);
@@ -55,10 +59,15 @@ const addImg = async (req, res) => {
         })),
       });
     }
+    const data = await prisma.docsIncome.findMany({
+      where: {
+        income_id: parseInt(id),
+      },
+    });
 
     res.status(201).json({
       success: true,
-      data: {},
+      data,
     });
   } catch (error) {
     console.log(error);
