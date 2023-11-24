@@ -83,6 +83,74 @@ const update = async (req, res) => {
     const { img1, img2 } = req.files;
 
     const children = matchedData(req);
+    if (children.img1 && img2) {
+      console.log("se reemplaza imagen 2");
+      const person = await prisma.doc.findFirst({
+        where: {
+          name: children.img1,
+        },
+        select: {
+          person_id: true,
+        },
+      });
+      const imageReplace = await prisma.doc.findFirst({
+        where: {
+          person_id: person.person_id,
+          NOT: [
+            {
+              name: children.img1,
+            },
+          ],
+        },
+      });
+      console.log(imageReplace);
+      const image2 = await uploadImage(img2[0]);
+      const replaceImg = await prisma.doc.update({
+        data: {
+          name: image2.imageName,
+        },
+        where: {
+          id: imageReplace.id,
+        },
+      });
+      deleteImage(imageReplace.name);
+      // console.log(imageReplace);
+      // console.log("llego imagen ", req.img2);
+    }
+    if (children.img2 && img1) {
+      console.log("se reemplaza imagen 1");
+      const person = await prisma.doc.findFirst({
+        where: {
+          name: children.img2,
+        },
+        select: {
+          person_id: true,
+        },
+      });
+      const imageReplace = await prisma.doc.findFirst({
+        where: {
+          person_id: person.person_id,
+          NOT: [
+            {
+              name: children.img2,
+            },
+          ],
+        },
+      });
+      console.log(imageReplace);
+      const image1 = await uploadImage(img1[0]);
+      const replaceImg = await prisma.doc.update({
+        data: {
+          name: image1.imageName,
+        },
+        where: {
+          id: imageReplace.id,
+        },
+      });
+      deleteImage(imageReplace.name);
+      // console.log(imageReplace);
+      // console.log("llego imagen ", req.img2);
+    }
     const { id } = children;
     const pers = await prisma.person.findFirst({
       where: {
@@ -140,6 +208,12 @@ const update = async (req, res) => {
     }
 
     children.birthdate = new Date(children.birthdate).toISOString();
+    if (children.issuance_doc) {
+      children.issuance_doc = new Date(children.issuance_doc).toISOString();
+    }
+    if (children.validate) {
+      children.validate = parseInt(children.validate);
+    }
     children.doc_number = children.doc_number.toString();
 
     const dateUpdate = new Date();

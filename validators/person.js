@@ -92,6 +92,12 @@ export const childValidationRules = [
     .isAlpha()
     .withMessage("el campo gender es incorrecto"),
   body("birthdate").isISO8601().withMessage("el birthdate es incorrecto"),
+  body("ubigeo").optional(),
+  body("issuance_doc").optional().isISO8601(),
+  body("civil_status").optional(),
+  body("validate").optional().isNumeric(),
+  body("img1").optional(),
+  body("img2").optional(),
 
   (req, res, next) => {
     return validateResults(req, res, next);
