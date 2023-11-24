@@ -6,86 +6,78 @@ import { compare, encrypt } from "../utils/handlePassword.js";
 import { matchedData } from "express-validator";
 import { tokenSign } from "../utils/handleJwt.js";
 import sendEmailToContact from "../mautic/sendEmailReset.js";
+import PersonRepository from "../repositories/PersonRepository.js";
+import UserRepository from "../repositories/UserRepository.js";
+import ContactRepository from "../repositories/ContactRepository.js";
+import UserRoleRepository from "../repositories/UserRoleRepository.js";
 const prisma = new PrismaClient();
-
+//commit
 const registerUser = async (req, res) => {
   try {
     req = matchedData(req);
     const { name, lastname, mLastname, doc_number, email, phone } = req;
 
-    //verificar emails y número de documento duplicados
-    const existsDoc = await prisma.person.findFirst({
-      where: {
-        doc_number,
-      },
-    });
+    //verificar emails, phone y número de documento duplicados
+    const existsDoc = await PersonRepository.getPersonByNumberDoc(doc_number);
 
     if (existsDoc) {
       handleHttpError(res, "EXIST_DATA");
       return;
     }
 
-    const existsEmail = await prisma.user.findFirst({
-      where: {
-        OR: [
-          {
-            email: {
-              equals: email,
-            },
-          },
-          {
-            phone: {
-              equals: phone,
-            },
-          },
-        ],
-      },
-    });
+    const existsEmail = await UserRepository.getUserByEmail(email);
 
     if (existsEmail) {
-      handleHttpError(res, "EXIST_DATA");
+      handleHttpError(res, "EMAIL_EXIST");
+      return;
+    }
+
+    const existsPhone = await UserRepository.getUserByPhone(phone);
+
+    if (existsPhone) {
+      handleHttpError(res, "PHONE_EXIST");
       return;
     }
 
     const surnames = lastname + " " + mLastname;
     //generar token
     const token = generateId();
-    const { contact } = await createContact(
-      name,
+
+    const dataContact = {
+      firstname: name,
+      lastname: surnames,
+      email: email,
+      token: token,
+      phone: phone,
+      origen: "admision",
+      // Otros campos según tus necesidades y configuración en Mautic
+    };
+    let contactId;
+    if (process.env.NODE_ENV === "production") {
+      const { contact } = await ContactRepository.createContact(dataContact);
+      contactId = contact.id;
+    }
+
+    const code = generateId().substring(5, 10);
+    const dataPerson = { name, mLastname, lastname, doc_number };
+    const person = await PersonRepository.createPerson(dataPerson);
+
+    const dataUser = {
       email,
       phone,
+      person_id: person.id,
       token,
-      surnames
-    );
-    const code = generateId().substring(5, 10);
-    const person = await prisma.person.create({
-      data: {
-        name,
-        mLastname,
-        lastname,
-        doc_number,
-      },
-    });
-    const user = await prisma.user.create({
-      data: {
-        email,
-        phone,
-        person_id: person.id,
-        token,
-        code,
-        mauticId: contact.id,
-        // mauticId: 0,
-      },
-    });
+      code,
+      mauticId: process.env.NODE_ENV === "production" ? contactId : null,
+      // mauticId: 0,
+    };
+    const user = await UserRepository.createUser(dataUser);
+
     const data = { id: user.id, email: user.email, name: person.name };
     res.status(201).json({
       success: true,
       data: data,
     });
-    // res.send({ id: user.id, email: user.email, name: person.name });
-    // res.success({ mensaje: "Operación exitosa" });
-
-    //mautic email
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_REGISTER_USER");
@@ -97,27 +89,22 @@ const confirmEmail = async (req, res) => {
     req = matchedData(req);
     const { token, password } = req;
 
-    const userConfirm = await prisma.user.findFirst({
-      where: {
-        token,
-      },
-    });
+    const userConfirm = await UserRepository.getUserByToken(token);
 
     if (!userConfirm) {
       handleHttpError(res, "INVALID_TOKEN", 401);
       return;
     }
     const passHash = await encrypt(password);
-    const userUpdate = await prisma.user.update({
-      where: {
-        id: userConfirm.id,
-      },
-      data: {
-        token: "",
-        confirmed_email: 1,
-        password: passHash,
-      },
-    });
+    const dataUserUpdate = {
+      token: "",
+      confirmed_email: 1,
+      password: passHash,
+    };
+    const userUpdate = await UserRepository.updateUser(
+      userConfirm.id,
+      dataUserUpdate
+    );
 
     const data = { email: userUpdate.email };
     res.status(201).json({
@@ -133,48 +120,10 @@ const confirmEmail = async (req, res) => {
 const login = async (req, res) => {
   try {
     const role = req.body.role;
-    let selRol;
+
     req = matchedData(req);
     const { password, email } = req;
-
-    const user = await prisma.user.findFirst({
-      where: {
-        email,
-      },
-      include: {
-        person: {
-          select: {
-            name: true,
-            lastname: true,
-            mLastname: true,
-          },
-        },
-        user_roles: {
-          select: {
-            roles: true,
-          },
-        },
-      },
-    });
-
-    if (role) {
-      if (user.user_roles.length > 0) {
-        user.user_roles.forEach((rol) => {
-          if (rol.roles.id === role) {
-            selRol = role;
-          }
-        });
-
-        if (!selRol) {
-          handleHttpError(res, "NOT_HAVE_ROL", 403);
-          return;
-        }
-      } else {
-        handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
-        return;
-      }
-    }
-
+    const user = await UserRepository.getUserByEmail(email);
     if (!user) {
       handleHttpError(res, "EMAIL_NOT_EXIST", 404);
       return;
@@ -183,7 +132,6 @@ const login = async (req, res) => {
       handleHttpError(res, "UNCONFIRMED_EMAIL", 401);
       return;
     }
-
     const hashPassword = user.password;
 
     const check = await compare(password, hashPassword);
@@ -192,17 +140,30 @@ const login = async (req, res) => {
       handleHttpError(res, "PASSWORD_INVALID", 401);
       return;
     }
+    const userRoles = await UserRoleRepository.getUserRolesByUser(user.id);
+    if (role && userRoles.length > 0) {
+      const foundRole = userRoles.find((rol) => rol.roles_id === role);
+      if (!foundRole) {
+        handleHttpError(res, "NOT_HAVE_ROL", 403);
+        return;
+      }
+    } else if (role) {
+      handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
+      return;
+    }
 
     // user.set("password", undefined, { strict: false });
+    const person = await PersonRepository.getPersonById(user.person_id);
+
     const data = {
       token: await tokenSign(user),
       id: user.id,
       personId: user.person_id,
-      role: selRol ?? 0,
+      role: role ?? 0,
       email: user.email,
-      name: user.person.name,
-      lastname: user.person.lastname,
-      mLastname: user.person.mLastname,
+      name: person.name,
+      lastname: person.lastname,
+      mLastname: person.mLastname,
       agree: user.agree,
     };
     res.status(201).json({
@@ -218,11 +179,8 @@ const forgotPassword = async (req, res) => {
   try {
     // req = matchedData(req);
     const { email } = req.body;
-    const existsUser = await prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
+    const existsUser = await UserRepository.getUserByEmail(email);
+
     if (!existsUser) {
       handleHttpError(res, "USER_DOES_NOT_EXIST", 404);
       return;
@@ -232,13 +190,8 @@ const forgotPassword = async (req, res) => {
       return;
     }
     const token = generateId();
-    const updateUser = await prisma.user.update({
-      data: {
-        token,
-      },
-      where: {
-        id: existsUser.id,
-      },
+    const updateUser = await UserRepository.updateUser(existsUser.id, {
+      token,
     });
 
     const resp = await sendEmailToContact(updateUser.mauticId, token);
@@ -271,5 +224,28 @@ const getRoles = async (req, res) => {
     handleHttpError(res, "ERROR_GET_ROL");
   }
 };
+const validateSession = async (req, res) => {
+  try {
+    const { user } = req;
+    if (!user) {
+      handleHttpError(res, "ERROR_VALIDATE_SESSION");
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      data: user.email,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_VALIDATE_SESSION");
+  }
+};
 
-export { registerUser, confirmEmail, login, forgotPassword, getRoles };
+export {
+  registerUser,
+  confirmEmail,
+  login,
+  forgotPassword,
+  getRoles,
+  validateSession,
+};

@@ -11,7 +11,9 @@ import {
   getRoles,
   login,
   registerUser,
+  validateSession,
 } from "../controllers/AuthController.js";
+import { authMiddleware } from "../middleware/session.js";
 const router = express.Router();
 
 /**
@@ -114,4 +116,5 @@ router.post("/login", validatorLogin, login);
 router.post("/forgot-password", validatorResetPass, forgotPassword);
 // router.post("/check", validatorResetPass, forgotPassword);
 router.get("/roles", getRoles);
+router.get("/validate-session", authMiddleware, validateSession);
 export default router;
