@@ -58,13 +58,11 @@ const addImg = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: {
-        count: docsIncome.length,
-      },
+      data: {},
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_UPDATE_AGREE");
+    handleHttpError(res, "ERROR_UPDATE_IMG");
   }
 };
 
