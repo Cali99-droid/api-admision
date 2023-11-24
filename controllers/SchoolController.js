@@ -46,7 +46,7 @@ const store = async (req, res) => {
         doc: school.doc,
         district_id: school.district_id,
         update_time: dateUpdate,
-        validateSchool: school.validate ? school.validate : 0,
+        validateSchool: school.validate ? parseInt(school.validate) : 0,
       },
       where: {
         id: child.id,

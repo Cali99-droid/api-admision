@@ -286,7 +286,9 @@ const saveHome = async (req, res) => {
         family_id: id,
       },
     });
-
+    if (dataHome.validate) {
+      dataHome.validate = parseInt(dataHome.validate);
+    }
     //** Si ya existe se actualiza */
 
     if (homeExist) {
@@ -371,6 +373,9 @@ const updateHome = async (req, res) => {
     }
 
     const dateUpdate = new Date();
+    if (body.validate) {
+      body.validate = parseInt(body.validate);
+    }
     body = { family_id: id, ...body };
     body = { update_time: dateUpdate, ...body };
 
@@ -456,7 +461,7 @@ const getHome = async (req, res) => {
 
 const createIncome = async (req, res) => {
   const range_id = parseInt(req.body.range_id);
-  const validate = req.body.validate ? req.body.validate : 0;
+  const validate = req.body.validate ? parseInt(req.body.validate) : 0;
   const { user } = req;
   const id = parseInt(req.params.id);
 
