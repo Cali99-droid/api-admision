@@ -25,10 +25,16 @@ const deleteImg = async (req, res) => {
     });
     deleteImage(name);
 
-    const data = await prisma.docsIncome.findMany({
+    const documents = await prisma.docsIncome.findMany({
       where: {
         income_id: doc.income_id,
       },
+      select: {
+        name: true,
+      },
+    });
+    const data = documents.map((d) => {
+      return d.name;
     });
 
     res.status(201).json({
@@ -59,10 +65,16 @@ const addImg = async (req, res) => {
         })),
       });
     }
-    const data = await prisma.docsIncome.findMany({
+    const documents = await prisma.docsIncome.findMany({
       where: {
         income_id: parseInt(id),
       },
+      select: {
+        name: true,
+      },
+    });
+    const data = documents.map((d) => {
+      return d.name;
     });
 
     res.status(201).json({
