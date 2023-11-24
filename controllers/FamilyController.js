@@ -10,6 +10,7 @@ import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 const store = async (req, res) => {
   try {
     const { user } = req;
+
     const { name } = matchedData(req);
     const secretaries = await prisma.user.findMany({
       where: {
