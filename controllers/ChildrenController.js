@@ -219,6 +219,9 @@ const update = async (req, res) => {
     const dateUpdate = new Date();
     children.update_time = dateUpdate;
     delete children.id;
+    if (children.img1) delete children.img1;
+    if (children.img2) delete children.img2;
+
     const childrenUpdate = await prisma.person.update({
       data: children,
       where: {
@@ -276,6 +279,11 @@ const get = async (req, res) => {
         name: true,
         gender: true,
         birthdate: true,
+        children: {
+          select: {
+            validate: true,
+          },
+        },
         doc: {
           select: {
             name: true,
