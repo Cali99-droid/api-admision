@@ -389,9 +389,15 @@ const sendMessageSecretary = async (req, res) => {
     const { user } = req;
     const data = matchedData(req);
 
+    const family = await prisma.family.findUnique({
+      where: {
+        id: parseInt(data.id),
+      },
+    });
+
     const userToSend = await prisma.user.findFirst({
       where: {
-        person_id: parseInt(data.id),
+        person_id: family.mainParent,
       },
     });
 
@@ -435,9 +441,14 @@ const sendMessageSecretary = async (req, res) => {
 const getMessage = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const family = await prisma.family.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
     const data = await prisma.chat.findMany({
       where: {
-        person_id: id,
+        person_id: family.mainParent,
       },
       select: {
         message: true,
