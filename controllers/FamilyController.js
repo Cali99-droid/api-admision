@@ -275,11 +275,11 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-    const verify = await existFamilyUser(id, user.id);
-    if (!verify) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-      return;
-    }
+    // const verify = await existFamilyUser(id, user.id);
+    // if (!verify) {
+    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+    //   return;
+    // }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
@@ -467,11 +467,11 @@ const createIncome = async (req, res) => {
   const id = parseInt(req.params.id);
 
   //**Verificar que la familia exista y pertenezca al usuario  */
-  const verify = await existFamilyUser(id, user.id);
-  if (!verify) {
-    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-    return;
-  }
+  // const verify = await existFamilyUser(id, user.id);
+  // if (!verify) {
+  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+  //   return;
+  // }
 
   const existIncome = await prisma.income.findFirst({
     where: {

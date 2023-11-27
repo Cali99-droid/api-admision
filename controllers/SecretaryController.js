@@ -388,7 +388,7 @@ const sendMessageSecretary = async (req, res) => {
   try {
     const { user } = req;
     const data = matchedData(req);
-
+    console.log(data);
     const family = await prisma.family.findUnique({
       where: {
         id: parseInt(data.id),
@@ -400,6 +400,7 @@ const sendMessageSecretary = async (req, res) => {
         person_id: family.mainParent,
       },
     });
+    console.log(userToSend);
 
     if (!user) {
       handleHttpError(res, "NOT_EXISTS_USER", 404);
