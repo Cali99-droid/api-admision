@@ -96,8 +96,8 @@ export const childValidationRules = [
   body("issuance_doc").optional().isISO8601(),
   body("civil_status").optional(),
   body("validate").optional().isNumeric(),
-  body("img1").optional(),
-  body("img2").optional(),
+  // body("img1").optional(),
+  // body("img2").optional(),
 
   (req, res, next) => {
     return validateResults(req, res, next);
