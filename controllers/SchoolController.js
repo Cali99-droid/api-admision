@@ -162,6 +162,7 @@ const get = async (req, res) => {
       district_id: children?.district_id,
       province_id: children.district?.province_id,
       region_id: children?.district?.province?.region_id,
+      validate: children.validateSchool,
     };
     res.status(200).json({
       success: true,
