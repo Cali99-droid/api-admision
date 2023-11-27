@@ -173,7 +173,7 @@ const update = async (req, res) => {
       }
     }
 
-    if (img1 || img2) {
+    if (img1 && img2) {
       const docs = await prisma.doc.findMany({
         where: {
           person_id: parseInt(id),
