@@ -295,7 +295,9 @@ const get = async (req, res) => {
     const img1 = childrenExist.doc[0]?.name ?? null;
     const img2 = childrenExist.doc[1]?.name ?? null;
     const validate = childrenExist.children[0].validate;
+    console.log(validate);
     delete childrenExist.doc;
+    delete childrenExist.children;
     const data = {
       ...childrenExist,
       img1,
