@@ -53,6 +53,8 @@ router.post(
   authMiddleware,
   upload.fields([{ name: "img" }]),
   validatorSchool,
+  validatorGetFamily,
+
   store
 );
 /**

@@ -103,6 +103,7 @@ const get = async (req, res) => {
       campus: vacant?.campus,
       year: vacant?.year,
       children_id: vacant?.children_id,
+      validate: vacant?.validate,
     };
     res.status(200).json({
       success: true,

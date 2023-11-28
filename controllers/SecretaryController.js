@@ -3,6 +3,7 @@ import prisma from "../utils/prisma.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import sendMessage from "../message/api.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
+import client from "../utils/client.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -19,10 +20,16 @@ const getFamilies = async (req, res) => {
                 vacant: true,
               },
             },
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
           },
         },
       },
     });
+
     const verifyLevel = (level) => {
       switch (level) {
         case "1":
@@ -38,7 +45,14 @@ const getFamilies = async (req, res) => {
     const data = families.map((f) => {
       return {
         id: f.family.id,
+
         name: f.family.name,
+        email: f.family.mainConyugue.email,
+        phone: f.family.mainConyugue.phone,
+        nameParent:
+          f.family.mainConyugue.person.name +
+          " " +
+          f.family.mainConyugue.person.lastname,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,
@@ -114,6 +128,8 @@ const getFamily = async (req, res) => {
         children: {
           select: {
             validate: true,
+            schoolId: true,
+            validateSchool: true,
             person: {
               select: {
                 id: true,
@@ -171,11 +187,21 @@ const getFamily = async (req, res) => {
       spouse = { role: family.conyugue.person.role, ...spouse };
     }
     let home;
+    const validate = (number) => {
+      if (number === 0) {
+        return false;
+      } else {
+        if (number === 1) {
+          return true;
+        }
+        return false;
+      }
+    };
     if (family.home) {
       home = {
         id: family.home[0]?.id,
         address: family.home[0]?.address,
-        validate: family.home[0]?.validate === 0 ? false : true,
+        validate: validate(family.home[0]?.validate),
       };
     }
     let income;
@@ -183,9 +209,25 @@ const getFamily = async (req, res) => {
       income = {
         id: family.income[0]?.id,
         income: family.income[0]?.range.name,
-        validate: family.income[0]?.validate === 0 ? false : true,
+        validate: validate(family.home[0]?.validate),
       };
     }
+
+    const findSchool = async (id) => {
+      const school = await client.schools.findUnique({
+        select: {
+          id: true,
+          ubigean: true,
+          name: true,
+          level: true,
+        },
+        where: {
+          id,
+        },
+      });
+      console.log(school);
+      return school.name;
+    };
 
     const children = family.children.map((child, { person }) => ({
       id: child.person.id,
@@ -193,6 +235,8 @@ const getFamily = async (req, res) => {
       lastname: child.person.lastname,
       mLastname: child.person.mLastname,
       validate: handleVerifyValidate(child.validate),
+      school: child.schoolId,
+      validateSchool: child.validateSchool,
     }));
 
     const parents = [mainSpouse, spouse];
@@ -375,14 +419,20 @@ const sendMessageSecretary = async (req, res) => {
   try {
     const { user } = req;
     const data = matchedData(req);
-
-    const userToSend = await prisma.user.findFirst({
+    console.log("la data", data.id);
+    const family = await prisma.family.findUnique({
       where: {
-        person_id: parseInt(data.id),
+        id: parseInt(data.id),
       },
     });
-
-    if (!user) {
+    console.log("la family", family.mainParent);
+    const userToSend = await prisma.user.findFirst({
+      where: {
+        id: family.mainParent,
+      },
+    });
+    console.log("the user", userToSend);
+    if (!userToSend) {
       handleHttpError(res, "NOT_EXISTS_USER", 404);
       return;
     }
@@ -390,7 +440,7 @@ const sendMessageSecretary = async (req, res) => {
     const body = data.message;
     const number = `51` + userToSend.phone;
     const resp = await sendMessage(number, body);
-
+    console.log(resp);
     if (resp) {
       const saveMessage = await prisma.chat.create({
         data: {
@@ -422,9 +472,14 @@ const sendMessageSecretary = async (req, res) => {
 const getMessage = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const family = await prisma.family.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
     const data = await prisma.chat.findMany({
       where: {
-        person_id: id,
+        person_id: family.mainParent,
       },
       select: {
         message: true,

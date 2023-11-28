@@ -370,4 +370,5 @@ router.get("/spouse/:id", validatorGetFamily, authMiddleware, getSpouse);
 
 router.get("/status/:id", validatorGetFamily, authMiddleware, getStatus);
 router.post("/assignament", authMiddleware, setFamilyToSecretary);
+
 export default router;

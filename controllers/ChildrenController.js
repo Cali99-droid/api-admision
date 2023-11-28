@@ -83,6 +83,74 @@ const update = async (req, res) => {
     const { img1, img2 } = req.files;
 
     const children = matchedData(req);
+    if (children.img1 && img2) {
+      console.log("se reemplaza imagen 2");
+      const person = await prisma.doc.findFirst({
+        where: {
+          name: children.img1,
+        },
+        select: {
+          person_id: true,
+        },
+      });
+      const imageReplace = await prisma.doc.findFirst({
+        where: {
+          person_id: person.person_id,
+          NOT: [
+            {
+              name: children.img1,
+            },
+          ],
+        },
+      });
+      console.log(imageReplace);
+      const image2 = await uploadImage(img2[0]);
+      const replaceImg = await prisma.doc.update({
+        data: {
+          name: image2.imageName,
+        },
+        where: {
+          id: imageReplace.id,
+        },
+      });
+      deleteImage(imageReplace.name);
+      // console.log(imageReplace);
+      // console.log("llego imagen ", req.img2);
+    }
+    if (children.img2 && img1) {
+      console.log("se reemplaza imagen 1");
+      const person = await prisma.doc.findFirst({
+        where: {
+          name: children.img2,
+        },
+        select: {
+          person_id: true,
+        },
+      });
+      const imageReplace = await prisma.doc.findFirst({
+        where: {
+          person_id: person.person_id,
+          NOT: [
+            {
+              name: children.img2,
+            },
+          ],
+        },
+      });
+      console.log(imageReplace);
+      const image1 = await uploadImage(img1[0]);
+      const replaceImg = await prisma.doc.update({
+        data: {
+          name: image1.imageName,
+        },
+        where: {
+          id: imageReplace.id,
+        },
+      });
+      deleteImage(imageReplace.name);
+      // console.log(imageReplace);
+      // console.log("llego imagen ", req.img2);
+    }
     const { id } = children;
     const pers = await prisma.person.findFirst({
       where: {
@@ -105,7 +173,7 @@ const update = async (req, res) => {
       }
     }
 
-    if (img1 || img2) {
+    if (img1 && img2) {
       const docs = await prisma.doc.findMany({
         where: {
           person_id: parseInt(id),
@@ -140,15 +208,32 @@ const update = async (req, res) => {
     }
 
     children.birthdate = new Date(children.birthdate).toISOString();
+    if (children.issuance_doc) {
+      children.issuance_doc = new Date(children.issuance_doc).toISOString();
+    }
+    if (children.validate) {
+      children.validate = parseInt(children.validate);
+    }
     children.doc_number = children.doc_number.toString();
 
     const dateUpdate = new Date();
     children.update_time = dateUpdate;
     delete children.id;
+    if (children.img1) delete children.img1;
+    if (children.img2) delete children.img2;
+
     const childrenUpdate = await prisma.person.update({
       data: children,
       where: {
         id: parseInt(id),
+      },
+    });
+    const actChild = await prisma.children.updateMany({
+      data: {
+        validate: children.validate ? parseInt(children.validate) : 0,
+      },
+      where: {
+        person_id: childrenUpdate.id,
       },
     });
 
@@ -177,10 +262,32 @@ const get = async (req, res) => {
         person_id: id,
       },
     });
+    console.log("llego");
     if (!children) {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
+    const dnisParents = await prisma.family.findUnique({
+      where: {
+        id: children.family_id,
+      },
+      select: {
+        conyugue: {
+          select: {
+            person: true,
+          },
+        },
+        mainConyugue: {
+          select: {
+            person: true,
+          },
+        },
+      },
+    });
+    console.log(dnisParents);
+    const mainParent = dnisParents.mainConyugue.person;
+    const parent = dnisParents.conyugue?.person;
+
     const childrenExist = await prisma.person.findUnique({
       where: {
         id,
@@ -194,6 +301,11 @@ const get = async (req, res) => {
         name: true,
         gender: true,
         birthdate: true,
+        children: {
+          select: {
+            validate: true,
+          },
+        },
         doc: {
           select: {
             name: true,
@@ -204,12 +316,26 @@ const get = async (req, res) => {
 
     const img1 = childrenExist.doc[0]?.name ?? null;
     const img2 = childrenExist.doc[1]?.name ?? null;
+    const validate = childrenExist.children[0].validate;
 
     delete childrenExist.doc;
+    delete childrenExist.children;
+    let docFather = mainParent?.role ==='P' ? mainParent?.doc_number : null;
+    let docMother = mainParent?.role ==='P' ? mainParent?.doc_number : null;
+    
     const data = {
       ...childrenExist,
       img1,
       img2,
+      validate,
+      docNumberMain: {
+        role: mainParent?.role ? mainParent?.role : null,
+        docNumber: mainParent?.doc_number ? mainParent?.doc_number : null,
+      },
+      docNumber: {
+        role: parent?.role ? parent?.role : null,
+        docNumber: parent?.doc_number ? parent?.doc_number : null,
+      },
     };
     res.status(200).json({
       success: true,

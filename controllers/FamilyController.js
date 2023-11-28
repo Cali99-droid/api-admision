@@ -10,6 +10,7 @@ import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 const store = async (req, res) => {
   try {
     const { user } = req;
+
     const { name } = matchedData(req);
     const secretaries = await prisma.user.findMany({
       where: {
@@ -274,11 +275,11 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-    const verify = await existFamilyUser(id, user.id);
-    if (!verify) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-      return;
-    }
+    // const verify = await existFamilyUser(id, user.id);
+    // if (!verify) {
+    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+    //   return;
+    // }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
@@ -286,7 +287,9 @@ const saveHome = async (req, res) => {
         family_id: id,
       },
     });
-
+    if (dataHome.validate) {
+      dataHome.validate = parseInt(dataHome.validate);
+    }
     //** Si ya existe se actualiza */
 
     if (homeExist) {
@@ -371,6 +374,9 @@ const updateHome = async (req, res) => {
     }
 
     const dateUpdate = new Date();
+    if (body.validate) {
+      body.validate = parseInt(body.validate);
+    }
     body = { family_id: id, ...body };
     body = { update_time: dateUpdate, ...body };
 
@@ -456,15 +462,16 @@ const getHome = async (req, res) => {
 
 const createIncome = async (req, res) => {
   const range_id = parseInt(req.body.range_id);
+  const validate = req.body.validate ? parseInt(req.body.validate) : 0;
   const { user } = req;
   const id = parseInt(req.params.id);
 
   //**Verificar que la familia exista y pertenezca al usuario  */
-  const verify = await existFamilyUser(id, user.id);
-  if (!verify) {
-    handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-    return;
-  }
+  // const verify = await existFamilyUser(id, user.id);
+  // if (!verify) {
+  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+  //   return;
+  // }
 
   const existIncome = await prisma.income.findFirst({
     where: {
@@ -510,6 +517,7 @@ const createIncome = async (req, res) => {
         range_id,
         family_id: id,
         update_time: dateUpdate,
+        validate,
       },
       where: {
         id: existIncome.id,
@@ -542,6 +550,7 @@ const createIncome = async (req, res) => {
     data: {
       range_id,
       family_id: id,
+      validate,
     },
     include: {
       docsIncome: true,

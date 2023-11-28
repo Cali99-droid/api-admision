@@ -25,6 +25,7 @@ export const validatorSchool = [
     .notEmpty()
     .withMessage("El campo level no puede estar vacío"),
 
+  body("validate").optional().isNumeric(),
   (req, res, next) => {
     return validateResults(req, res, next);
   },
