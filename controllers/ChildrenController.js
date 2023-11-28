@@ -287,6 +287,7 @@ const get = async (req, res) => {
     console.log(dnisParents);
     const mainParent = dnisParents.mainConyugue.person;
     const parent = dnisParents.conyugue?.person;
+
     const childrenExist = await prisma.person.findUnique({
       where: {
         id,
@@ -324,6 +325,14 @@ const get = async (req, res) => {
       img1,
       img2,
       validate,
+      docNumberMain: {
+        role: mainParent?.role ? mainParent?.role : null,
+        docNumber: mainParent?.doc_number ? mainParent?.doc_number : null,
+      },
+      docNumber: {
+        role: parent?.role ? parent?.role : null,
+        docNumber: parent?.doc_number ? parent?.doc_number : null,
+      },
     };
     res.status(200).json({
       success: true,
