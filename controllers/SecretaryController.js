@@ -187,11 +187,21 @@ const getFamily = async (req, res) => {
       spouse = { role: family.conyugue.person.role, ...spouse };
     }
     let home;
+    const validate = (number) => {
+      if (number === 0) {
+        return false;
+      } else {
+        if (number === 1) {
+          return true;
+        }
+        return false;
+      }
+    };
     if (family.home) {
       home = {
         id: family.home[0]?.id,
         address: family.home[0]?.address,
-        validate: family.home[0]?.validate === 0 ? false : true,
+        validate: validate(family.home[0]?.validate),
       };
     }
     let income;
@@ -199,7 +209,7 @@ const getFamily = async (req, res) => {
       income = {
         id: family.income[0]?.id,
         income: family.income[0]?.range.name,
-        validate: family.income[0]?.validate === 0 ? false : true,
+        validate: validate(family.home[0]?.validate),
       };
     }
 
@@ -228,7 +238,6 @@ const getFamily = async (req, res) => {
       school: child.schoolId,
       validateSchool: child.validateSchool,
     }));
-    
 
     const parents = [mainSpouse, spouse];
     const data = {

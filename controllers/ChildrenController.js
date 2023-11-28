@@ -320,6 +320,9 @@ const get = async (req, res) => {
 
     delete childrenExist.doc;
     delete childrenExist.children;
+    let docFather = mainParent?.role ==='P' ? mainParent?.doc_number : null;
+    let docMother = mainParent?.role ==='P' ? mainParent?.doc_number : null;
+    
     const data = {
       ...childrenExist,
       img1,
