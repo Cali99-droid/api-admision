@@ -397,7 +397,7 @@ const sendMessageSecretary = async (req, res) => {
     console.log("la family", family.mainParent);
     const userToSend = await prisma.user.findFirst({
       where: {
-        person_id: family.mainParent,
+        id: family.mainParent,
       },
     });
     console.log("the user", userToSend);
