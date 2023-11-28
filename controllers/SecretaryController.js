@@ -388,21 +388,20 @@ const sendMessageSecretary = async (req, res) => {
   try {
     const { user } = req;
     const data = matchedData(req);
-    console.log(data);
+    console.log("la data", data.id);
     const family = await prisma.family.findUnique({
       where: {
         id: parseInt(data.id),
       },
     });
-
+    console.log("la family", family.mainParent);
     const userToSend = await prisma.user.findFirst({
       where: {
         person_id: family.mainParent,
       },
     });
-    console.log(userToSend);
-
-    if (!user) {
+    console.log("the user", userToSend);
+    if (!userToSend) {
       handleHttpError(res, "NOT_EXISTS_USER", 404);
       return;
     }
@@ -410,7 +409,7 @@ const sendMessageSecretary = async (req, res) => {
     const body = data.message;
     const number = `51` + userToSend.phone;
     const resp = await sendMessage(number, body);
-
+    console.log(resp);
     if (resp) {
       const saveMessage = await prisma.chat.create({
         data: {
