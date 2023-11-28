@@ -262,10 +262,31 @@ const get = async (req, res) => {
         person_id: id,
       },
     });
+    console.log("llego");
     if (!children) {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
+    const dnisParents = await prisma.family.findUnique({
+      where: {
+        id: children.family_id,
+      },
+      select: {
+        conyugue: {
+          select: {
+            person: true,
+          },
+        },
+        mainConyugue: {
+          select: {
+            person: true,
+          },
+        },
+      },
+    });
+    console.log(dnisParents);
+    const mainParent = dnisParents.mainConyugue.person;
+    const parent = dnisParents.conyugue?.person;
     const childrenExist = await prisma.person.findUnique({
       where: {
         id,
@@ -295,7 +316,7 @@ const get = async (req, res) => {
     const img1 = childrenExist.doc[0]?.name ?? null;
     const img2 = childrenExist.doc[1]?.name ?? null;
     const validate = childrenExist.children[0].validate;
-    console.log(validate);
+
     delete childrenExist.doc;
     delete childrenExist.children;
     const data = {

@@ -3,6 +3,7 @@ import prisma from "../utils/prisma.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import sendMessage from "../message/api.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
+import client from "../utils/client.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -127,6 +128,8 @@ const getFamily = async (req, res) => {
         children: {
           select: {
             validate: true,
+            schoolId: true,
+            validateSchool: true,
             person: {
               select: {
                 id: true,
@@ -200,13 +203,32 @@ const getFamily = async (req, res) => {
       };
     }
 
+    const findSchool = async (id) => {
+      const school = await client.schools.findUnique({
+        select: {
+          id: true,
+          ubigean: true,
+          name: true,
+          level: true,
+        },
+        where: {
+          id,
+        },
+      });
+      console.log(school);
+      return school.name;
+    };
+
     const children = family.children.map((child, { person }) => ({
       id: child.person.id,
       name: child.person.name,
       lastname: child.person.lastname,
       mLastname: child.person.mLastname,
       validate: handleVerifyValidate(child.validate),
+      school: child.schoolId,
+      validateSchool: child.validateSchool,
     }));
+    
 
     const parents = [mainSpouse, spouse];
     const data = {
