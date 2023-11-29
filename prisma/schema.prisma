@@ -57,6 +57,7 @@ model family {
   name              String              @db.VarChar(255)
   mainParent        Int?                @map("main_parent")
   parent            Int?
+  status            Int?
   create_time       DateTime?           @default(now()) @db.Timestamp(0)
   update_time       DateTime?           @db.Timestamp(0)
   children          children[]
@@ -245,6 +246,7 @@ model user_roles {
   roles_id    Int
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
+  token_boss  String?   @db.VarChar(255)
   roles       roles     @relation(fields: [roles_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_roles_roles1")
   user        user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_roles_user1")
 
