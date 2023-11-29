@@ -4,6 +4,7 @@ import { handleHttpError } from "../utils/handleHttpError.js";
 import sendMessage from "../message/api.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import client from "../utils/client.js";
+import sendMessageFromSecretary from "../message/fromUser.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -418,20 +419,23 @@ const validateSpouse = async (req, res) => {
 const sendMessageSecretary = async (req, res) => {
   try {
     const { user } = req;
+
+    // TODO cambiar cuando exista mas de un rol
+    const token = user.user_roles[0].token_boss;
     const data = matchedData(req);
-    console.log("la data", data.id);
+
     const family = await prisma.family.findUnique({
       where: {
         id: parseInt(data.id),
       },
     });
-    console.log("la family", family.mainParent);
+
     const userToSend = await prisma.user.findFirst({
       where: {
         id: family.mainParent,
       },
     });
-    console.log("the user", userToSend);
+
     if (!userToSend) {
       handleHttpError(res, "NOT_EXISTS_USER", 404);
       return;
@@ -439,7 +443,7 @@ const sendMessageSecretary = async (req, res) => {
 
     const body = data.message;
     const number = `51` + userToSend.phone;
-    const resp = await sendMessage(number, body);
+    const resp = await sendMessageFromSecretary(number, body, token);
     console.log(resp);
     if (resp) {
       const saveMessage = await prisma.chat.create({
@@ -459,7 +463,7 @@ const sendMessageSecretary = async (req, res) => {
       res.status(401).json({
         success: false,
         data: {
-          phone: userToConfirm.phone,
+          phone: userToSend.phone,
         },
       });
     }

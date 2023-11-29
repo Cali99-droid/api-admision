@@ -61,6 +61,7 @@ export const sessionSecretaryMiddleware = async (req, res, next) => {
         user_roles: {
           select: {
             roles: true,
+            token_boss: true,
           },
         },
       },

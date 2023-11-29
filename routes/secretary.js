@@ -41,5 +41,7 @@ router.post(
 );
 
 router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
+// router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
+router.post("/served/:id", sessionSecretaryMiddleware, getMessage);
 
 export default router;
