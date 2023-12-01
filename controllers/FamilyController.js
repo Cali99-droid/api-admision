@@ -787,7 +787,7 @@ const getStatus = async (req, res) => {
         return {
           id: c.person_id,
           formStatus: true,
-          validateStatus: handleVerifyValidate(c.validate),
+          validateStatus: handleVerifyValidate(c.vacant[0].validate),
         };
       } else {
         return {
