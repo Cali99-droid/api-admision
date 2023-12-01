@@ -57,7 +57,7 @@ model family {
   name              String              @db.VarChar(255)
   mainParent        Int?                @map("main_parent")
   parent            Int?
-  status            Int?
+  status            Int?                @default(0)
   create_time       DateTime?           @default(now()) @db.Timestamp(0)
   update_time       DateTime?           @db.Timestamp(0)
   children          children[]

@@ -793,7 +793,7 @@ const getStatus = async (req, res) => {
         return {
           id: c.person_id,
           formStatus: false,
-          validateStatus: handleVerifyValidate(c.validate),
+          validateStatus: handleVerifyValidate(c.vacant[0].validate),
         };
       }
     });

@@ -500,6 +500,52 @@ const getMessage = async (req, res) => {
   }
 };
 
+const setServed = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const family = await prisma.familiy_secretary.findFirst({
+    where: {
+      family_id: parseInt(id),
+    },
+  });
+  if (!family) {
+    handleHttpError(res, "FAMILY_NOT_EXIST", 404);
+    return;
+  }
+
+  const updateFamily = await prisma.familiy_secretary.update({
+    where: {
+      id: family.id,
+    },
+    data: {
+      status: 1,
+    },
+  });
+  res.status(201).json({
+    success: true,
+    data: {
+      id: updateFamily.id,
+    },
+  });
+};
+
+const getServed = async (req, res) => {
+  const { user } = req;
+  const serverdFamilies = await prisma.familiy_secretary.findMany({
+    where: {
+      status: 1,
+      AND: {
+        user_id: user.id,
+      },
+    },
+  });
+  res.status(200).json({
+    success: true,
+    data: {
+      served: serverdFamilies.length,
+    },
+  });
+};
+
 export {
   getFamilies,
   getFamily,
@@ -510,4 +556,6 @@ export {
   validateSpouse,
   sendMessageSecretary,
   getMessage,
+  setServed,
+  getServed,
 };

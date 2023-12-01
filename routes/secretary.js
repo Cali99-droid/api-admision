@@ -5,7 +5,9 @@ import {
   getFamilies,
   getFamily,
   getMessage,
+  getServed,
   sendMessageSecretary,
+  setServed,
   validateChildren,
   validateHome,
   validateIncome,
@@ -42,6 +44,7 @@ router.post(
 
 router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
 // router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
-router.post("/served/:id", sessionSecretaryMiddleware, getMessage);
+router.post("/served/:id", sessionSecretaryMiddleware, setServed);
+router.get("/get-served", sessionSecretaryMiddleware, getServed);
 
 export default router;
