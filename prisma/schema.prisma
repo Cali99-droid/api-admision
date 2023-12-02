@@ -8,21 +8,22 @@ datasource db {
 }
 
 model children {
-  id             Int       @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   family_id      Int
   person_id      Int
   schoolId       Int?
   grade          Int?
   level          Int?
-  doc            String?   @db.VarChar(255)
-  validate       Int?      @default(0) @db.TinyInt
-  validateSchool Int?      @default(0)
-  update_time    DateTime? @db.Timestamp(0)
-  create_time    DateTime? @default(now()) @db.Timestamp(0)
-  district_id    String?   @db.VarChar(6)
-  person         person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
-  district       district? @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_district1")
-  family         family    @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
+  doc            String?      @db.VarChar(255)
+  validate       Int?         @default(0) @db.TinyInt
+  validateSchool Int?         @default(0)
+  update_time    DateTime?    @db.Timestamp(0)
+  create_time    DateTime?    @default(now()) @db.Timestamp(0)
+  district_id    String?      @db.VarChar(6)
+  person         person       @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
+  district       district?    @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_district1")
+  family         family       @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
+  report_psy     report_psy[]
   vacant         vacant[]
 
   @@index([person_id], map: "fk_children_PERSON1_idx")
@@ -66,6 +67,7 @@ model family {
   conyugue          user?               @relation("family_parentTouser", fields: [parent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
   home              home[]
   income            income[]
+  psy_evaluation    psy_evaluation[]
 
   @@index([mainParent], map: "fk_family_USER1_idx")
   @@index([parent], map: "fk_family_USER2_idx")
@@ -167,6 +169,7 @@ model user {
   familiy_secretary               familiy_secretary[]
   family_family_main_parentTouser family[]            @relation("family_main_parentTouser")
   family_family_parentTouser      family[]            @relation("family_parentTouser")
+  psy_evaluation                  psy_evaluation[]
   person                          person              @relation(fields: [person_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_USER_PERSON")
   user_roles                      user_roles[]
 
@@ -265,6 +268,46 @@ model chat {
 
   @@index([person_id], map: "fk_chat_person1_idx")
   @@index([user_id], map: "fk_chat_user1_idx")
+}
+
+model doc_interview_psy {
+  id                Int            @id @default(autoincrement())
+  name              String         @db.VarChar(255)
+  create_time       DateTime?      @default(now()) @db.Timestamp(0)
+  update_time       DateTime?      @db.Timestamp(0)
+  psy_evaluation_id Int
+  psy_evaluation    psy_evaluation @relation(fields: [psy_evaluation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_doc_interview_psy_psy_evaluation1")
+
+  @@index([psy_evaluation_id], map: "fk_doc_interview_psy_psy_evaluation1_idx")
+}
+
+model psy_evaluation {
+  id                Int                 @id @default(autoincrement())
+  applied           Int                 @default(0)
+  approved          Int                 @default(0)
+  doc1              String?             @db.VarChar(255)
+  doc2              String?             @db.VarChar(255)
+  create_time       DateTime?           @default(now()) @db.Timestamp(0)
+  update_time       DateTime?           @db.Timestamp(0)
+  family_id         Int
+  user_id           Int
+  doc_interview_psy doc_interview_psy[]
+  family            family              @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_psy_evaluation_family1")
+  user              user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_psy_evaluation_user1")
+
+  @@index([family_id], map: "fk_psy_evaluation_family1_idx")
+  @@index([user_id], map: "fk_psy_evaluation_user1_idx")
+}
+
+model report_psy {
+  id          Int       @id @default(autoincrement())
+  doc         String    @db.VarChar(255)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+  update_time DateTime? @db.Timestamp(0)
+  children_id Int
+  children    children  @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_interview_sheet_children1")
+
+  @@index([children_id], map: "fk_interview_sheet_children1_idx")
 }
 
 enum person_gender {
