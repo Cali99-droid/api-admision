@@ -5,6 +5,7 @@ import sendMessage from "../message/api.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import client from "../utils/client.js";
 import sendMessageFromSecretary from "../message/fromUser.js";
+import PsychologyRepository from "../repositories/PsychologyRepository.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -14,6 +15,7 @@ const getFamilies = async (req, res) => {
         user_id: user.id,
       },
       select: {
+        status: true,
         family: {
           include: {
             children: {
@@ -63,7 +65,7 @@ const getFamilies = async (req, res) => {
           return vacant;
         }),
         children: f.family.children.length,
-        served: false,
+        served: f.status,
       };
     });
 
@@ -160,6 +162,7 @@ const getFamily = async (req, res) => {
             },
           },
         },
+        familiy_secretary: true,
       },
     });
 
@@ -248,6 +251,7 @@ const getFamily = async (req, res) => {
       children,
       home,
       income,
+      served: family.familiy_secretary[0].status,
     };
     res.status(200).json({
       success: true,
@@ -511,6 +515,22 @@ const setServed = async (req, res) => {
     handleHttpError(res, "FAMILY_NOT_EXIST", 404);
     return;
   }
+  //asignar a la psicologa menos ocupada rol: 3
+  const psychology = await prisma.user.findMany({
+    where: {
+      user_roles: {
+        some: {
+          roles_id: 3,
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+    orderBy: { psy_evaluation: { _count: "asc" } },
+  });
+  // console.log(psychology);
+  const lessPsychology = psychology[0];
 
   const updateFamily = await prisma.familiy_secretary.update({
     where: {
@@ -519,6 +539,11 @@ const setServed = async (req, res) => {
     data: {
       status: 1,
     },
+  });
+
+  const asigFamilyToPsy = await PsychologyRepository.assignFamily({
+    user_id: lessPsychology.id,
+    family_id: id,
   });
   res.status(201).json({
     success: true,

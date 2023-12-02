@@ -29,12 +29,14 @@ export const uploadImage = async (img) => {
 
 export const deleteImage = async (url) => {
   let key;
+  const folder = process.env.FOLDER_IMG_NAME;
   if (url !== null) {
     if (url.length > 20) {
       const urlParts = url.split("/");
       key = urlParts.slice(3).join("/");
     } else {
-      key = "admision/" + url;
+      key = `${folder}/${url}`;
+      // key = "admision/" + url;
     }
 
     const params = {
