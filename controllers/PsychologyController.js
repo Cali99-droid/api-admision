@@ -131,7 +131,7 @@ const createInterview = async (req, res) => {
   });
   return res.status(201).json({
     success: true,
-    data: 2,
+    data: updateEv,
   });
 
   // const interview = await prisma.doc_interview_psy.findMany({
