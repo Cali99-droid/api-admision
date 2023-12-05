@@ -11,12 +11,9 @@ export const validatorReport = [
 ];
 
 export const validatorInterview = [
-  body("approved")
-    .isNumeric()
-    .withMessage("El campo approved debe ser un numero"),
-  body("familyId")
-    .isNumeric()
-    .withMessage("El campo familyId debe ser un numero"),
+  body("approved").exists().withMessage("El campo familyId es necesario"),
+  ,
+  body("familyId").exists().withMessage("El campo familyId es necesario"),
 
   (req, res, next) => {
     return validateResults(req, res, next);
