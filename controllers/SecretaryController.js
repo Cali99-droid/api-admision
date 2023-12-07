@@ -213,7 +213,7 @@ const getFamily = async (req, res) => {
       income = {
         id: family.income[0]?.id,
         income: family.income[0]?.range.name,
-        validate: validate(family.home[0]?.validate),
+        validate: validate(family.income[0]?.validate),
       };
     }
 
