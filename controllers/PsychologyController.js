@@ -36,6 +36,7 @@ const getFamily = async (req, res) => {
   try {
     const family = await PsychologyRepository.getFamilyById(id);
     //formatear
+    let status = true;
     const children = family.children.map((c) => {
       return {
         id: c.person.id,
@@ -48,19 +49,32 @@ const getFamily = async (req, res) => {
         report: c.report_psy,
       };
     });
+    if (children.length <= 0) {
+      status = false;
+    } else {
+      status = true;
+      children.forEach((c) => {
+        if (c.report.length < 2) {
+          status = false;
+        }
+      });
+    }
+    console.log(children);
     const evPsy = family.psy_evaluation[0];
+
     // const vacant = family.children.map((c) => {
     //   return c.vacant;
     // });
+
     const data = {
       id: family.id,
       family: family.name,
-
       applied: evPsy?.applied || null,
       approved: evPsy?.approved || null,
       doc1: evPsy?.doc1 || null,
       doc2: evPsy?.doc2 || null,
       children,
+      status,
     };
     res.status(201).json({
       success: true,
@@ -117,7 +131,7 @@ const createInterview = async (req, res) => {
   });
   return res.status(201).json({
     success: true,
-    data: 2,
+    data: updateEv,
   });
 
   // const interview = await prisma.doc_interview_psy.findMany({
