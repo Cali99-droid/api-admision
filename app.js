@@ -7,7 +7,7 @@ import swaggerUI from "swagger-ui-express";
 import cron from "node-cron";
 import prisma from "./utils/prisma.js";
 import morganBody from "morgan-body";
-import { IncomingWebhook } from "@slack/webhook";
+
 import loggerStream from "./utils/handleLogger.js";
 
 const app = express();
