@@ -36,6 +36,7 @@ const getFamily = async (req, res) => {
   try {
     const family = await PsychologyRepository.getFamilyById(id);
     //formatear
+    const phone = family.mainConyugue.phone;
     let status = true;
     const children = family.children.map((c) => {
       return {
@@ -69,6 +70,7 @@ const getFamily = async (req, res) => {
     const data = {
       id: family.id,
       family: family.name,
+      phone,
       applied: evPsy?.applied || null,
       approved: evPsy?.approved || null,
       doc1: evPsy?.doc1 || null,

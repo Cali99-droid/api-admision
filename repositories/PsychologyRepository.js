@@ -30,6 +30,11 @@ class FamilyPsychologyRepository {
       select: {
         id: true,
         name: true,
+        mainConyugue: {
+          select: {
+            phone: true,
+          },
+        },
         children: {
           select: {
             person: true,
