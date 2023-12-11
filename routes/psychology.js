@@ -9,6 +9,7 @@ import {
   createReportToChildren,
   getFamilies,
   getFamily,
+  miSonsera,
 } from "../controllers/PsychologyController.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
@@ -36,6 +37,13 @@ router.post(
   validatorReport,
 
   createReportToChildren
+);
+
+router.post(
+  "/gaa",
+  sessionPsychologyMiddleware,
+
+  miSonsera
 );
 
 export default router;
