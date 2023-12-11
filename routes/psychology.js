@@ -1,6 +1,9 @@
 import express from "express";
 
-import { sessionPsychologyMiddleware } from "../middleware/session.js";
+import {
+  authMiddleware,
+  sessionPsychologyMiddleware,
+} from "../middleware/session.js";
 
 import { validatorGetFamily } from "../validators/family.js";
 import { validatorMessage } from "../validators/message.js";
@@ -41,7 +44,7 @@ router.post(
 
 router.post(
   "/gaa",
-  sessionPsychologyMiddleware,
+  authMiddleware,
 
   miSonsera
 );
