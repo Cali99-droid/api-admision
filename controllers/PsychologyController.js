@@ -207,7 +207,11 @@ const createReportToChildren = async (req, res) => {
 };
 
 const miSonsera = async (req, res) => {
-  const families = await prisma.familiy_secretary.findMany();
+  const families = await prisma.familiy_secretary.findMany({
+    where: {
+      status: 1,
+    },
+  });
 
   const data = await prisma.user_roles.findMany({
     where: {
