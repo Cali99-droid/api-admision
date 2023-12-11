@@ -11,7 +11,11 @@ class FamilyPsychologyRepository {
         user_id: userId,
       },
       select: {
-        family: true,
+        family: {
+          include: {
+            mainConyugue: true,
+          },
+        },
         applied: true,
         approved: true,
 
