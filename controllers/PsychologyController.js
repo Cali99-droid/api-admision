@@ -17,6 +17,7 @@ const getFamilies = async (req, res) => {
         name: f.family.name,
         applied: f.applied,
         approved: f.approved,
+        phone: f.family.mainConyugue.phone,
       };
     });
     res.status(201).json({
