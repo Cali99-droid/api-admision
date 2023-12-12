@@ -1,11 +1,10 @@
 import prisma from "../utils/prisma.js";
 
-class PsychologyRepository {
+class SecretaryRepository {
+  //**Familias asignadas por secretaria */
   async getAssignments() {
-    const data = prisma.psy_evaluation.findMany({
+    const data = prisma.familiy_secretary.findMany({
       select: {
-        applied: true,
-        approved: true,
         family: true,
         user: {
           select: {
@@ -17,7 +16,7 @@ class PsychologyRepository {
 
     return data;
   }
-
+  //** familias por secretaria */
   async getFamiliesByUser(userId) {
     const data = prisma.psy_evaluation.findMany({
       where: {
@@ -86,4 +85,4 @@ class PsychologyRepository {
   }
 }
 
-export default new PsychologyRepository();
+export default new SecretaryRepository();
