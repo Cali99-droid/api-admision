@@ -55,7 +55,7 @@ const getFamily = async (req, res) => {
     } else {
       status = true;
       children.forEach((c) => {
-        if (c.report.length < 2) {
+        if (c.report.length < 1) {
           status = false;
         }
       });
@@ -192,11 +192,11 @@ const createReportToChildren = async (req, res) => {
     return;
   }
   const image1 = await uploadImage(img1[0]);
-  const image2 = await uploadImage(img2[0]);
+  // const image2 = await uploadImage(img2[0]);
   const data1 = { doc: image1.imageName, children_id: parseInt(childrenId) };
-  const data2 = { doc: image2.imageName, children_id: parseInt(childrenId) };
+  // const data2 = { doc: image2.imageName, children_id: parseInt(childrenId) };
   const createReport1 = await PsychologyReportRepository.createReport(data1);
-  const createReport2 = await PsychologyReportRepository.createReport(data2);
+  // const createReport2 = await PsychologyReportRepository.createReport(data2);
   const data = { count: 2 };
   res.status(201).json({
     success: true,
