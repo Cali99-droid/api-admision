@@ -3,6 +3,7 @@ import express from "express";
 import { adminMiddleware } from "../middleware/session.js";
 import {
   getPsychologyAssignments,
+  getSecretaries,
   getSecretaryAssignments,
 } from "../controllers/AdminController.js";
 
@@ -14,5 +15,6 @@ router.get(
   adminMiddleware,
   getPsychologyAssignments
 );
+router.get("/secretaries", adminMiddleware, getSecretaries);
 
 export default router;
