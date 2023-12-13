@@ -30,7 +30,6 @@ const getFamilies = async (req, res) => {
   }
 };
 const getFamily = async (req, res) => {
-  const { user } = req;
   req = matchedData(req);
   const id = parseInt(req.id);
 
@@ -56,7 +55,7 @@ const getFamily = async (req, res) => {
     } else {
       status = true;
       children.forEach((c) => {
-        if (c.report.length < 2) {
+        if (c.report.length < 1) {
           status = false;
         }
       });
@@ -142,12 +141,12 @@ const createInterview = async (req, res) => {
   // })
 };
 const createReportToChildren = async (req, res) => {
-  const { img1, img2 } = req.files;
+  const { img1 } = req.files;
   req = matchedData(req);
 
   const { personId } = req;
 
-  if (!img1 || !img2) {
+  if (!img1) {
     handleHttpError(res, "INSUFFICIENT_IMAGES");
     return;
   }
@@ -173,31 +172,31 @@ const createReportToChildren = async (req, res) => {
       deleteImage(rep.doc);
     });
     const image1 = await uploadImage(img1[0]);
-    const image2 = await uploadImage(img2[0]);
+    // const image2 = await uploadImage(img2[0]);
     const update1 = await PsychologyReportRepository.updateReport(
       {
         doc: image1.imageName,
       },
       report[0].id
     );
-    const update2 = await PsychologyReportRepository.updateReport(
-      {
-        doc: image2.imageName,
-      },
-      report[1].id
-    );
+    // const update2 = await PsychologyReportRepository.updateReport(
+    //   {
+    //     doc: image2.imageName,
+    //   },
+    //   report[1].id
+    // );
     res.status(201).json({
       success: true,
-      data: 2,
+      data: 1,
     });
     return;
   }
   const image1 = await uploadImage(img1[0]);
-  const image2 = await uploadImage(img2[0]);
+  // const image2 = await uploadImage(img2[0]);
   const data1 = { doc: image1.imageName, children_id: parseInt(childrenId) };
-  const data2 = { doc: image2.imageName, children_id: parseInt(childrenId) };
+  // const data2 = { doc: image2.imageName, children_id: parseInt(childrenId) };
   const createReport1 = await PsychologyReportRepository.createReport(data1);
-  const createReport2 = await PsychologyReportRepository.createReport(data2);
+  // const createReport2 = await PsychologyReportRepository.createReport(data2);
   const data = { count: 2 };
   res.status(201).json({
     success: true,

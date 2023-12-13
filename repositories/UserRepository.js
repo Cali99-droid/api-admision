@@ -39,6 +39,21 @@ class UserRepository {
       },
     });
   }
+  async getUsersByRole(role) {
+    return prisma.user_roles.findMany({
+      where: {
+        roles_id: role,
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            person: true,
+          },
+        },
+      },
+    });
+  }
   async getUserByPhone(phone) {
     return prisma.user.findFirst({
       where: {
