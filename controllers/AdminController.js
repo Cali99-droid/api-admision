@@ -1,5 +1,5 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
-import { body, matchedData } from "express-validator";
+
 import SecretaryRepository from "../repositories/SecretaryRepository.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
@@ -67,5 +67,29 @@ const getSecretaries = async (req, res) => {
     handleHttpError(res, "ERROR_UPDATE_AGREE");
   }
 };
+const getPsychologists = async (req, res) => {
+  try {
+    const secretaries = await UserRepository.getUsersByRole(3);
+    const data = secretaries.map(({ user }) => {
+      return {
+        id: user.id,
+        name: user.person.name,
+        lastname: user.person.lastname,
+      };
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_AGREE");
+  }
+};
 
-export { getSecretaryAssignments, getPsychologyAssignments, getSecretaries };
+export {
+  getSecretaryAssignments,
+  getPsychologyAssignments,
+  getSecretaries,
+  getPsychologists,
+};
