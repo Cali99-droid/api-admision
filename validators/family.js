@@ -122,7 +122,6 @@ export const validateDate = async (req, res, next) => {
   console.log(fechaMediaHoraDespues);
   const entrevistasEnEseRango = await prisma.quotes.findMany({
     where: {
-      psy_evaluation_id,
       date: {
         gte: fechaMediaHoraAntes,
         lt: fechaMediaHoraDespues,
