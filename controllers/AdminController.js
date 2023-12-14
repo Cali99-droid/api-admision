@@ -10,7 +10,7 @@ const getSecretaryAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
-        status: a.family.status === null ? 0 : a.family.status,
+        status: a.status,
         agent: a.user.person.name,
         date: a.family.create_time,
       };

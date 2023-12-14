@@ -5,6 +5,7 @@ class SecretaryRepository {
   async getAssignments() {
     const data = prisma.familiy_secretary.findMany({
       select: {
+        status: true,
         family: true,
         user: {
           select: {
