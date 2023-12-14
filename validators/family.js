@@ -95,13 +95,16 @@ export const validateDate = async (req, res, next) => {
   const { psy_evaluation_id, date } = req.body;
 
   // Verificar que la fecha no sea pasada
-  const fechaActual = new Date();
+  const fechaActual = new Date().getHours() + 5;
   const fechaEntrevista = new Date(date);
 
   if (fechaEntrevista < fechaActual) {
-    return res
-      .status(400)
-      .json({ error: "La fecha de la entrevista no puede ser en el pasado." });
+    handleHttpError(
+      res,
+      "La fecha de la entrevista no puede ser en el pasado.",
+      400
+    );
+    return;
   }
 
   // Verificar que no haya otra entrevista en la primera media hora
