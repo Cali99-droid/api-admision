@@ -311,6 +311,7 @@ model report_psy {
   @@index([children_id], map: "fk_interview_sheet_children1_idx")
 }
 
+//agregando model
 model quotes {
   id                Int            @id @default(autoincrement())
   date              DateTime?      @db.DateTime(0)
