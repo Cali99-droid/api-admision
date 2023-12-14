@@ -101,8 +101,8 @@ export const validateDate = async (req, res, next) => {
   // console.log(fechaEntrevista);
   const fechaEntrevista = new Date(date);
   // fechaEntrevista.setHours(fechaEntrevista.getHours() + 5);
-  console.log(fechaEntrevista);
-  console.log(fechaActual);
+  // console.log(fechaEntrevista);
+  // console.log(fechaActual);
   if (fechaEntrevista < fechaActual) {
     handleHttpError(
       res,
@@ -117,8 +117,9 @@ export const validateDate = async (req, res, next) => {
   fechaMediaHoraDespues.setMinutes(fechaMediaHoraDespues.getMinutes() + 30);
   const fechaMediaHoraAntes = new Date(fechaEntrevista);
   fechaMediaHoraAntes.setMinutes(fechaMediaHoraAntes.getMinutes() - 29);
-  // console.log(fechaMediaHoraAntes);
-  // console.log(fechaMediaHoraDespues);
+  console.log(fechaEntrevista);
+  console.log(fechaMediaHoraAntes);
+  console.log(fechaMediaHoraDespues);
   const entrevistasEnEseRango = await prisma.quotes.findMany({
     where: {
       psy_evaluation_id,
