@@ -24,6 +24,7 @@ class PsychologyRepository {
         user_id: userId,
       },
       select: {
+        id: true,
         family: {
           include: {
             mainConyugue: true,
@@ -31,7 +32,7 @@ class PsychologyRepository {
         },
         applied: true,
         approved: true,
-
+        quotes: true,
         // doc_interview_psy: true,
       },
     });
@@ -69,6 +70,7 @@ class PsychologyRepository {
             approved: true,
             doc1: true,
             doc2: true,
+            quotes: true,
           },
         },
         // doc_interview_psy: true,

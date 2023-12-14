@@ -18,6 +18,11 @@ const getFamilies = async (req, res) => {
         applied: f.applied,
         approved: f.approved,
         phone: f.family.mainConyugue.phone,
+        date: f.quotes[0]?.date === undefined ? "pending" : f.quotes[0]?.date,
+        status:
+          f.quotes[0]?.status === undefined ? "pending" : f.quotes[0]?.status,
+        idCitation: f.quotes[0]?.id === undefined ? null : f.quotes[0]?.id,
+        idEvaluation: f.id,
       };
     });
     res.status(201).json({
@@ -77,6 +82,8 @@ const getFamily = async (req, res) => {
       doc2: evPsy?.doc2 || null,
       children,
       status,
+      date:
+        evPsy.quotes[0]?.date === undefined ? "pending" : evPsy.quotes[0]?.date,
     };
     res.status(201).json({
       success: true,
@@ -131,6 +138,22 @@ const createInterview = async (req, res) => {
       id: evPsy.id,
     },
   });
+  const citation = await prisma.quotes.findMany({
+    where: {
+      psy_evaluation_id: updateEv.id,
+    },
+  });
+  if (citation) {
+    const updateAttendaceQuote = await prisma.quotes.update({
+      data: {
+        status: "completed",
+      },
+      where: {
+        id: citation.id,
+      },
+    });
+  }
+
   return res.status(201).json({
     success: true,
     data: updateEv,
@@ -205,63 +228,175 @@ const createReportToChildren = async (req, res) => {
   return;
 };
 
-const miSonsera = async (req, res) => {
-  const families = await prisma.familiy_secretary.findMany({
-    where: {
-      status: 1,
-    },
-  });
+const createCitation = async (req, res) => {
+  try {
+    const { psy_evaluation_id, date } = req.body;
 
-  const data = await prisma.user_roles.findMany({
-    where: {
-      roles_id: 3,
-    },
-    select: {
-      user: true,
-    },
-  });
-  const secretaries = data.map((dat) => dat.user);
-
-  // Obtener la cantidad actual de familias asignadas a cada secretaria
-  const familySecretaryRelations = await prisma.psy_evaluation.findMany();
-  const asignaments = {};
-  secretaries.forEach((secretary) => {
-    const assignedFamilies = familySecretaryRelations.filter(
-      (rel) => rel.user_id === secretary.id
-    );
-    asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
-  });
-
-  // Asignar las familias no asignadas
-  families.forEach((family) => {
-    const secretariaIds = Object.keys(asignaments);
-    const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
-      asignaments[a].length < asignaments[b].length ? a : b
-    );
-    asignaments[secretariaMenosOcupada].push(family.family_id);
-  });
-  // Actualizar la base de datos con las asignaciones
-  const updatePromises = Object.entries(asignaments).map(
-    ([user_id, familiaIds]) => {
-      const data = familiaIds.map((id) => {
-        return { user_id: parseInt(user_id), family_id: id };
-      });
-
-      return prisma.psy_evaluation.createMany({
-        data,
-      });
-    }
-  );
-
-  await Promise.all(updatePromises);
-
-  res.json({ message: "Familias asignadas con éxito." });
+    const newCitation = await prisma.quotes.create({
+      data: {
+        psy_evaluation_id,
+        date: new Date(date),
+        status: "scheduled",
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data: newCitation,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_CREATE_CITATION");
+  }
 };
+const updateCitation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date } = req.body;
+
+    const newCitation = await prisma.quotes.updateMany({
+      where: {
+        psy_evaluation_id: parseInt(id),
+      },
+      data: {
+        date: new Date(date),
+        status: "rescheduled",
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data: newCitation,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_CREATE_CITATION");
+  }
+};
+const cancelCitation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateCitation = await prisma.quotes.update({
+      data: {
+        status: "not_present",
+      },
+      where: {
+        id: parseInt(id),
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data: updateCitation,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_CANCEL_CITATION");
+  }
+};
+const getCitations = async (req, res) => {
+  const { user } = req;
+
+  try {
+    const s = await PsychologyRepository.getFamiliesByUser(user.id);
+
+    const da = s.filter((p) => p.quotes[0]?.id);
+    const quotes = da.map((p) => {
+      if (p.quotes[0]?.id) {
+        return {
+          id: p.quotes[0]?.id,
+          date: p.quotes[0]?.date,
+          status: p.quotes[0]?.status,
+          family: p.family.name,
+        };
+      }
+    });
+    res.status(201).json({
+      success: true,
+      data: quotes,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_CITATION");
+  }
+};
+// const miSonsera = async (req, res) => {
+//   const families = await prisma.familiy_secretary.findMany({
+//     where: {
+//       status: 1,
+//     },
+//   });
+
+//   const data = await prisma.user_roles.findMany({
+//     where: {
+//       roles_id: 3,
+//     },
+//     select: {
+//       user: true,
+//     },
+//   });
+//   const secretaries = data.map((dat) => dat.user);
+
+//   // Obtener la cantidad actual de familias asignadas a cada secretaria
+//   const familySecretaryRelations = await prisma.psy_evaluation.findMany();
+//   const asignaments = {};
+//   secretaries.forEach((secretary) => {
+//     const assignedFamilies = familySecretaryRelations.filter(
+//       (rel) => rel.user_id === secretary.id
+//     );
+//     asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
+//   });
+
+//   // Asignar las familias no asignadas
+//   families.forEach((family) => {
+//     const secretariaIds = Object.keys(asignaments);
+//     const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
+//       asignaments[a].length < asignaments[b].length ? a : b
+//     );
+//     asignaments[secretariaMenosOcupada].push(family.family_id);
+//   });
+//   // Actualizar la base de datos con las asignaciones
+//   const updatePromises = Object.entries(asignaments).map(
+//     ([user_id, familiaIds]) => {
+//       const data = familiaIds.map((id) => {
+//         return { user_id: parseInt(user_id), family_id: id };
+//       });
+
+//       return prisma.psy_evaluation.createMany({
+//         data,
+//       });
+//     }
+//   );
+
+//   await Promise.all(updatePromises);
+
+//   res.json({ message: "Familias asignadas con éxito." });
+// };
 //  const getFamilies = (req, res) => {};
+
+const getCompleted = async (req, res) => {
+  try {
+    const { user } = req;
+    const familyAplieds = await PsychologyRepository.getFamiliesByUser(user.id);
+    const applied = familyAplieds.filter((f) => f.applied === 1);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        applied: applied.length,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_COMPLETED");
+  }
+};
 export {
   getFamilies,
   getFamily,
   createReportToChildren,
   createInterview,
-  miSonsera,
+  // miSonsera,
+  createCitation,
+  updateCitation,
+  cancelCitation,
+  getCitations,
+  getCompleted,
 };

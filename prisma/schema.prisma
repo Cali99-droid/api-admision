@@ -294,6 +294,7 @@ model psy_evaluation {
   doc_interview_psy doc_interview_psy[]
   family            family              @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_psy_evaluation_family1")
   user              user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_psy_evaluation_user1")
+  quotes            quotes[]
 
   @@index([family_id], map: "fk_psy_evaluation_family1_idx")
   @@index([user_id], map: "fk_psy_evaluation_user1_idx")
@@ -310,6 +311,16 @@ model report_psy {
   @@index([children_id], map: "fk_interview_sheet_children1_idx")
 }
 
+model quotes {
+  id                Int            @id @default(autoincrement())
+  date              DateTime?      @db.DateTime(0)
+  status            quotes_status?
+  psy_evaluation_id Int
+  psy_evaluation    psy_evaluation @relation(fields: [psy_evaluation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_quotes_psy_evaluation1")
+
+  @@index([psy_evaluation_id], map: "fk_quotes_psy_evaluation1_idx")
+}
+
 enum person_gender {
   M
   F
@@ -323,4 +334,11 @@ enum person_type_doc {
 enum person_role {
   P
   M
+}
+
+enum quotes_status {
+  scheduled
+  rescheduled
+  completed
+  not_present
 }

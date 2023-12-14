@@ -5,14 +5,22 @@ import {
   sessionPsychologyMiddleware,
 } from "../middleware/session.js";
 
-import { validatorGetFamily } from "../validators/family.js";
+import {
+  validateDate,
+  validatorGetFamily,
+  validatorQuote,
+} from "../validators/family.js";
 import { validatorMessage } from "../validators/message.js";
 import {
+  cancelCitation,
+  createCitation,
   createInterview,
   createReportToChildren,
+  getCitations,
+  getCompleted,
   getFamilies,
   getFamily,
-  miSonsera,
+  updateCitation,
 } from "../controllers/PsychologyController.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
@@ -43,10 +51,25 @@ router.post(
 );
 
 router.post(
-  "/gaa",
-  authMiddleware,
-
-  miSonsera
+  "/citation",
+  sessionPsychologyMiddleware,
+  validateDate,
+  createCitation
 );
+router.put(
+  "/citation/:id",
+  sessionPsychologyMiddleware,
+  validateDate,
+  updateCitation
+);
+router.put("/cancel-citation/:id", sessionPsychologyMiddleware, cancelCitation);
+router.get("/citation", sessionPsychologyMiddleware, getCitations);
+router.get("/completed", sessionPsychologyMiddleware, getCompleted);
+// router.post(
+//   "/gaa",
+//   authMiddleware,
+
+//   miSonsera change
+// );
 
 export default router;
