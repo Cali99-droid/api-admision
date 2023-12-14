@@ -22,7 +22,7 @@ const getFamilies = async (req, res) => {
         status:
           f.quotes[0]?.status === undefined ? "pending" : f.quotes[0]?.status,
         idCitation: f.quotes[0]?.id === undefined ? null : f.quotes[0]?.id,
-        idEvaluation: f.id,
+        psy_evaluation_id: f.id,
       };
     });
     res.status(201).json({
