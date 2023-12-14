@@ -143,7 +143,7 @@ const createInterview = async (req, res) => {
       psy_evaluation_id: updateEv.id,
     },
   });
-  if (citation) {
+  if (citation.length > 0) {
     const updateAttendaceQuote = await prisma.quotes.update({
       data: {
         status: "completed",
