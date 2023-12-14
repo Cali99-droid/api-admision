@@ -97,7 +97,7 @@ export const validateDate = async (req, res, next) => {
   // Verificar que la fecha no sea pasada
   const fechaActual = new Date();
   //añadir hora de diferencia
-  fechaActual.setHours(fechaActual.getHours() + 5);
+  // fechaActual.setHours(fechaActual.getHours() + 5);
   console.log(fechaActual);
   const fechaEntrevista = new Date(date);
 
