@@ -102,6 +102,7 @@ export const validateDate = async (req, res, next) => {
   const fechaEntrevista = new Date(date);
   fechaEntrevista.setHours(fechaEntrevista.getHours() + 5);
   console.log(fechaEntrevista);
+  console.log(fechaActual);
   if (fechaEntrevista < fechaActual) {
     handleHttpError(
       res,
