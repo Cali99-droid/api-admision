@@ -17,6 +17,7 @@ import {
   createInterview,
   createReportToChildren,
   getCitations,
+  getCompleted,
   getFamilies,
   getFamily,
   updateCitation,
@@ -63,6 +64,7 @@ router.put(
 );
 router.put("/cancel-citation/:id", sessionPsychologyMiddleware, cancelCitation);
 router.get("/citation", sessionPsychologyMiddleware, getCitations);
+router.get("/completed", sessionPsychologyMiddleware, getCompleted);
 // router.post(
 //   "/gaa",
 //   authMiddleware,

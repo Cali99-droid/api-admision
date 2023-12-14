@@ -370,6 +370,24 @@ const getCitations = async (req, res) => {
 //   res.json({ message: "Familias asignadas con éxito." });
 // };
 //  const getFamilies = (req, res) => {};
+
+const getCompleted = async (req, res) => {
+  try {
+    const { user } = req;
+    const familyAplieds = await PsychologyRepository.getFamiliesByUser(user.id);
+    const applied = familyAplieds.filter((f) => f.applied === 1);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        applied: applied.length,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_COMPLETED");
+  }
+};
 export {
   getFamilies,
   getFamily,
@@ -380,4 +398,5 @@ export {
   updateCitation,
   cancelCitation,
   getCitations,
+  getCompleted,
 };
