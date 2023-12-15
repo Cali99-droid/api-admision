@@ -149,7 +149,7 @@ const createInterview = async (req, res) => {
         status: "completed",
       },
       where: {
-        id: citation.id,
+        id: citation[0]?.id,
       },
     });
   }
@@ -274,12 +274,12 @@ const updateCitation = async (req, res) => {
 const cancelCitation = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateCitation = await prisma.quotes.update({
+    const updateCitation = await prisma.quotes.updateMany({
       data: {
         status: "not_present",
       },
       where: {
-        id: parseInt(id),
+        psy_evaluation_id: parseInt(id),
       },
     });
     res.status(201).json({
