@@ -2,6 +2,7 @@ import express from "express";
 
 import { sessionSecretaryMiddleware } from "../middleware/session.js";
 import {
+  deleteChildren,
   getFamilies,
   getFamily,
   getMessage,
@@ -47,4 +48,6 @@ router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
 router.post("/served/:id", sessionSecretaryMiddleware, setServed);
 router.get("/get-served", sessionSecretaryMiddleware, getServed);
 
+//children
+router.delete("/children/:id", sessionSecretaryMiddleware, deleteChildren);
 export default router;

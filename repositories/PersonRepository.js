@@ -24,6 +24,13 @@ class PersonRepository {
       data,
     });
   }
+  async deletePerson(id) {
+    return prisma.person.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }
 
 export default new PersonRepository();
