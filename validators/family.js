@@ -26,6 +26,17 @@ export const validatorGetFamily = [
     return validateResults(req, res, next);
   },
 ];
+export const validatorIdFamily = [
+  check("familyId")
+    .exists()
+    .notEmpty()
+    .withMessage("parameto id no valido")
+    .isNumeric()
+    .withMessage("el parametro no es un numero"),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 
 export const validatorHome = [
   body("address")
@@ -140,3 +151,55 @@ export const validateDate = async (req, res, next) => {
 
   next();
 };
+
+//validaciones de ev economica ('excelente', 'regular', 'malo', 'sn'
+export const validatorEconomic = [
+  body("result")
+    .trim()
+    .exists()
+    .notEmpty()
+    .isIn(["excelente", "regular", "malo", "sn"])
+    .withMessage("El campo result debe ser: excelente, regular, malo o sn"),
+  body("comment")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo comment no puede estar vacío"),
+  body("conclusion")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo conclusion no puede estar vacío")
+    .isIn(["apto", "no_apto"])
+    .withMessage("El campo conclusion debe ser apto o no_apto"),
+  body("family_id")
+    .isNumeric()
+    .withMessage("El campo family_id debe ser un numero "),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
+
+//validaciones de ev economica ('excelente', 'regular', 'malo', 'sn'
+export const validatorAntecedent = [
+  body("comment")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo comment no puede estar vacío"),
+  body("conclusion")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo conclusion no puede estar vacío")
+    .isIn(["apto", "no_apto"])
+    .withMessage("El campo conclusion debe ser apto o no_apto"),
+  body("family_id")
+    .isNumeric()
+    .withMessage("El campo family_id debe ser un numero "),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];

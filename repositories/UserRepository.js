@@ -61,6 +61,13 @@ class UserRepository {
       },
     });
   }
+  async getUserPermission(id) {
+    return prisma.auth.findMany({
+      where: {
+        user_id: id,
+      },
+    });
+  }
   async createUser(data) {
     return prisma.user.create({
       data,
