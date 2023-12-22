@@ -104,6 +104,6 @@ router.post(
   createAntecedent
 );
 
-router.get("/all-families", allMiddleware, getAllFamilies);
+router.get("/all-families",sessionSecretaryMiddleware, allMiddleware, getAllFamilies);
 
 export default router;
