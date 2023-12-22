@@ -616,7 +616,7 @@ const getAllFamilies = async (req, res) => {
               },
             },
             economic_evaluation: true,
-            background_assessmen:true,
+            background_assessment:true,
           },
         },
       },
