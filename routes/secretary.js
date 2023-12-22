@@ -7,6 +7,7 @@ import {
 } from "../middleware/session.js";
 import {
   deleteChildren,
+  getAllFamilies,
   getFamilies,
   getFamily,
   getMessage,
@@ -101,5 +102,7 @@ router.post(
   antecedentMiddleware,
   createAntecedent
 );
+
+router.get("/all-families", allMiddleware, getAllFamilies);
 
 export default router;
