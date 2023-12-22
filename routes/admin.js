@@ -2,10 +2,12 @@ import express from "express";
 
 import { adminMiddleware } from "../middleware/session.js";
 import {
+  getFamiliesEvaluationStatus,
   getPsychologists,
   getPsychologyAssignments,
   getSecretaries,
   getSecretaryAssignments,
+  getSuccessFamilies,
 } from "../controllers/AdminController.js";
 
 const router = express.Router();
@@ -18,5 +20,8 @@ router.get(
 );
 router.get("/secretaries", adminMiddleware, getSecretaries);
 router.get("/psychologists", adminMiddleware, getPsychologists);
+
+router.get("/success-families", adminMiddleware, getSuccessFamilies);
+router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
 
 export default router;

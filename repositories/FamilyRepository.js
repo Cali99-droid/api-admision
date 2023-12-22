@@ -1,53 +1,61 @@
 import prisma from "../utils/prisma.js";
 
 class FamilyRepository {
-  async getAllUsers() {
-    return prisma.user.findMany();
+  async getFamiliesWithEvaluationsApproved() {
+    return prisma.family.findMany({
+      where: {
+        psy_evaluation: {
+          some: {
+            approved: 1,
+          },
+        },
+        economic_evaluation: {
+          some: {
+            conclusion: "apto",
+          },
+        },
+        background_assessment: {
+          some: {
+            conclusion: "apto",
+          },
+        },
+      },
+      include: {
+        psy_evaluation: true,
+        economic_evaluation: true,
+        background_assessment: true,
+      },
+    });
   }
 
-  async getUserById(userId) {
-    return prisma.user.findUnique({
+  async getFamiliesWithEvaluationsStatus() {
+    return prisma.family.findMany({
       where: {
-        id: userId,
+        psy_evaluation: {
+          some: {
+            applied: 1,
+          },
+        },
+        economic_evaluation: {
+          some: {
+            conclusion: {
+              not: null,
+            },
+          },
+        },
+        background_assessment: {
+          some: {
+            conclusion: {
+              not: null,
+            },
+          },
+        },
       },
-    });
-  }
-  async getUserByEmail(email) {
-    return prisma.user.findUnique({
-      where: {
-        email,
+      include: {
+        psy_evaluation: true,
+        economic_evaluation: true,
+        background_assessment: true,
       },
-    });
-  }
-  async getUserByEmailErrorTest(email) {
-    const user = prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-
-    if (!user) {
-      throw new UserNotFoundError(`Person with ID ${email} not found`);
-    }
-    return user;
-  }
-  async getUserByToken(token) {
-    return prisma.user.findFirst({
-      where: {
-        token,
-      },
-    });
-  }
-  async getUserByPhone(phone) {
-    return prisma.user.findFirst({
-      where: {
-        phone,
-      },
-    });
-  }
-  async createUser(data) {
-    return prisma.user.create({
-      data,
     });
   }
   async updateUser(userId, data) {

@@ -240,6 +240,23 @@ const validateSession = async (req, res) => {
     handleHttpError(res, "ERROR_VALIDATE_SESSION");
   }
 };
+const getPermissions = async (req, res) => {
+  try {
+    const { user } = req;
+    if (!user) {
+      handleHttpError(res, "ERROR_VALIDATE_SESSION");
+      return;
+    }
+    const permissions = await UserRepository.getUserPermission(user.id);
+    res.status(200).json({
+      success: true,
+      data: permissions,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_VALIDATE_SESSION");
+  }
+};
 
 export {
   registerUser,
@@ -248,4 +265,5 @@ export {
   forgotPassword,
   getRoles,
   validateSession,
+  getPermissions,
 };

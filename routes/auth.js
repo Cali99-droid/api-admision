@@ -8,6 +8,7 @@ import {
 import {
   confirmEmail,
   forgotPassword,
+  getPermissions,
   getRoles,
   login,
   registerUser,
@@ -117,4 +118,5 @@ router.post("/forgot-password", validatorResetPass, forgotPassword);
 // router.post("/check", validatorResetPass, forgotPassword);
 router.get("/roles", getRoles);
 router.get("/validate-session", authMiddleware, validateSession);
+router.get("/permissions", authMiddleware, getPermissions);
 export default router;

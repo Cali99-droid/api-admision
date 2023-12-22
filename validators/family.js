@@ -26,6 +26,17 @@ export const validatorGetFamily = [
     return validateResults(req, res, next);
   },
 ];
+export const validatorIdFamily = [
+  check("familyId")
+    .exists()
+    .notEmpty()
+    .withMessage("parameto id no valido")
+    .isNumeric()
+    .withMessage("el parametro no es un numero"),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 
 export const validatorHome = [
   body("address")
@@ -96,12 +107,20 @@ export const validateDate = async (req, res, next) => {
 
   // Verificar que la fecha no sea pasada
   const fechaActual = new Date();
+  //añadir hora de diferencia
+  // fechaActual.setHours(fechaActual.getHours() + 5);
+  // console.log(fechaEntrevista);
   const fechaEntrevista = new Date(date);
-
+  // fechaEntrevista.setHours(fechaEntrevista.getHours() + 5);
+  // console.log(fechaEntrevista);
+  // console.log(fechaActual);
   if (fechaEntrevista < fechaActual) {
-    return res
-      .status(400)
-      .json({ error: "La fecha de la entrevista no puede ser en el pasado." });
+    handleHttpError(
+      res,
+      "La fecha de la entrevista no puede ser en el pasado.",
+      400
+    );
+    return;
   }
 
   // Verificar que no haya otra entrevista en la primera media hora
@@ -109,11 +128,11 @@ export const validateDate = async (req, res, next) => {
   fechaMediaHoraDespues.setMinutes(fechaMediaHoraDespues.getMinutes() + 30);
   const fechaMediaHoraAntes = new Date(fechaEntrevista);
   fechaMediaHoraAntes.setMinutes(fechaMediaHoraAntes.getMinutes() - 29);
-  // console.log(fechaMediaHoraAntes);
-  // console.log(fechaMediaHoraDespues);
+  console.log(fechaEntrevista);
+  console.log(fechaMediaHoraAntes);
+  console.log(fechaMediaHoraDespues);
   const entrevistasEnEseRango = await prisma.quotes.findMany({
     where: {
-      psy_evaluation_id,
       date: {
         gte: fechaMediaHoraAntes,
         lt: fechaMediaHoraDespues,
@@ -132,3 +151,55 @@ export const validateDate = async (req, res, next) => {
 
   next();
 };
+
+//validaciones de ev economica ('excelente', 'regular', 'malo', 'sn'
+export const validatorEconomic = [
+  body("result")
+    .trim()
+    .exists()
+    .notEmpty()
+    .isIn(["excelente", "regular", "malo", "sn"])
+    .withMessage("El campo result debe ser: excelente, regular, malo o sn"),
+  body("comment")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo comment no puede estar vacío"),
+  body("conclusion")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo conclusion no puede estar vacío")
+    .isIn(["apto", "no_apto"])
+    .withMessage("El campo conclusion debe ser apto o no_apto"),
+  body("family_id")
+    .isNumeric()
+    .withMessage("El campo family_id debe ser un numero "),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
+
+//validaciones de ev economica ('excelente', 'regular', 'malo', 'sn'
+export const validatorAntecedent = [
+  body("comment")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo comment no puede estar vacío"),
+  body("conclusion")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("El campo conclusion no puede estar vacío")
+    .isIn(["apto", "no_apto"])
+    .withMessage("El campo conclusion debe ser apto o no_apto"),
+  body("family_id")
+    .isNumeric()
+    .withMessage("El campo family_id debe ser un numero "),
+
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];

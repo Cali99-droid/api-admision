@@ -6,6 +6,7 @@ import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import client from "../utils/client.js";
 import sendMessageFromSecretary from "../message/fromUser.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
+import PersonRepository from "../repositories/PersonRepository.js";
 
 const getFamilies = async (req, res) => {
   try {
@@ -251,7 +252,7 @@ const getFamily = async (req, res) => {
       children,
       home,
       income,
-      served: family.familiy_secretary[0].status,
+      served: family.familiy_secretary[0]?.status,
     };
     res.status(200).json({
       success: true,
@@ -571,6 +572,27 @@ const getServed = async (req, res) => {
   });
 };
 
+const deleteChildren = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  try {
+    const children = await PersonRepository.getPersonById(id);
+    if (!children) {
+      handleHttpError(res, "NOT_EXISTS_CHILDREN");
+      return;
+    }
+
+    const deleteChildren = await PersonRepository.deletePerson(id);
+    res.status(201).json({
+      success: true,
+      data: deleteChildren,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_DELETE_CHILD");
+  }
+};
+
 export {
   getFamilies,
   getFamily,
@@ -583,4 +605,5 @@ export {
   getMessage,
   setServed,
   getServed,
+  deleteChildren,
 };

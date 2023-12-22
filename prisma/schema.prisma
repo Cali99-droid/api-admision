@@ -20,7 +20,7 @@ model children {
   update_time    DateTime?    @db.Timestamp(0)
   create_time    DateTime?    @default(now()) @db.Timestamp(0)
   district_id    String?      @db.VarChar(6)
-  person         person       @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_PERSON1")
+  person         person       @relation(fields: [person_id], references: [id], onDelete: Cascade, map: "fk_children_PERSON1")
   district       district?    @relation(fields: [district_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_district1")
   family         family       @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_children_family1")
   report_psy     report_psy[]
@@ -48,26 +48,28 @@ model doc {
   person_id   Int
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
-  person      person    @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_DOC_PERSON1")
+  person      person    @relation(fields: [person_id], references: [id], onDelete: Cascade, map: "fk_DOC_PERSON1")
 
   @@index([person_id], map: "fk_DOC_PERSON1_idx")
 }
 
 model family {
-  id                Int                 @id @default(autoincrement())
-  name              String              @db.VarChar(255)
-  mainParent        Int?                @map("main_parent")
-  parent            Int?
-  status            Int?                @default(0)
-  create_time       DateTime?           @default(now()) @db.Timestamp(0)
-  update_time       DateTime?           @db.Timestamp(0)
-  children          children[]
-  familiy_secretary familiy_secretary[]
-  mainConyugue      user?               @relation("family_main_parentTouser", fields: [mainParent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
-  conyugue          user?               @relation("family_parentTouser", fields: [parent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
-  home              home[]
-  income            income[]
-  psy_evaluation    psy_evaluation[]
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.VarChar(255)
+  mainParent            Int?                    @map("main_parent")
+  parent                Int?
+  status                Int?                    @default(0)
+  create_time           DateTime?               @default(now()) @db.Timestamp(0)
+  update_time           DateTime?               @db.Timestamp(0)
+  background_assessment background_assessment[]
+  children              children[]
+  economic_evaluation   economic_evaluation[]
+  familiy_secretary     familiy_secretary[]
+  mainConyugue          user?                   @relation("family_main_parentTouser", fields: [mainParent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER1")
+  conyugue              user?                   @relation("family_parentTouser", fields: [parent], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_family_USER2")
+  home                  home[]
+  income                income[]
+  psy_evaluation        psy_evaluation[]
 
   @@index([mainParent], map: "fk_family_USER1_idx")
   @@index([parent], map: "fk_family_USER2_idx")
@@ -165,6 +167,7 @@ model user {
   mauticId                        Int?
   agree                           Int?                @default(0)
   person_id                       Int
+  auth                            auth[]
   chat                            chat[]
   familiy_secretary               familiy_secretary[]
   family_family_main_parentTouser family[]            @relation("family_main_parentTouser")
@@ -198,7 +201,7 @@ model vacant {
   validate    Int?      @default(0)
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
-  children    children  @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_vacant_children1")
+  children    children  @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
 
   @@index([children_id], map: "fk_vacant_children1_idx")
 }
@@ -306,7 +309,7 @@ model report_psy {
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
   children_id Int
-  children    children  @relation(fields: [children_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_interview_sheet_children1")
+  children    children  @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_interview_sheet_children1")
 
   @@index([children_id], map: "fk_interview_sheet_children1_idx")
 }
@@ -319,6 +322,40 @@ model quotes {
   psy_evaluation    psy_evaluation @relation(fields: [psy_evaluation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_quotes_psy_evaluation1")
 
   @@index([psy_evaluation_id], map: "fk_quotes_psy_evaluation1_idx")
+}
+
+model background_assessment {
+  id          Int                               @id @default(autoincrement())
+  comment     String?                           @db.Text
+  conclusion  background_assessment_conclusion?
+  create_time DateTime?                         @default(now()) @db.Timestamp(0)
+  update_time DateTime?                         @db.Timestamp(0)
+  family_id   Int
+  family      family                            @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_background_assessment_family1")
+
+  @@index([family_id], map: "fk_background_assessment_family1_idx")
+}
+
+model economic_evaluation {
+  id          Int                             @id @default(autoincrement())
+  result      economic_evaluation_result?
+  comment     String?                         @db.Text
+  conclusion  economic_evaluation_conclusion?
+  create_time DateTime?                       @default(now()) @db.Timestamp(0)
+  update_time DateTime?                       @db.Timestamp(0)
+  family_id   Int
+  family      family                          @relation(fields: [family_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_economic_evaluation_family1")
+
+  @@index([family_id], map: "fk_economic_evaluation_family1_idx")
+}
+
+model auth {
+  id      Int     @id @default(autoincrement())
+  name    String? @db.VarChar(255)
+  user_id Int
+  user    user    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_auth_user1")
+
+  @@index([user_id], map: "fk_auth_user1_idx")
 }
 
 enum person_gender {
@@ -341,4 +378,21 @@ enum quotes_status {
   rescheduled
   completed
   not_present
+}
+
+enum economic_evaluation_result {
+  excelente
+  regular
+  malo
+  sn
+}
+
+enum background_assessment_conclusion {
+  apto
+  no_apto @map("no apto")
+}
+
+enum economic_evaluation_conclusion {
+  apto
+  no_apto @map("no apto")
 }
