@@ -656,7 +656,7 @@ const getAllFamilies = async (req, res) => {
         children: f.family.children.length,
         served: f.status,
         economic: f.family.economic_evaluation.length,
-        antecedent:f.family.background_assessmen.length,p
+        antecedent:f.family.background_assessment.length,
       };
     });
 
