@@ -10,6 +10,7 @@ import prisma from "../utils/prisma.js";
 const getFamilies = async (req, res) => {
   const { user } = req;
   try {
+    //commit
     const s = await PsychologyRepository.getFamiliesByUser(user.id);
     const data = s.map((f) => {
       return {
