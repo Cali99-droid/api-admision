@@ -7,6 +7,7 @@ import {
   getPsychologyAssignments,
   getSecretaries,
   getSecretaryAssignments,
+  getStatusFamilies,
   getSuccessFamilies,
 } from "../controllers/AdminController.js";
 
@@ -22,6 +23,11 @@ router.get("/secretaries", adminMiddleware, getSecretaries);
 router.get("/psychologists", adminMiddleware, getPsychologists);
 
 router.get("/success-families", adminMiddleware, getSuccessFamilies);
+router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+
+//dashboard
+
+router.get("/status-family", adminMiddleware, getStatusFamilies);
 router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
 
 export default router;

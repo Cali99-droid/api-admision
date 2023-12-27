@@ -58,12 +58,18 @@ class FamilyRepository {
       },
     });
   }
-  async updateUser(userId, data) {
-    return prisma.user.update({
-      where: {
-        id: userId,
+
+  async getFamiliesStatus() {
+    return prisma.familiy_secretary.findMany({
+      include: {
+        family: {
+          include: {
+            psy_evaluation: true,
+            economic_evaluation: true,
+            background_assessment: true,
+          },
+        },
       },
-      data,
     });
   }
 

@@ -138,6 +138,20 @@ const getFamiliesEvaluationStatus = async (req, res) => {
   }
 };
 
+const getStatusFamilies = async (req, res) => {
+  try {
+    const data = await FamilyRepository.getFamiliesStatus();
+    res.status(201).json({
+      success: true,
+      data,
+    });
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATUS");
+  }
+};
+
 export {
   getSecretaryAssignments,
   getPsychologyAssignments,
@@ -145,4 +159,5 @@ export {
   getPsychologists,
   getSuccessFamilies,
   getFamiliesEvaluationStatus,
+  getStatusFamilies,
 };
