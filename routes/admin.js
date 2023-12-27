@@ -28,6 +28,6 @@ router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
 //dashboard
 
 router.get("/status-family", adminMiddleware, getStatusFamilies);
-router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+// router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
 
 export default router;
