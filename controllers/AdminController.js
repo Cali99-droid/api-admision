@@ -34,7 +34,7 @@ const getPsychologyAssignments = async (req, res) => {
         id: a.family.id,
         name: a.family.name,
         applied: a.applied,
-        approved: a.approved,
+        approved: f.applied === 0 ? 3 : f.approved,
         agent: a.user.person.name,
         date: a.family.create_time,
       };
@@ -145,6 +145,7 @@ const getStatusFamilies = async (req, res) => {
       success: true,
       data,
     });
+
     console.log(data);
   } catch (error) {
     console.log(error);
