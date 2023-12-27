@@ -1,12 +1,14 @@
 import express from "express";
 
 import {
+  allMiddleware,
   antecedentMiddleware,
   economicMiddleware,
   sessionSecretaryMiddleware,
 } from "../middleware/session.js";
 import {
   deleteChildren,
+  getAllFamilies,
   getFamilies,
   getFamily,
   getMessage,
@@ -101,5 +103,7 @@ router.post(
   antecedentMiddleware,
   createAntecedent
 );
+
+router.get("/all-families",sessionSecretaryMiddleware, allMiddleware, getAllFamilies);
 
 export default router;

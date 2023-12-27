@@ -108,6 +108,30 @@ export const economicMiddleware = async (req, res, next) => {
     handleHttpError(res, "NOT_SESSION", 401);
   }
 };
+
+export const allMiddleware = async (req, res, next) => {
+  try {
+    const permissions = await prisma.auth.findMany({
+      where: {
+        user_id: req.user.id,
+      },
+    });
+    if (permissions.length <= 0) {
+      handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
+      return;
+    }
+
+    // const havePersissions = await validatePersissions(permissions, "economic");
+    // if (!havePersissions) {
+    //   handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
+    //   return;
+    // }
+
+    next();
+  } catch (e) {
+    handleHttpError(res, "NOT_SESSION", 401);
+  }
+};
 export const antecedentMiddleware = async (req, res, next) => {
   try {
     const permissions = await prisma.auth.findMany({
