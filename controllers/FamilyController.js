@@ -6,6 +6,7 @@ import prisma from "../utils/prisma.js";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
+import FamilyRepository from "../repositories/FamilyRepository.js";
 
 const store = async (req, res) => {
   try {
@@ -149,6 +150,48 @@ const show = async (req, res) => {
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_GET_FAMILIES");
+  }
+};
+const update = async (req, res) => {
+  try {
+    const { user } = req;
+
+    const { name, id } = matchedData(req);
+    const family = await FamilyRepository.getFamilyById(+id);
+    if (!family) {
+      handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+      return;
+    }
+    const updateFamily = await FamilyRepository.update(+id, { name });
+
+    res.status(201).json({
+      success: true,
+      data: updateFamily,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_FAMILY");
+  }
+};
+const destroy = async (req, res) => {
+  try {
+    const { user } = req;
+
+    const { id } = matchedData(req);
+    const family = await FamilyRepository.getFamilyById(+id);
+    if (!family) {
+      handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+      return;
+    }
+    const destroyFamily = await FamilyRepository.destroy(+id);
+
+    res.status(201).json({
+      success: true,
+      data: destroyFamily,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_FAMILY");
   }
 };
 
@@ -921,8 +964,10 @@ const setFamilyToSecretary = async (req, res) => {
 };
 export {
   store,
+  update,
   show,
   get,
+  destroy,
   saveHome,
   updateHome,
   getHome,

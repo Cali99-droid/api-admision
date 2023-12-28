@@ -1,6 +1,28 @@
 import prisma from "../utils/prisma.js";
 
 class FamilyRepository {
+  async getFamilyById(id) {
+    return prisma.family.findFirst({
+      where: {
+        id,
+      },
+    });
+  }
+  async update(id, data) {
+    return prisma.family.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+  async destroy(id) {
+    return prisma.family.delete({
+      where: {
+        id,
+      },
+    });
+  }
   async getFamiliesWithEvaluationsApproved() {
     return prisma.family.findMany({
       where: {
