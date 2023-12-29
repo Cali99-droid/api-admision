@@ -1,6 +1,28 @@
 import prisma from "../utils/prisma.js";
 
 class FamilyRepository {
+  async getFamilyById(id) {
+    return prisma.family.findFirst({
+      where: {
+        id,
+      },
+    });
+  }
+  async update(id, data) {
+    return prisma.family.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+  async destroy(id) {
+    return prisma.family.delete({
+      where: {
+        id,
+      },
+    });
+  }
   async getFamiliesWithEvaluationsApproved() {
     return prisma.family.findMany({
       where: {
@@ -58,12 +80,18 @@ class FamilyRepository {
       },
     });
   }
-  async updateUser(userId, data) {
-    return prisma.user.update({
-      where: {
-        id: userId,
+
+  async getFamiliesStatus() {
+    return prisma.familiy_secretary.findMany({
+      include: {
+        family: {
+          include: {
+            psy_evaluation: true,
+            economic_evaluation: true,
+            background_assessment: true,
+          },
+        },
       },
-      data,
     });
   }
 

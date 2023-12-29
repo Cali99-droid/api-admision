@@ -16,7 +16,7 @@ const store = async (req, res) => {
         code,
       },
     });
-    console.log(validateUser);
+
     if (!validateUser) {
       handleHttpError(res, "INVALID_CODE", 404);
       return;

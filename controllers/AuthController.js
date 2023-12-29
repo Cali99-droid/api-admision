@@ -76,7 +76,7 @@ const registerUser = async (req, res) => {
     const data = { id: user.id, email: user.email, name: person.name };
     res.status(201).json({
       success: true,
-      data: data,
+      data,
     });
   } catch (error) {
     console.log(error);

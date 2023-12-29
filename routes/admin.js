@@ -2,13 +2,18 @@ import express from "express";
 
 import { adminMiddleware } from "../middleware/session.js";
 import {
+  getAllVacants,
   getFamiliesEvaluationStatus,
+  getFilterByLevelGrade,
   getPsychologists,
   getPsychologyAssignments,
   getSecretaries,
   getSecretaryAssignments,
+  getStatusFamilies,
   getSuccessFamilies,
 } from "../controllers/AdminController.js";
+import { destroy, update } from "../controllers/FamilyController.js";
+import { validatorFamily, validatorGetFamily } from "../validators/family.js";
 
 const router = express.Router();
 
@@ -20,8 +25,30 @@ router.get(
 );
 router.get("/secretaries", adminMiddleware, getSecretaries);
 router.get("/psychologists", adminMiddleware, getPsychologists);
+/**Gestion familias */
+router.put(
+  "/family/:id",
+  adminMiddleware,
+  validatorFamily,
+  validatorGetFamily,
+  update
+);
+router.delete("/family/:id", adminMiddleware, validatorGetFamily, destroy);
 
+/**No usados */
 router.get("/success-families", adminMiddleware, getSuccessFamilies);
-router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+router.get("/status-families", adminMiddleware, getStatusFamilies);
+
+//dashboard
+// router.get("/statistics/", adminMiddleware, getFilterByLevelGrade);
+router.get(
+  "/statistics/vacant/:level/:grade",
+  adminMiddleware,
+  getFilterByLevelGrade
+);
+router.get("/statistics/vacant/all", adminMiddleware, getAllVacants);
+// router.get("/status-family", adminMiddleware, getStatusFamilies);
+// router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+//
 
 export default router;

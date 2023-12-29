@@ -12,7 +12,6 @@ const getFamilies = async (req, res) => {
   try {
     const { user } = req;
 
-    user.permi;
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: user.id,
@@ -616,7 +615,7 @@ const getAllFamilies = async (req, res) => {
               },
             },
             economic_evaluation: true,
-            background_assessment:true,
+            background_assessment: true,
           },
         },
       },
@@ -656,7 +655,7 @@ const getAllFamilies = async (req, res) => {
         children: f.family.children.length,
         served: f.status,
         economic: f.family.economic_evaluation.length || 0,
-        antecedent:f.family.background_assessment.length || 0,
+        antecedent: f.family.background_assessment.length || 0,
       };
     });
 

@@ -4,6 +4,7 @@ import SecretaryRepository from "../repositories/SecretaryRepository.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
+import VacantRepository from "../repositories/VacantRepository.js";
 const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments();
@@ -34,7 +35,7 @@ const getPsychologyAssignments = async (req, res) => {
         id: a.family.id,
         name: a.family.name,
         applied: a.applied,
-        approved: a.approved,
+        approved: a.applied === 0 ? 3 : a.approved,
         agent: a.user.person.name,
         date: a.family.create_time,
       };
@@ -112,6 +113,7 @@ const getSuccessFamilies = async (req, res) => {
   }
 };
 
+/**no usado */
 const getFamiliesEvaluationStatus = async (req, res) => {
   try {
     const families = await FamilyRepository.getFamiliesWithEvaluationsStatus();
@@ -138,6 +140,128 @@ const getFamiliesEvaluationStatus = async (req, res) => {
   }
 };
 
+const getStatusFamilies = async (req, res) => {
+  try {
+    const families = await FamilyRepository.getFamiliesStatus();
+    const format = families.map((f) => {
+      return {
+        id: f.family.id,
+        name: f.family.name,
+        inscription: f.family.create_time,
+        secretary: f.status === 1 ? true : false,
+        economic:
+          f.family.economic_evaluation[0]?.conclusion === "apto"
+            ? true
+            : f.family.economic_evaluation.length > 0
+            ? false
+            : "pending",
+        antecendent:
+          f.family.background_assessment[0]?.conclusion === "apto"
+            ? true
+            : f.family.background_assessment > 0
+            ? false
+            : "pending",
+        psychology:
+          f.family.psy_evaluation[0]?.approved === 1
+            ? true
+            : f.family.psy_evaluation.length > 0
+            ? false
+            : "pending",
+      };
+    });
+
+    res.status(201).json({
+      success: true,
+      data: format,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATUS");
+  }
+};
+
+const getFilterByLevelGrade = async (req, res) => {
+  try {
+    const { level, grade } = req.params;
+    const vacants = await VacantRepository.getUserByGradeAndNivel(level, grade);
+    const data = vacants.map((v) => {
+      return {
+        id: v.id,
+        grade: v.grade,
+        campus: v.campus,
+        children:
+          v.children.person.name +
+          " " +
+          v.children.person.lastname +
+          " " +
+          v.children.person.mLastname,
+        family: v.children.family.name,
+      };
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATISTICS");
+  }
+};
+const getAllVacants = async (req, res) => {
+  try {
+    const vacants = await VacantRepository.getAllVacants();
+    const data = vacants.map((v) => {
+      return {
+        id: v.id,
+        grade: v.grade,
+        level: v.level,
+        campus: v.campus,
+        children:
+          v.children.person.name +
+          " " +
+          v.children.person.lastname +
+          " " +
+          v.children.person.mLastname,
+        family: v.children.family.name,
+      };
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATISTICS");
+  }
+};
+const getStatistics = async (req, res) => {
+  try {
+    const vacants = await VacantRepository.getAllVacants();
+    const data = vacants.map((v) => {
+      return {
+        id: v.id,
+        grade: v.grade,
+        level: v.level,
+        campus: v.campus,
+        children:
+          v.children.person.name +
+          " " +
+          v.children.person.lastname +
+          " " +
+          v.children.person.mLastname,
+        family: v.children.family.name,
+      };
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATISTICS");
+  }
+};
+
 export {
   getSecretaryAssignments,
   getPsychologyAssignments,
@@ -145,4 +269,8 @@ export {
   getPsychologists,
   getSuccessFamilies,
   getFamiliesEvaluationStatus,
+  getStatusFamilies,
+  getAllVacants,
+  getFilterByLevelGrade,
+  getStatistics,
 };
