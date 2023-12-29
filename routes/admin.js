@@ -1,6 +1,6 @@
 import express from "express";
 
-import { adminMiddleware } from "../middleware/session.js";
+import { adminMiddleware, authMiddleware } from "../middleware/session.js";
 import {
   getAllVacants,
   getFamiliesEvaluationStatus,
@@ -28,7 +28,7 @@ router.get("/psychologists", adminMiddleware, getPsychologists);
 /**Gestion familias */
 router.put(
   "/family/:id",
-  adminMiddleware,
+  authMiddleware,
   validatorFamily,
   validatorGetFamily,
   update
