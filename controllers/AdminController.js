@@ -1,9 +1,67 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
-
+import { matchedData } from "express-validator";
 import SecretaryRepository from "../repositories/SecretaryRepository.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
+import UserRoleRepository from "../repositories/UserRoleRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await UserRepository.getAllUsers();
+    const data = users.map((u) => {
+      return {
+        id: u.id,
+        doc_number:u.person.doc_number,
+        name: u.person.name,
+        lastname: u.person.lastname,
+        mLastname: u.person.mLastname,
+        date: u.email,
+        phone:u.phone,
+        create_time: u.create_time,
+        mautic:u.mauticId,
+        user_roles:u.user_roles
+      };
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_USERS");
+  }
+};
+const createUserRole = async( req,res ) =>{
+  try {
+    req = matchedData(req);
+    const userCreate = await UserRoleRepository.createUserRole(req);
+    res.status(201).json({
+      success: true,
+      data:userCreate,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_CREATE_USER_ROLE");
+  }
+}
+const updateUserRole = async( req,res ) =>{
+  try {
+    const id = parseInt(req.params.id);
+    req = matchedData(req);
+    const dateUpdate = new Date();
+    console.log(id);
+    req = { update_time: dateUpdate, ...req };
+    console.log(req);
+    const userUpdate = await UserRoleRepository.updateUserRole(id,req);
+    res.status(201).json({
+       success: true,
+       data:userUpdate,
+     });
+  } catch (error) {
+    console.log(error);
+    // handleHttpError(res, "ERROR_CREATE_USER_ROLE");
+  }
+}
 const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments();
@@ -139,6 +197,9 @@ const getFamiliesEvaluationStatus = async (req, res) => {
 };
 
 export {
+  getAllUsers,
+  createUserRole,
+  updateUserRole,
   getSecretaryAssignments,
   getPsychologyAssignments,
   getSecretaries,

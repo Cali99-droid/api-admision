@@ -12,7 +12,19 @@ class UserRoleRepository {
       },
     });
   }
-
+  async createUserRole(data) {
+    return prisma.user_roles.create({
+      data,
+    });
+  }
+  async updateUserRole(idUserRole,data) {
+    return prisma.user_roles.update({
+      where:{
+        id:idUserRole,
+      },
+      data,
+    });
+  }
   // Otros métodos relacionados con el repositorio de usuario
 }
 
