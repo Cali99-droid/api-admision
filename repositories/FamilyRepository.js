@@ -89,8 +89,29 @@ class FamilyRepository {
             psy_evaluation: true,
             economic_evaluation: true,
             background_assessment: true,
+            children: true,
           },
         },
+      },
+      where: {
+        status: 1,
+      },
+    });
+  }
+  async getVacant() {
+    return prisma.children.findMany({
+      include: {
+        family: {
+          include: {
+            psy_evaluation: true,
+            economic_evaluation: true,
+            background_assessment: true,
+            familiy_secretary: true,
+            mainConyugue: true,
+          },
+        },
+        vacant: true,
+        person: true,
       },
     });
   }

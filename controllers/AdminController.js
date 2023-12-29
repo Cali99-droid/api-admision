@@ -262,6 +262,56 @@ const getStatistics = async (req, res) => {
   }
 };
 
+const getStatusFamilyAndChildren = async (req, res) => {
+  try {
+    const families = await FamilyRepository.getVacant();
+    const dat = families.filter(
+      (f) => f.family.familiy_secretary[0].status === 1
+    );
+    const format = dat.map((f) => {
+      return {
+        id: f.family.id,
+        children:
+          f.person.lastname + " " + f.person.mLastname + " " + f.person.name,
+        family: f.family.name,
+        inscription: f.family.create_time,
+        phone: f.family.mainConyugue.phone,
+        email: f.family.mainConyugue.email,
+        campus: f.vacant[0]?.campus,
+        level: f.vacant[0]?.level,
+        grade: f.vacant[0]?.grade,
+        secretary: f.family.familiy_secretary[0].status === 1 ? true : false,
+        economic:
+          f.family.economic_evaluation[0]?.conclusion === "apto"
+            ? true
+            : f.family.economic_evaluation.length > 0
+            ? false
+            : "pending",
+        antecendent:
+          f.family.background_assessment[0]?.conclusion === "apto"
+            ? true
+            : f.family.background_assessment > 0
+            ? false
+            : "pending",
+        psychology:
+          f.family.psy_evaluation[0]?.approved === 1
+            ? true
+            : f.family.psy_evaluation.length > 0
+            ? false
+            : "pending",
+      };
+    });
+
+    res.status(201).json({
+      success: true,
+      data: format,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_STATUS");
+  }
+};
+
 export {
   getSecretaryAssignments,
   getPsychologyAssignments,
@@ -273,4 +323,5 @@ export {
   getAllVacants,
   getFilterByLevelGrade,
   getStatistics,
+  getStatusFamilyAndChildren,
 };

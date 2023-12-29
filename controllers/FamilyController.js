@@ -197,8 +197,8 @@ const destroy = async (req, res) => {
     const destroyFamily = await FamilyRepository.destroy(+id);
     const logger = await prisma.deletion_log.create({
       data: {
-        table: `family delete id:${destroyFamily.id} name: ${destroyFamily.name}`,
-        user: user.id,
+        table: `delete id:${destroyFamily.id}${destroyFamily.name}`,
+        user: user.id + "",
       },
     });
     res.status(201).json({
