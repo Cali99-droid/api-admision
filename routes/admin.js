@@ -10,6 +10,7 @@ import {
   getSecretaries,
   getSecretaryAssignments,
   getStatusFamilies,
+  getStatusFamilyAndChildren,
   getSuccessFamilies,
 } from "../controllers/AdminController.js";
 import { destroy, update } from "../controllers/FamilyController.js";
@@ -37,7 +38,8 @@ router.delete("/family/:id", adminMiddleware, validatorGetFamily, destroy);
 
 /**No usados */
 router.get("/success-families", adminMiddleware, getSuccessFamilies);
-router.get("/status-families", adminMiddleware, getStatusFamilies);
+// router.get("/status-families", adminMiddleware, getStatusFamilies);
+router.get("/status-families", adminMiddleware, getStatusFamilyAndChildren);
 
 //dashboard
 // router.get("/statistics/", adminMiddleware, getFilterByLevelGrade);
