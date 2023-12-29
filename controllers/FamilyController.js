@@ -7,6 +7,7 @@ import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
+import sendMessageFromSecretary from "../message/fromUser.js";
 
 const store = async (req, res) => {
   try {
@@ -27,19 +28,7 @@ const store = async (req, res) => {
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
     const secretariaMenosOcupada = secretaries[0];
-    // return res.status(201).json({
-    //   success: true,
-    //   data: secretariaMenosOcupada,
-    // });
-    // const userExists = await prisma.user.findFirst({
-    //   where: {
-    //     id,
-    //   },
-    // });
-    // if (!userExists) {
-    //   handleHttpError(res, "USER_NOT_EXIST", 404);
-    //   return;
-    // }
+
     const AnotherFamily = await prisma.family.findFirst({
       where: {
         mainParent: user.id,
@@ -57,6 +46,9 @@ const store = async (req, res) => {
         where: {
           family_id: AnotherFamily.id,
         },
+        include: {
+          user: true,
+        },
       });
 
       const familyAsig = await prisma.familiy_secretary.create({
@@ -65,6 +57,14 @@ const store = async (req, res) => {
           family_id: family.id,
         },
       });
+      const phone = existFamilySecretary.user.phone;
+      const token = process.env.TOKEN;
+      const body = `Hola ${existFamilySecretary.user.email}, se te ha asignado una nueva familia: ${family.name}, ingresa a la plataforma para darle seguimiento 😉 `;
+      const sendNotification = await sendMessageFromSecretary(
+        phone,
+        body,
+        token
+      );
     } else {
       console.log("asignando como nuevo");
       const familyAsig = await prisma.familiy_secretary.create({
@@ -72,7 +72,18 @@ const store = async (req, res) => {
           user_id: secretariaMenosOcupada.id,
           family_id: family.id,
         },
+        include: {
+          user: true,
+        },
       });
+      const phone = familyAsig.user.phone;
+      const token = process.env.TOKEN;
+      const body = `Hola ${familyAsig.user.email}, se te ha asignado una nueva familia: *${family.name}*, ingresa a la plataforma para darle seguimiento 😉 `;
+      const sendNotification = await sendMessageFromSecretary(
+        phone,
+        body,
+        token
+      );
     }
 
     // console.log(secretariaMenosOcupada);
@@ -184,7 +195,12 @@ const destroy = async (req, res) => {
       return;
     }
     const destroyFamily = await FamilyRepository.destroy(+id);
-
+    const logger = await prisma.deletion_log.create({
+      data: {
+        table: `family delete id:${destroyFamily.id} name: ${destroyFamily.name}`,
+        user: user.id,
+      },
+    });
     res.status(201).json({
       success: true,
       data: destroyFamily,
