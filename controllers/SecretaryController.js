@@ -55,9 +55,11 @@ const getFamilies = async (req, res) => {
         email: f.family.mainConyugue.email,
         phone: f.family.mainConyugue.phone,
         nameParent:
-          f.family.mainConyugue.person.name +
+          f.family.mainConyugue.person.lastname +
           " " +
-          f.family.mainConyugue.person.lastname,
+          f.family.mainConyugue.person.mLastname +
+          " " +
+          f.family.mainConyugue.person.name,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,
