@@ -5,6 +5,8 @@ import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import VacantRepository from "../repositories/VacantRepository.js";
+import { getVacantSIGE } from "../utils/handleGetVacantSige.js";
+
 const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments();
@@ -264,12 +266,25 @@ const getStatistics = async (req, res) => {
 
 const getStatusFamilyAndChildren = async (req, res) => {
   try {
-    const families = await FamilyRepository.getVacant();
+    const [dataSIGE, families] = await Promise.all([
+      getVacantSIGE(),
+      FamilyRepository.getVacant()
+    ]);
+
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0].status === 1
     );
     const format = dat.map((f) => {
-      return {
+      const campus = parseInt(f.vacant[0]?.campus);
+      const nivel = parseInt(f.vacant[0]?.level);
+      const id_gra = parseInt(f.vacant[0]?.grade);
+
+      const getdataSIGE = dataSIGE.filter(x => (
+          x.sucursal === campus &&
+          x.nivel === nivel &&
+          x.id_gra === id_gra
+      ));
+      return { 
         id: f.family.id,
         children:
           f.person.lastname + " " + f.person.mLastname + " " + f.person.name,
@@ -280,6 +295,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
         campus: f.vacant[0]?.campus,
         level: f.vacant[0]?.level,
         grade: f.vacant[0]?.grade,
+        
+        vacants:
+            f.vacant[0]?.campus === undefined
+            ? undefined
+            : getdataSIGE[0].vacantes,
         secretary: f.family.familiy_secretary[0].status === 1 ? true : false,
         economic:
           f.family.economic_evaluation[0]?.conclusion === "apto"
@@ -299,9 +319,10 @@ const getStatusFamilyAndChildren = async (req, res) => {
             : f.family.psy_evaluation.length > 0
             ? false
             : "pending",
+        
       };
     });
-
+    
     res.status(201).json({
       success: true,
       data: format,
@@ -311,7 +332,6 @@ const getStatusFamilyAndChildren = async (req, res) => {
     handleHttpError(res, "ERROR_GET_STATUS");
   }
 };
-
 export {
   getSecretaryAssignments,
   getPsychologyAssignments,
