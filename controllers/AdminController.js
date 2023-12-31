@@ -46,20 +46,19 @@ const createUserRole = async( req,res ) =>{
 }
 const updateUserRole = async( req,res ) =>{
   try {
-    const id = parseInt(req.params.id);
+    const idUserRole = parseInt(req.params.id);
     req = matchedData(req);
     const dateUpdate = new Date();
-    console.log(id);
     req = { update_time: dateUpdate, ...req };
-    console.log(req);
-    const userUpdate = await UserRoleRepository.updateUserRole(id,req);
+    const {id, ... data} = req;
+    const userUpdate = await UserRoleRepository.updateUserRole(idUserRole,data);
     res.status(201).json({
        success: true,
        data:userUpdate,
      });
   } catch (error) {
     console.log(error);
-    // handleHttpError(res, "ERROR_CREATE_USER_ROLE");
+    handleHttpError(res, "ERROR_CREATE_USER_ROLE");
   }
 }
 const getSecretaryAssignments = async (req, res) => {

@@ -1,8 +1,8 @@
 import prisma from "../utils/prisma.js";
 
 class UserRoleRepository {
-  async getAllUsers() {
-    return prisma.user.findMany();
+  async getAllUsersRoles() {
+    return prisma.user_roles.findMany();
   }
   //commmit
   async getUserRolesByUser(userId) {
@@ -20,7 +20,7 @@ class UserRoleRepository {
   async updateUserRole(idUserRole,data) {
     return prisma.user_roles.update({
       where:{
-        id:idUserRole,
+        id:parseInt(idUserRole),
       },
       data,
     });

@@ -21,13 +21,16 @@ class UserRepository {
         user_roles:{
           
           select:{
+            id:true,
             roles:true,
+            create_time:true,
+            update_time:true,
           }
         },
       },
-      // where:{
-      //   NOT: [{ mauticId:null }]
-      // }
+      where:{
+        NOT: [{ mauticId:null }]
+      }
     });
   }
 
