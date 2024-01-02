@@ -268,7 +268,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
   try {
     const [dataSIGE, families] = await Promise.all([
       getVacantSIGE(),
-      FamilyRepository.getVacant()
+      FamilyRepository.getVacant(),
     ]);
 
     const dat = families.filter(
@@ -279,13 +279,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
       const nivel = parseInt(f.vacant[0]?.level);
       const id_gra = parseInt(f.vacant[0]?.grade);
 
-      const getdataSIGE = dataSIGE.filter(x => (
-          x.sucursal === campus &&
-          x.nivel === nivel &&
-          x.id_gra === id_gra
-      ));
-      return { 
-        id: f.family.id,
+      const getdataSIGE = dataSIGE.filter(
+        (x) => x.sucursal === campus && x.nivel === nivel && x.id_gra === id_gra
+      );
+      return {
+        id: f.id,
         children:
           f.person.lastname + " " + f.person.mLastname + " " + f.person.name,
         family: f.family.name,
@@ -295,9 +293,9 @@ const getStatusFamilyAndChildren = async (req, res) => {
         campus: f.vacant[0]?.campus,
         level: f.vacant[0]?.level,
         grade: f.vacant[0]?.grade,
-        
+
         vacants:
-            f.vacant[0]?.campus === undefined
+          f.vacant[0]?.campus === undefined
             ? undefined
             : getdataSIGE[0].vacantes,
         secretary: f.family.familiy_secretary[0].status === 1 ? true : false,
@@ -319,10 +317,9 @@ const getStatusFamilyAndChildren = async (req, res) => {
             : f.family.psy_evaluation.length > 0
             ? false
             : "pending",
-        
       };
     });
-    
+
     res.status(201).json({
       success: true,
       data: format,
@@ -330,6 +327,23 @@ const getStatusFamilyAndChildren = async (req, res) => {
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_GET_STATUS");
+  }
+};
+
+const assignVacant = async (req, res) => {
+  try {
+    const { idChildren } = req.params;
+    const data = await FamilyRepository.getFamilyMembers(+idChildren);
+    /**Migracion a SIGE */
+
+    /**ENVIO DE EMAIL */
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_ASSIGN_FAMILY");
   }
 };
 export {
@@ -344,4 +358,5 @@ export {
   getFilterByLevelGrade,
   getStatistics,
   getStatusFamilyAndChildren,
+  assignVacant,
 };
