@@ -6,9 +6,14 @@ import UserRepository from "../repositories/UserRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import VacantRepository from "../repositories/VacantRepository.js";
 import { getVacantSIGE } from "../utils/handleGetVacantSige.js";
-import { createFamilySIGE, createFamiliarsSIGE, createStudentSIGE} from "../utils/handleCreateFamilySige.js";
+import {
+  createFamilySIGE,
+  createFamiliarsSIGE,
+  createStudentSIGE,
+} from "../utils/handleCreateFamilySige.js";
 import { loginSIGE } from "../utils/handleLoginSige.js";
 import prisma from "../utils/prisma.js";
+import sendEmail from "../mautic/sendEmail.js";
 
 const getSecretaryAssignments = async (req, res) => {
   try {
@@ -321,6 +326,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
             : f.family.psy_evaluation.length > 0
             ? 2
             : 3,
+        status: f.vacant[0]?.status,
       };
     });
 
@@ -340,19 +346,52 @@ const assignVacant = async (req, res) => {
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     /**Migracion a SIGE */
     const token = await loginSIGE();
-    const respFamily = await createFamilySIGE(data.family.name, token);
-    const respCreateMainConyugue = await createFamiliarsSIGE(respFamily.result.id_gpf,data.family.mainConyugue, token);;
 
-    const respCreateConyugue = await createFamiliarsSIGE(respFamily.result.id_gpf,data.family.conyugue, token);
-    const respCreateStudent= await createStudentSIGE(respFamily.result.id_gpf,data.person, token);
+    /**Enviar email */
+    const NODE_ENV = process.env.NODE_ENV;
+    const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
+    const contactId =
+      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
+    const respMAutic = await sendEmail(contactId, emailId);
+    if (!respMAutic) {
+      console.log(error);
+      handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+      return;
+    }
+    const nameFamily = data.person.lastname + " " + data.person.mLastname;
+    const respFamily = await createFamilySIGE(nameFamily, token);
+    const respCreateMainConyugue = await createFamiliarsSIGE(
+      respFamily.result.id_gpf,
+      data.family.mainConyugue,
+      token
+    );
+    if (data.family.conyugue) {
+      const respCreateConyugue = await createFamiliarsSIGE(
+        respFamily.result.id_gpf,
+        data.family.conyugue,
+        token
+      );
+    }
+
+    const respCreateStudent = await createStudentSIGE(
+      respFamily.result.id_gpf,
+      data.person,
+      token
+    );
+    /**Actualizar Vacante */
+    const updateVacantStatus = await VacantRepository.updateVacant(
+      data.vacant[0].id,
+      { status: "1" }
+    );
 
     res.status(201).json({
-      success: true,  
+      success: true,
       data: {
         family: respFamily,
-        mainConyugue:respCreateMainConyugue,
-        conyugue:respCreateConyugue,
-        student:respCreateStudent,
+        mainConyugue: respCreateMainConyugue,
+        // conyugue: respCreateConyugue,
+        student: respCreateStudent,
+        updateVacantStatus,
       },
     });
   } catch (error) {
