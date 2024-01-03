@@ -6,6 +6,7 @@ import UserRepository from "../repositories/UserRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import VacantRepository from "../repositories/VacantRepository.js";
 import { getVacantSIGE } from "../utils/handleGetVacantSige.js";
+import { createFamilySIGE } from "../utils/handleCreateFamilySige.js";
 
 const getSecretaryAssignments = async (req, res) => {
   try {
@@ -290,9 +291,9 @@ const getStatusFamilyAndChildren = async (req, res) => {
         inscription: f.family.create_time,
         phone: f.family.mainConyugue.phone,
         email: f.family.mainConyugue.email,
-        campus: f.vacant[0]?.campus,
-        level: f.vacant[0]?.level,
-        grade: f.vacant[0]?.grade,
+        campus,
+        level,
+        grade: id_gra,
 
         vacants:
           f.vacant[0]?.campus === undefined
@@ -337,9 +338,14 @@ const assignVacant = async (req, res) => {
     /**Migracion a SIGE */
 
     /**ENVIO DE EMAIL */
+    // console.log(data);
+    const resp = await createFamilySIGE(data.family.name);
+
     res.status(201).json({
       success: true,
-      data,
+      data: {
+        family: data.family.name,
+      },
     });
   } catch (error) {
     console.log(error);

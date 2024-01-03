@@ -33,6 +33,7 @@
     "multer-s3": "^3.0.1",
     "node-cron": "^3.0.3",
     "nodemon": "^3.0.1",
+    "qs": "^6.11.2",
     "sharp": "^0.32.6",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
