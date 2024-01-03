@@ -298,25 +298,25 @@ const getStatusFamilyAndChildren = async (req, res) => {
           f.vacant[0]?.campus === undefined
             ? undefined
             : getdataSIGE[0].vacantes,
-        secretary: f.family.familiy_secretary[0].status === 1 ? true : false,
+        secretary: f.family.familiy_secretary[0].status === 1 ? 1 : 2,
         economic:
           f.family.economic_evaluation[0]?.conclusion === "apto"
-            ? true
+            ? 1
             : f.family.economic_evaluation.length > 0
-            ? false
-            : "pending",
+            ? 2
+            : 3,
         antecendent:
           f.family.background_assessment[0]?.conclusion === "apto"
-            ? true
+            ? 1
             : f.family.background_assessment > 0
-            ? false
-            : "pending",
+            ? 2
+            : 3,
         psychology:
           f.family.psy_evaluation[0]?.approved === 1
-            ? true
+            ? 1
             : f.family.psy_evaluation.length > 0
-            ? false
-            : "pending",
+            ? 2
+            : 3,
       };
     });
 
