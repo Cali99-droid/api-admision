@@ -292,7 +292,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
         phone: f.family.mainConyugue.phone,
         email: f.family.mainConyugue.email,
         campus,
-        level,
+        level: nivel,
         grade: id_gra,
 
         vacants:
