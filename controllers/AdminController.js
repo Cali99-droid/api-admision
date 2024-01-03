@@ -6,7 +6,9 @@ import UserRepository from "../repositories/UserRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import VacantRepository from "../repositories/VacantRepository.js";
 import { getVacantSIGE } from "../utils/handleGetVacantSige.js";
-import { createFamilySIGE } from "../utils/handleCreateFamilySige.js";
+import { createFamilySIGE, createFamiliarsSIGE, createStudentSIGE} from "../utils/handleCreateFamilySige.js";
+import { loginSIGE } from "../utils/handleLoginSige.js";
+import prisma from "../utils/prisma.js";
 
 const getSecretaryAssignments = async (req, res) => {
   try {
@@ -337,15 +339,20 @@ const assignVacant = async (req, res) => {
     const { idChildren } = req.params;
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     /**Migracion a SIGE */
+    const token = await loginSIGE();
+    const respFamily = await createFamilySIGE(data.family.name, token);
+    const respCreateMainConyugue = await createFamiliarsSIGE(respFamily.result.id_gpf,data.family.mainConyugue, token);;
 
-    /**ENVIO DE EMAIL */
-    // console.log(data);
-    const resp = await createFamilySIGE(data.family.name);
+    const respCreateConyugue = await createFamiliarsSIGE(respFamily.result.id_gpf,data.family.conyugue, token);
+    const respCreateStudent= await createStudentSIGE(respFamily.result.id_gpf,data.person, token);
 
     res.status(201).json({
-      success: true,
+      success: true,  
       data: {
-        family: data.family.name,
+        family: respFamily,
+        mainConyugue:respCreateMainConyugue,
+        conyugue:respCreateConyugue,
+        student:respCreateStudent,
       },
     });
   } catch (error) {
