@@ -5,6 +5,16 @@ import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import VacantRepository from "../repositories/VacantRepository.js";
+import { getVacantSIGE } from "../utils/handleGetVacantSige.js";
+import {
+  createFamilySIGE,
+  createFamiliarsSIGE,
+  createStudentSIGE,
+} from "../utils/handleCreateFamilySige.js";
+import { loginSIGE } from "../utils/handleLoginSige.js";
+import prisma from "../utils/prisma.js";
+import sendEmail from "../mautic/sendEmail.js";
+
 const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments();
@@ -264,41 +274,59 @@ const getStatistics = async (req, res) => {
 
 const getStatusFamilyAndChildren = async (req, res) => {
   try {
-    const families = await FamilyRepository.getVacant();
+    const [dataSIGE, families] = await Promise.all([
+      getVacantSIGE(),
+      FamilyRepository.getVacant(),
+    ]);
+
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0].status === 1
     );
     const format = dat.map((f) => {
+      const campus = parseInt(f.vacant[0]?.campus);
+      const nivel = parseInt(f.vacant[0]?.level);
+      const id_gra = parseInt(f.vacant[0]?.grade);
+
+      const getdataSIGE = dataSIGE.filter(
+        (x) => x.sucursal === campus && x.nivel === nivel && x.id_gra === id_gra
+      );
       return {
-        id: f.family.id,
+        id: f.id,
         children:
           f.person.lastname + " " + f.person.mLastname + " " + f.person.name,
+        gender: f.person.gender,
         family: f.family.name,
         inscription: f.family.create_time,
         phone: f.family.mainConyugue.phone,
         email: f.family.mainConyugue.email,
-        campus: f.vacant[0]?.campus,
-        level: f.vacant[0]?.level,
-        grade: f.vacant[0]?.grade,
-        secretary: f.family.familiy_secretary[0].status === 1 ? true : false,
+        campus,
+        level: nivel,
+        grade: id_gra,
+
+        vacants:
+          f.vacant[0]?.campus === undefined
+            ? undefined
+            : getdataSIGE[0].vacantes,
+        secretary: f.family.familiy_secretary[0].status === 1 ? 1 : 2,
         economic:
           f.family.economic_evaluation[0]?.conclusion === "apto"
-            ? true
+            ? 1
             : f.family.economic_evaluation.length > 0
-            ? false
-            : "pending",
+            ? 2
+            : 3,
         antecendent:
           f.family.background_assessment[0]?.conclusion === "apto"
-            ? true
+            ? 1
             : f.family.background_assessment > 0
-            ? false
-            : "pending",
+            ? 2
+            : 3,
         psychology:
           f.family.psy_evaluation[0]?.approved === 1
-            ? true
+            ? 1
             : f.family.psy_evaluation.length > 0
-            ? false
-            : "pending",
+            ? 2
+            : 3,
+        status: f.vacant[0]?.status,
       };
     });
 
@@ -312,6 +340,65 @@ const getStatusFamilyAndChildren = async (req, res) => {
   }
 };
 
+const assignVacant = async (req, res) => {
+  try {
+    const { idChildren } = req.params;
+    const data = await FamilyRepository.getFamilyMembers(+idChildren);
+    /**Migracion a SIGE */
+    const token = await loginSIGE();
+
+    /**Enviar email */
+    const NODE_ENV = process.env.NODE_ENV;
+    const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
+    const contactId =
+      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
+    const respMAutic = await sendEmail(contactId, emailId);
+    if (!respMAutic) {
+      console.log(error);
+      handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+      return;
+    }
+    const nameFamily = data.person.lastname + " " + data.person.mLastname;
+    const respFamily = await createFamilySIGE(nameFamily, token);
+    const respCreateMainConyugue = await createFamiliarsSIGE(
+      respFamily.result.id_gpf,
+      data.family.mainConyugue,
+      token
+    );
+    if (data.family.conyugue) {
+      const respCreateConyugue = await createFamiliarsSIGE(
+        respFamily.result.id_gpf,
+        data.family.conyugue,
+        token
+      );
+    }
+
+    const respCreateStudent = await createStudentSIGE(
+      respFamily.result.id_gpf,
+      data.person,
+      token
+    );
+    /**Actualizar Vacante */
+    const updateVacantStatus = await VacantRepository.updateVacant(
+      data.vacant[0].id,
+      { status: "1" }
+    );
+
+    res.status(201).json({
+      success: true,
+      data: {
+        family: respFamily,
+        mainConyugue: respCreateMainConyugue,
+        // conyugue: respCreateConyugue,
+        student: respCreateStudent,
+        updateVacantStatus,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_ASSIGN_FAMILY");
+  }
+};
 export {
   getSecretaryAssignments,
   getPsychologyAssignments,
@@ -324,4 +411,5 @@ export {
   getFilterByLevelGrade,
   getStatistics,
   getStatusFamilyAndChildren,
+  assignVacant,
 };

@@ -117,6 +117,31 @@ class FamilyRepository {
   }
 
   // Otros métodos relacionados con el repositorio de usuario
+  async getFamilyMembers(idChildren) {
+    return prisma.children.findUnique({
+      where: {
+        id: idChildren,
+      },
+      include: {
+        person: true,
+        vacant: true,
+        family: {
+          include: {
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
+            conyugue: {
+              include: {
+                person: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }
 
 export default new FamilyRepository();

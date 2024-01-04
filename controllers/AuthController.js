@@ -198,6 +198,7 @@ const forgotPassword = async (req, res) => {
     if (!resp) {
       console.log(error);
       handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+      return;
     }
 
     const data = { email: updateUser.email };

@@ -74,29 +74,16 @@ class VacantRepository {
       },
     });
   }
-  async getUserByPhone(phone) {
-    return prisma.user.findFirst({
-      where: {
-        phone,
-      },
-    });
-  }
-  async getUserPermission(id) {
-    return prisma.auth.findMany({
-      where: {
-        user_id: id,
-      },
-    });
-  }
+
   async createUser(data) {
     return prisma.user.create({
       data,
     });
   }
-  async updateUser(userId, data) {
-    return prisma.user.update({
+  async updateVacant(vacantId, data) {
+    return prisma.vacant.update({
       where: {
-        id: userId,
+        id: vacantId,
       },
       data,
     });
