@@ -525,6 +525,9 @@ const setServed = async (req, res) => {
       user_roles: {
         some: {
           roles_id: 3,
+          AND: {
+            status: 1,
+          },
         },
       },
     },

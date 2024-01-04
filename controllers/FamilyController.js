@@ -19,6 +19,9 @@ const store = async (req, res) => {
         user_roles: {
           some: {
             roles_id: 2,
+            AND: {
+              status: 1,
+            },
           },
         },
       },
@@ -27,6 +30,7 @@ const store = async (req, res) => {
       },
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
+    console.log(secretaries);
     const secretariaMenosOcupada = secretaries[0];
 
     const AnotherFamily = await prisma.family.findFirst({

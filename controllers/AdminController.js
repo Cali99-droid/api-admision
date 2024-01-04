@@ -174,7 +174,7 @@ const getStatusFamilies = async (req, res) => {
         psychology:
           f.family.psy_evaluation[0]?.approved === 1
             ? true
-            : f.family.psy_evaluation.length > 0
+            : f.family.psy_evaluation[0]?.approved === 0
             ? false
             : "pending",
       };
@@ -323,7 +323,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
         psychology:
           f.family.psy_evaluation[0]?.approved === 1
             ? 1
-            : f.family.psy_evaluation.length > 0
+            : f.family.psy_evaluation.approved === 0
             ? 2
             : 3,
         status: f.vacant[0]?.status,
