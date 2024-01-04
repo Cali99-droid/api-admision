@@ -37,7 +37,6 @@ router.put(
 );
 router.delete("/family/:id", adminMiddleware, validatorGetFamily, destroy);
 
-/**No usados */
 router.get("/success-families", adminMiddleware, getSuccessFamilies);
 // router.get("/status-families", adminMiddleware, getStatusFamilies);
 router.get("/status-families", adminMiddleware, getStatusFamilyAndChildren);
@@ -54,6 +53,6 @@ router.get("/statistics/vacant/all", adminMiddleware, getAllVacants);
 // router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
 //
 
-router.post("/assign/vacant/:idChildren", assignVacant);
+router.post("/assign/vacant/:idChildren", adminMiddleware, assignVacant);
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;
