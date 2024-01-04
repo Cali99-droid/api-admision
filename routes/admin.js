@@ -53,6 +53,6 @@ router.get("/statistics/vacant/all", adminMiddleware, getAllVacants);
 // router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
 //
 
-router.post("/assign/vacant/:idChildren", adminMiddleware, assignVacant);
+router.post("/assign/vacant/:idChildren", assignVacant);
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;
