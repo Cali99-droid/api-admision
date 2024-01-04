@@ -1,11 +1,12 @@
 import axios from "axios";
+import FormData from "form-data";
 export const getVacantSIGE = async () => {
   const loginUrl = process.env.SIGE_URL_LOGIN;
   const vacantUrl = process.env.SIGE_URL_VACANT;
   const user = process.env.SIGE_USER;
   const password = process.env.SIGE_PASSWORD;
-  const formData = new FormData();
 
+  const formData = new FormData();
   formData.append("login", user);
   formData.append("password", password);
 
