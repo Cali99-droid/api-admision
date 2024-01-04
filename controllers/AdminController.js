@@ -321,12 +321,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
             ? 2
             : 3,
         psychology:
-          f.family.psy_evaluation[0]?.approved === 1
-            ? 1
-            : f.family.psy_evaluation.approved === 0
-            ? 2
-            : 3,
+          f.family.psy_evaluation[0]?.applied === 0
+            ? 3
+            : f.family.psy_evaluation[0]?.approved,
         status: f.vacant[0]?.status,
+        //approved: a.applied === 0 ? 3 : a.approved,
       };
     });
 
