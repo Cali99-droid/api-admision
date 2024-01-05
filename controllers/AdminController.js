@@ -309,9 +309,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
         grade: id_gra,
 
         vacants:
-          f.vacant[0]?.campus === undefined
-            ? undefined
-            : getdataSIGE[0].vacantes,
+          f.vacant[0]?.campus === undefined ? 0 : getdataSIGE[0].vacantes,
         secretary: f.family.familiy_secretary[0].status === 1 ? 1 : 2,
         economic:
           f.family.economic_evaluation[0]?.conclusion === "apto"
