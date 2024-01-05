@@ -12,6 +12,7 @@ import {
   createStudentSIGE,
 } from "../utils/handleCreateFamilySige.js";
 import { loginSIGE } from "../utils/handleLoginSige.js";
+import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 
@@ -345,7 +346,6 @@ const assignVacant = async (req, res) => {
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     /**Migracion a SIGE */
     const token = await loginSIGE();
-
     /**Enviar email */
     const NODE_ENV = process.env.NODE_ENV;
     const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
@@ -357,13 +357,28 @@ const assignVacant = async (req, res) => {
       handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
       return;
     }
+    /**Validar Si existe Familia en SIGE */
+    const respVerifyFamilySIGE = await verifyFamilySIGE(data.person.lastname,data.person.mLastname,token);
+    if (respVerifyFamilySIGE.result === 1)
+    {
+      res.status(400).json({
+        success: false,
+        data: {
+           msg: 'Ya existe la Familia en SIGE',
+        },
+      });
+      return;
+    }
     const nameFamily = data.person.lastname + " " + data.person.mLastname;
+    /**Crear Familia SIGE */
     const respFamily = await createFamilySIGE(nameFamily, token);
+    /**Crear Conyugue Principal SIGE */
     const respCreateMainConyugue = await createFamiliarsSIGE(
       respFamily.result.id_gpf,
       data.family.mainConyugue,
       token
     );
+    /**Crear Conyugue SIGE */
     if (data.family.conyugue) {
       const respCreateConyugue = await createFamiliarsSIGE(
         respFamily.result.id_gpf,
@@ -371,7 +386,7 @@ const assignVacant = async (req, res) => {
         token
       );
     }
-
+    /**Crear Estudiante SIGE */
     const respCreateStudent = await createStudentSIGE(
       respFamily.result.id_gpf,
       data.person,
@@ -395,7 +410,7 @@ const assignVacant = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_ASSIGN_FAMILY");
+    // handleHttpError(res, "ERROR_ASSIGN_FAMILY");
   }
 };
 export {
