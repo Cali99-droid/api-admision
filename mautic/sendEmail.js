@@ -7,7 +7,7 @@ const NODE_ENV = process.env.NODE_ENV;
  * @param {*} emailId
  * @param {*} token
  */
-const sendEmail = async (id, emailId) => {
+const sendEmail = async (id, emailId, body) => {
   try {
     const apiUrl = process.env.MAUTIC_API_URL;
     const mauticUrl = process.env.MAUTIC_URL;
@@ -24,10 +24,14 @@ const sendEmail = async (id, emailId) => {
 
     const accessToken = authResponse.data.access_token;
 
-    // email con tokens
+    const data = {
+      tokens: {
+        body,
+      },
+    };
     const response = await axios.post(
       `${apiUrl}/emails/${emailId}/contact/${id}/send`,
-      {},
+      data,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

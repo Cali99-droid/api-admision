@@ -293,9 +293,13 @@ const getStatusFamilyAndChildren = async (req, res) => {
       );
       return {
         id: f.id,
-        children:
-          f.person.lastname + " " + f.person.mLastname + " " + f.person.name,
+        name: f.person.name,
+        lastname: f.person.lastname,
+        mLastname: f.person.mLastname,
         gender: f.person.gender,
+        dni: f.person.doc_number,
+        // ubigeo: f.person.ubigeo,
+        birthdate: f.person.birthdate,
         family: f.family.name,
         inscription: f.family.create_time,
         phone: f.family.mainConyugue.phone,
@@ -341,34 +345,64 @@ const getStatusFamilyAndChildren = async (req, res) => {
 };
 
 const assignVacant = async (req, res) => {
+  const sucursalMapping = {
+    1: "Local 1 - Jr. Huaylas 220",
+    2: "Local 2 - Einstinitos 2", //Local 2 - Jr. Augusto B. Leguia Nro 264
+    3: "Local 3 - Jr. Huaylas 245",
+  };
+
+  const nivelMapping = {
+    1: "Inicial",
+    2: "Primaria",
+    3: "Secundaria",
+  };
+  const inicialName = {
+    1: "3 años",
+    2: "4 años",
+    3: "5 años",
+  };
+  const NODE_ENV = process.env.NODE_ENV;
+  const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
   try {
     const { idChildren } = req.params;
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     /**Migracion a SIGE */
     const token = await loginSIGE();
-    /**Enviar email */
-    const NODE_ENV = process.env.NODE_ENV;
-    const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
-    const contactId =
-      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
-    const respMAutic = await sendEmail(contactId, emailId);
-    if (!respMAutic) {
-      console.log(error);
-      handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
-      return;
-    }
+
     /**Validar Si existe Familia en SIGE */
-    const respVerifyFamilySIGE = await verifyFamilySIGE(data.person.lastname,data.person.mLastname,token);
-    if (respVerifyFamilySIGE.result === 1)
-    {
-      res.status(400).json({
-        success: false,
-        data: {
-           msg: 'Ya existe la Familia en SIGE',
-        },
-      });
+    const respVerifyFamilySIGE = await verifyFamilySIGE(
+      data.person.lastname,
+      data.person.mLastname,
+      token
+    );
+    if (respVerifyFamilySIGE.result === 1) {
+      const updateVacantStatus = await VacantRepository.updateVacant(
+        data.vacant[0].id,
+        { status: "2" }
+      );
+      /**Enviar email */
+      const campus = sucursalMapping[updateVacantStatus.campus];
+      const nivel = nivelMapping[updateVacantStatus.level];
+      console.log(campus);
+      const nomenclatura =
+        updateVacantStatus.level == 1
+          ? inicialName[updateVacantStatus.grade]
+          : `${updateVacantStatus.grade}° grado`;
+
+      const body = `Detalle Vacante: ${campus},  ${nomenclatura} - ${nivel}`;
+      const contactId =
+        NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
+      const respMAutic = await sendEmail(contactId, emailId, body);
+      if (!respMAutic) {
+        console.log(error);
+        handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+        return;
+      }
+      handleHttpError(res, "Ya existe la familia en SIGE", 409);
       return;
     }
+
+    /**Si no existe familia crea en sige */
     const nameFamily = data.person.lastname + " " + data.person.mLastname;
     /**Crear Familia SIGE */
     const respFamily = await createFamilySIGE(nameFamily, token);
@@ -397,6 +431,20 @@ const assignVacant = async (req, res) => {
       data.vacant[0].id,
       { status: "1" }
     );
+    /**Enviar email */
+
+    const campus = sucursalMapping[updateVacantStatus.campus];
+    const nivel = nivelMapping[updateVacantStatus.level];
+
+    const body = `Detalle Vacante: ${campus}, ${updateVacantStatus.grade} grado de ${nivel}`;
+    const contactId =
+      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
+    const respMAutic = await sendEmail(contactId, emailId, body);
+    if (!respMAutic) {
+      console.log(error);
+      handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+      return;
+    }
 
     res.status(201).json({
       success: true,
