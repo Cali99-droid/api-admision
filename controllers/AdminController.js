@@ -442,7 +442,7 @@ const assignVacant = async (req, res) => {
 
     const body = `Detalle Vacante: ${campus},  ${nomenclatura} - ${nivel}`;
     const contactId =
-      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
+      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 21;
     const respMAutic = await sendEmail(contactId, emailId, body);
     if (!respMAutic) {
       console.log(error);
