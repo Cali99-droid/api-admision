@@ -360,8 +360,9 @@ const assignVacant = async (req, res) => {
     3: "5 años",
   };
   const NODE_ENV = process.env.NODE_ENV;
-  const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
+
   try {
+    const emailId = process.env.MAUTIC_ID_EMAIL_VACANT;
     const { idChildren } = req.params;
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     /**Migracion a SIGE */
@@ -430,11 +431,16 @@ const assignVacant = async (req, res) => {
       { status: "1" }
     );
     /**Enviar email */
-
     const campus = sucursalMapping[updateVacantStatus.campus];
     const nivel = nivelMapping[updateVacantStatus.level];
+    console.log(campus);
+    console.log(emailId);
+    const nomenclatura =
+      updateVacantStatus.level == 1
+        ? inicialName[updateVacantStatus.grade]
+        : `${updateVacantStatus.grade}° grado`;
 
-    const body = `Detalle Vacante: ${campus}, ${updateVacantStatus.grade} grado de ${nivel}`;
+    const body = `Detalle Vacante: ${campus},  ${nomenclatura} - ${nivel}`;
     const contactId =
       NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
     const respMAutic = await sendEmail(contactId, emailId, body);
