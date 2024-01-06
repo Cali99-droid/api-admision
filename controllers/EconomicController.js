@@ -42,6 +42,7 @@ const updateEconomic = async (req, res) => {
     req = matchedData(req);
     const data = req;
 
+    console.log(data);
     const updateEconomic = await EconomicRepository.updateEconomic(+id, data);
 
     res.status(201).json({

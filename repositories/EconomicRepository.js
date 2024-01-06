@@ -20,6 +20,9 @@ class EconomicRepository {
     });
   }
   async updateEconomic(economicId, data) {
+    const update_time = new Date();
+
+    data = { ...data, update_time };
     return prisma.economic_evaluation.update({
       where: {
         id: economicId,
