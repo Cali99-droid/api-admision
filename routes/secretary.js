@@ -31,6 +31,7 @@ import { validatorMessage } from "../validators/message.js";
 import {
   createEconomic,
   getEconomic,
+  updateEconomic,
 } from "../controllers/EconomicController.js";
 import {
   createAntecedent,
@@ -86,6 +87,13 @@ router.post(
   economicMiddleware,
   createEconomic
 );
+router.put(
+  "/economic/:id",
+  validatorEconomic,
+  sessionSecretaryMiddleware,
+  economicMiddleware,
+  updateEconomic
+);
 
 //ev antecedentes
 router.get(
@@ -104,6 +112,11 @@ router.post(
   createAntecedent
 );
 
-router.get("/all-families",sessionSecretaryMiddleware, allMiddleware, getAllFamilies);
+router.get(
+  "/all-families",
+  sessionSecretaryMiddleware,
+  allMiddleware,
+  getAllFamilies
+);
 
 export default router;
