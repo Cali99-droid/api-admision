@@ -57,6 +57,13 @@ export const sessionSecretaryMiddleware = async (req, res, next) => {
     const user = await prisma.user.findUnique({
       where: {
         id: dataToken["id"],
+        user_roles: {
+          some: {
+            roles_id: {
+              in: [2, 1], // Puedes ajustar los roles según tus necesidades
+            },
+          },
+        },
       },
       include: {
         user_roles: {
@@ -67,20 +74,22 @@ export const sessionSecretaryMiddleware = async (req, res, next) => {
         },
       },
     });
-    if (user.user_roles.length <= 0) {
-      handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
-      return;
-    }
-    const haveRol = await validateRol(user.user_roles, 2);
 
-    if (!haveRol) {
+    if (!user) {
       handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
       return;
     }
+    // const haveRol = await validateRol(user.user_roles, 2);
+
+    // if (!haveRol) {
+    //   handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
+    //   return;
+    // }
 
     req.user = user;
     next();
   } catch (e) {
+    console.log(e);
     handleHttpError(res, "NOT_SESSION", 401);
   }
 };
@@ -105,6 +114,7 @@ export const economicMiddleware = async (req, res, next) => {
 
     next();
   } catch (e) {
+    console.log(e);
     handleHttpError(res, "NOT_SESSION", 401);
   }
 };

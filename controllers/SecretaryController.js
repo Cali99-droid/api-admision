@@ -514,6 +514,17 @@ const setServed = async (req, res) => {
     where: {
       family_id: parseInt(id),
     },
+    include: {
+      family: {
+        include: {
+          children: {
+            include: {
+              person: true,
+            },
+          },
+        },
+      },
+    },
   });
   if (!family) {
     handleHttpError(res, "FAMILY_NOT_EXIST", 404);
@@ -539,7 +550,7 @@ const setServed = async (req, res) => {
   // console.log(psychology);
   const lessPsychology = psychology[0];
 
-  const updateFamily = await prisma.familiy_secretary.update({
+  const updateStatusFamily = await prisma.familiy_secretary.update({
     where: {
       id: family.id,
     },
@@ -547,6 +558,19 @@ const setServed = async (req, res) => {
       status: 1,
     },
   });
+  if (family.family.children.length > 0) {
+    const lastname = family.family.children[0].person.lastname.toUpperCase();
+    const mlastname = family.family.children[0].person.mLastname.toUpperCase();
+
+    const updateNameFamily = await prisma.family.update({
+      where: {
+        id: family.family.id,
+      },
+      data: {
+        name: lastname + " " + mlastname,
+      },
+    });
+  }
 
   const asigFamilyToPsy = await PsychologyRepository.assignFamily({
     user_id: lessPsychology.id,
@@ -555,7 +579,7 @@ const setServed = async (req, res) => {
   res.status(201).json({
     success: true,
     data: {
-      id: updateFamily.id,
+      id: updateStatusFamily.id,
     },
   });
 };
