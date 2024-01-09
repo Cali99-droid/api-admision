@@ -490,7 +490,7 @@ const changeNameFamily = async (req, res) => {
           familia.children[0].person.mLastname;
         await prisma.family.update({
           where: { id: familia.id },
-          data: { name: apellidosHijo },
+          data: { name: apellidosHijo.toLocaleUpperCase() },
         });
       }
     });
