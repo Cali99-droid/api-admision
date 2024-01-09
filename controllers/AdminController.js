@@ -465,6 +465,45 @@ const assignVacant = async (req, res) => {
     // handleHttpError(res, "ERROR_ASSIGN_FAMILY");
   }
 };
+
+/**Script cambiar nombre de la familia */
+const changeNameFamily = async (req, res) => {
+  try {
+    const familias = await prisma.family.findMany({
+      include: {
+        children: {
+          include: {
+            person: true,
+          },
+        },
+      },
+    });
+
+    // Actualizar el nombre de la familia con los apellidos del hijo
+    const actualizaciones = familias.map(async (familia) => {
+      // .map((hijo) => hijo.person.lastname + " " + hijo.person.mLastname)
+      // .join(" ");
+      if (familia.children.length > 0) {
+        const apellidosHijo =
+          familia.children[0].person.lastname +
+          " " +
+          familia.children[0].person.mLastname;
+        await prisma.family.update({
+          where: { id: familia.id },
+          data: { name: apellidosHijo },
+        });
+      }
+    });
+
+    await Promise.all(actualizaciones);
+
+    res
+      .status(200)
+      .json({ message: "Nombres de familia actualizados correctamente" });
+  } catch (error) {
+    console.log(error);
+  }
+};
 export {
   getSecretaryAssignments,
   getPsychologyAssignments,
@@ -478,4 +517,6 @@ export {
   getStatistics,
   getStatusFamilyAndChildren,
   assignVacant,
+  //sctipots
+  changeNameFamily,
 };

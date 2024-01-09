@@ -15,6 +15,7 @@ import {
   validateSession,
 } from "../controllers/AuthController.js";
 import { authMiddleware } from "../middleware/session.js";
+import { changeNameFamily } from "../controllers/AdminController.js";
 const router = express.Router();
 
 /**
@@ -119,4 +120,7 @@ router.post("/forgot-password", validatorResetPass, forgotPassword);
 router.get("/roles", getRoles);
 router.get("/validate-session", authMiddleware, validateSession);
 router.get("/permissions", authMiddleware, getPermissions);
+
+/**Scripts */
+router.post("/change", changeNameFamily);
 export default router;
