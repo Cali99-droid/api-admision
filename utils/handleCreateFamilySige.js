@@ -49,8 +49,8 @@ export const createFamiliarsSIGE = async (id_gpf, data, token) => {
       ? formData.append("id_tdc", 1)
       : formData.append("id_tdc", 3);
 
-    formData.append("nro_doc", data.person.doc_number);
-    formData.append("ubigeo", data.person.ubigeo);
+    formData.append("nro_doc", data.person.doc_number || "");
+    formData.append("ubigeo", data.person.ubigeo || "");
     /**El role P : PADRE Y M : MADRE */
     data.person.role === "P"
       ? /**Si es PADRE entonces es Genero Masculino y su id en SIGE ES :1  */

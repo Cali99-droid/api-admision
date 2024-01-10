@@ -293,6 +293,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
       );
       return {
         id: f.id,
+        idFamily: f.family.id,
         name: f.person.name,
         lastname: f.person.lastname,
         mLastname: f.person.mLastname,
