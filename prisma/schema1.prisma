@@ -1,24 +1,66 @@
 generator client {
-    provider = "prisma-client-js"
-    output   = "../node_modules/@prisma-db-1/client"
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma-db-1/client"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DB_URL")
+  provider = "mysql"
+  url      = env("DB_URL")
 }
 
 model schools {
-    id           Int     @id @default(autoincrement())
-    name         String  @db.VarChar(255)
-    level        String? @db.VarChar(255)
-    director     String? @db.VarChar(45)
-    telephone    String? @db.VarChar(45)
-    email        String? @db.VarChar(45)
-    web          String? @db.VarChar(45)
-    address      String? @db.VarChar(45)
-    ubigean      String? @db.VarChar(45)
-    region       String? @db.VarChar(45)
-    ugel         String? @db.VarChar(45)
-    registration String? @db.VarChar(45)
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  level        String   @db.VarChar(255)
+  director     String?  @db.VarChar(255)
+  telephone    String?  @db.VarChar(255)
+  email        String?  @db.VarChar(255)
+  web          String?  @db.VarChar(255)
+  address      String   @db.VarChar(255)
+  ubigean      String   @db.VarChar(255)
+  region       String   @db.VarChar(255)
+  ugel         String   @db.VarChar(255)
+  registration DateTime @default(now()) @db.Timestamp(0)
+  cod_modular  String   @db.VarChar(255)
+  cod_level    String   @db.VarChar(255)
+  cod_ugel     String   @db.VarChar(255)
+  state        String   @db.VarChar(255)
+}
+
+model answers {
+  id           Int        @id @default(autoincrement())
+  wording      String     @db.Text
+  right        String     @db.Char(1)
+  registration DateTime   @default(now()) @db.Timestamp(0)
+  questionId   Int?
+  questions    questions? @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_c38697a57844f52584abdb878d7")
+
+  @@index([questionId], map: "FK_c38697a57844f52584abdb878d7")
+}
+
+model locations {
+  id           Int      @id @default(autoincrement())
+  departament  String   @db.VarChar(255)
+  province     String   @db.VarChar(255)
+  district     String   @db.VarChar(255)
+  name         String   @db.VarChar(255)
+  registration DateTime @default(now()) @db.Timestamp(0)
+}
+
+model questions {
+  id              Int       @id @default(autoincrement())
+  tags            String    @db.VarChar(255)
+  level           String    @db.Char(1)
+  category        String    @db.Char(1)
+  contest_name    String    @db.VarChar(255)
+  contest_level   String    @db.VarChar(255)
+  contest_grade   String    @db.VarChar(255)
+  contest_year    String    @db.VarChar(255)
+  test_university String    @db.VarChar(255)
+  test_area       String    @db.VarChar(255)
+  test_year       String    @db.VarChar(255)
+  title           String    @db.Text
+  wording         String    @db.Text
+  registration    DateTime  @default(now()) @db.Timestamp(0)
+  answers         answers[]
 }

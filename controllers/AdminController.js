@@ -15,6 +15,7 @@ import { loginSIGE } from "../utils/handleLoginSige.js";
 import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
+import client from "../utils/client.js";
 
 const getSecretaryAssignments = async (req, res) => {
   try {
@@ -283,54 +284,74 @@ const getStatusFamilyAndChildren = async (req, res) => {
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0].status === 1
     );
-    const format = dat.map((f) => {
-      const campus = parseInt(f.vacant[0]?.campus);
-      const nivel = parseInt(f.vacant[0]?.level);
-      const id_gra = parseInt(f.vacant[0]?.grade);
+    const format = await Promise.all(
+      dat.map(async (f) => {
+        // Destructure with default values
+        const {
+          vacant: [{ campus, level, grade } = {}] = [],
+          schoolId,
+          family,
+          person,
+        } = f;
 
-      const getdataSIGE = dataSIGE.filter(
-        (x) => x.sucursal === campus && x.nivel === nivel && x.id_gra === id_gra
-      );
-      return {
-        id: f.id,
-        name: f.person.name,
-        lastname: f.person.lastname,
-        mLastname: f.person.mLastname,
-        gender: f.person.gender,
-        dni: f.person.doc_number,
-        // ubigeo: f.person.ubigeo,
-        birthdate: f.person.birthdate,
-        family: f.family.name,
-        inscription: f.family.create_time,
-        phone: f.family.mainConyugue.phone,
-        email: f.family.mainConyugue.email,
-        campus,
-        level: nivel,
-        grade: id_gra,
+        // Use filter directly in the function argument
+        const getdataSIGE = dataSIGE.filter(
+          (x) =>
+            x.sucursal === parseInt(campus) &&
+            x.nivel === parseInt(level) &&
+            x.id_gra === parseInt(grade)
+        );
 
-        vacants:
-          f.vacant[0]?.campus === undefined ? 0 : getdataSIGE[0].vacantes,
-        secretary: f.family.familiy_secretary[0].status === 1 ? 1 : 2,
-        economic:
-          f.family.economic_evaluation[0]?.conclusion === "apto"
-            ? 1
-            : f.family.economic_evaluation.length > 0
-            ? 2
-            : 3,
-        antecendent:
-          f.family.background_assessment[0]?.conclusion === "apto"
-            ? 1
-            : f.family.background_assessment > 0
-            ? 2
-            : 3,
-        psychology:
-          f.family.psy_evaluation[0]?.applied === 0
-            ? 3
-            : f.family.psy_evaluation[0]?.approved,
-        status: f.vacant[0]?.status,
-        //approved: a.applied === 0 ? 3 : a.approved,
-      };
-    });
+        // Use conditional operator for schools assignment
+        const school = schoolId
+          ? await client.schools.findFirst({
+              where: { id: schoolId },
+              select: { cod_modular: true, name: true },
+            })
+          : null;
+
+        return {
+          id: f.id,
+          idFamily: family.id,
+          name: person.name,
+          lastname: person.lastname,
+          mLastname: person.mLastname,
+          gender: person.gender,
+          dni: person.doc_number,
+
+          birthdate: person.birthdate,
+          family: family.name,
+          inscription: family.create_time,
+          phone: family.mainConyugue.phone,
+          email: family.mainConyugue.email,
+          campus: parseInt(campus),
+          level: parseInt(level),
+          grade: parseInt(grade),
+          vacants: campus === undefined ? 0 : getdataSIGE[0]?.vacantes || 0,
+          secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
+          economic:
+            family.economic_evaluation[0]?.conclusion === "apto"
+              ? 1
+              : family.economic_evaluation.length > 0
+              ? 2
+              : 3,
+          antecedent:
+            family.background_assessment[0]?.conclusion === "apto"
+              ? 1
+              : family.background_assessment.length > 0
+              ? 2
+              : 3,
+          psychology:
+            family.psy_evaluation[0]?.applied === 0
+              ? 3
+              : family.psy_evaluation[0]?.approved || 0,
+          status: f.vacant[0]?.status,
+
+          dataParent: family.mainConyugue.person,
+          school,
+        };
+      })
+    );
 
     res.status(201).json({
       success: true,

@@ -24,6 +24,7 @@ import {
 } from "../controllers/PsychologyController.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
+import { assignamentPsichology } from "../controllers/FamilyController.js";
 
 const router = express.Router();
 
@@ -65,6 +66,7 @@ router.put(
 router.put("/cancel-citation/:id", sessionPsychologyMiddleware, cancelCitation);
 router.get("/citation", sessionPsychologyMiddleware, getCitations);
 router.get("/completed", sessionPsychologyMiddleware, getCompleted);
+
 // router.post(
 //   "/gaa",
 //   authMiddleware,
