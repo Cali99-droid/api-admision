@@ -239,18 +239,16 @@ export const adminMiddleware = async (req, res, next) => {
       where: {
         id: dataToken["id"],
       },
-      include: {
-        user_roles: {
-          select: {
-            roles: true,
-            token_boss: true,
-          },
+      include:{
+        user_roles:{
+          select:{
+            roles:true,
+          }
         },
-      },
+      }
+
     });
-
     const haveRol = await validateRol(user.user_roles, 1);
-
     if (!haveRol) {
       handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
       return;

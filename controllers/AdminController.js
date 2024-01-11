@@ -1,8 +1,9 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
-
+import { matchedData } from "express-validator";
 import SecretaryRepository from "../repositories/SecretaryRepository.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
+import UserRoleRepository from "../repositories/UserRoleRepository.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import VacantRepository from "../repositories/VacantRepository.js";
 import { getVacantSIGE } from "../utils/handleGetVacantSige.js";
@@ -16,6 +17,77 @@ import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
+
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await UserRepository.getAllUsers();
+    const data = users.map((u) => {
+      return {
+        id: u.id,
+        doc_number:u.person.doc_number,
+        name: u.person.name,
+        lastname: u.person.lastname,
+        mLastname: u.person.mLastname,
+        date: u.email,
+        phone:u.phone,
+        create_time: u.create_time,
+        mautic:u.mauticId,
+        user_roles:u.user_roles
+      };
+    });
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_USERS");
+  }
+};
+const createUserRole = async( req,res ) =>{
+  try {
+    req = matchedData(req);
+    const userRoleCreate = await UserRoleRepository.createUserRole(req);
+    res.status(201).json({
+      success: true,
+      data:userRoleCreate,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_CREATE_USER_ROLE");
+  }
+}
+const updateUserRole = async( req,res ) =>{
+  try {
+    const idUserRole = parseInt(req.params.id);
+    req = matchedData(req);
+    const dateUpdate = new Date();
+    req = { update_time: dateUpdate, ...req };
+    const {id, ... data} = req;
+    const userRoleUpdate = await UserRoleRepository.updateUserRole(idUserRole,data);
+    res.status(201).json({
+       success: true,
+       data:userRoleUpdate,
+     });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_USER_ROLE");
+  }
+}
+const deleteUserRole = async( req,res ) =>{
+  try {
+    const idUserRole = parseInt(req.params.id);
+    const userRoleDelete = await UserRoleRepository.deleteUserRole(idUserRole);
+    res.status(201).json({
+       success: true,
+       data:userRoleDelete,
+     });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_DELETE_USER_ROLE");
+  }
+}
 
 const getSecretaryAssignments = async (req, res) => {
   try {
@@ -526,6 +598,10 @@ const changeNameFamily = async (req, res) => {
   }
 };
 export {
+  getAllUsers,
+  createUserRole,
+  updateUserRole,
+  deleteUserRole,
   getSecretaryAssignments,
   getPsychologyAssignments,
   getSecretaries,

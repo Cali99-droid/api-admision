@@ -3,7 +3,40 @@ import prisma from "../utils/prisma.js";
 
 class UserRepository {
   async getAllUsers() {
-    return prisma.user.findMany();
+    return prisma.user.findMany({
+      select:{
+        id: true,
+        email: true,
+        phone: true,
+        mauticId: true,
+        create_time:true,
+        person:{
+          select:{
+            name:true,
+            lastname:true,
+            mLastname:true,
+            doc_number:true,
+          }
+        },
+        user_roles:{
+          
+          select:{
+            id:true,
+            roles:true,
+            create_time:true,
+            update_time:true,
+            status:true,
+          },
+          where:{
+            status: 1,
+          }
+          
+        },
+      },
+      where:{
+        NOT: [{ mauticId:null }],
+      }
+    });
   }
 
   async getUserById(userId) {
