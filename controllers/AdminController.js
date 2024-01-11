@@ -34,10 +34,10 @@ const getAllUsers = async (req, res) => {
 const createUserRole = async( req,res ) =>{
   try {
     req = matchedData(req);
-    const userCreate = await UserRoleRepository.createUserRole(req);
+    const userRoleCreate = await UserRoleRepository.createUserRole(req);
     res.status(201).json({
       success: true,
-      data:userCreate,
+      data:userRoleCreate,
     });
   } catch (error) {
     console.log(error);
@@ -51,14 +51,27 @@ const updateUserRole = async( req,res ) =>{
     const dateUpdate = new Date();
     req = { update_time: dateUpdate, ...req };
     const {id, ... data} = req;
-    const userUpdate = await UserRoleRepository.updateUserRole(idUserRole,data);
+    const userRoleUpdate = await UserRoleRepository.updateUserRole(idUserRole,data);
     res.status(201).json({
        success: true,
-       data:userUpdate,
+       data:userRoleUpdate,
      });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_CREATE_USER_ROLE");
+    handleHttpError(res, "ERROR_UPDATE_USER_ROLE");
+  }
+}
+const deleteUserRole = async( req,res ) =>{
+  try {
+    const idUserRole = parseInt(req.params.id);
+    const userRoleDelete = await UserRoleRepository.deleteUserRole(idUserRole);
+    res.status(201).json({
+       success: true,
+       data:userRoleDelete,
+     });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_DELETE_USER_ROLE");
   }
 }
 const getSecretaryAssignments = async (req, res) => {
@@ -199,6 +212,7 @@ export {
   getAllUsers,
   createUserRole,
   updateUserRole,
+  deleteUserRole,
   getSecretaryAssignments,
   getPsychologyAssignments,
   getSecretaries,

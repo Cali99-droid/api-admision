@@ -11,8 +11,13 @@ import {
   getAllUsers,
   createUserRole,
   updateUserRole,
+  deleteUserRole,
 } from "../controllers/AdminController.js";
-import { validatorCreateUserRole,validatorUpdateUserRole } from "../validators/userRole.js";
+import { 
+  validatorCreateUserRole,
+  validatorUpdateUserRole,
+  validatorDeleteUserRole,
+} from "../validators/userRole.js";
 const router = express.Router();
 /**
  * Get all users
@@ -38,7 +43,7 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/users",adminMiddleware,getAllUsers);
+router.get("/users",getAllUsers);
 /**
  *
  * Route create user-role
@@ -97,6 +102,32 @@ router.post("/user-role",validatorCreateUserRole,adminMiddleware , createUserRol
  *
  */
 router.put("/user-role/:id",validatorUpdateUserRole, adminMiddleware, updateUserRole);
+/**
+ * Route delete user-role
+ * @openapi
+ * /admin/user-role/{id}:
+ *      delete:
+ *          tags:
+ *              - Admin
+ *          summary: "Eliminar el rol-user"
+ *          description: "Esta ruta es para Eliminar datos el rol-user "
+ *          security:
+ *            - bearerAuth: []
+ *          parameters:
+ *          - name: id
+ *            in: path
+ *            description: id de rol-user a la cual se eliminara su rol
+ *            required: true
+ *          responses:
+ *                  '201':
+ *                      description: los datos user-role fue eliminada correctamente
+ *                  '401':
+ *                      description: Error por validación de datos
+ *                  '403':
+ *                      description: No tiene permisos '403'
+ *
+ */
+router.delete("/user-role/:id",validatorDeleteUserRole, deleteUserRole);
 router.get("/secretary/assignments", adminMiddleware, getSecretaryAssignments);
 router.get(
   "/psychology/assignments",

@@ -14,7 +14,10 @@ class UserRoleRepository {
   }
   async createUserRole(data) {
     return prisma.user_roles.create({
-      data,
+      data: {
+        ...data,
+        status: 1,
+      },
     });
   }
   async updateUserRole(idUserRole,data) {
@@ -23,6 +26,14 @@ class UserRoleRepository {
         id:parseInt(idUserRole),
       },
       data,
+    });
+  }
+  async deleteUserRole(idUserRole) {
+    return prisma.user_roles.update({
+      where:{
+        id:parseInt(idUserRole),
+      },
+      data:{status:0},
     });
   }
   // Otros métodos relacionados con el repositorio de usuario

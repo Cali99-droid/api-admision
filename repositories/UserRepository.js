@@ -25,11 +25,16 @@ class UserRepository {
             roles:true,
             create_time:true,
             update_time:true,
+            status:true,
+          },
+          where:{
+            status: 1,
           }
+          
         },
       },
       where:{
-        NOT: [{ mauticId:null }]
+        NOT: [{ mauticId:null }],
       }
     });
   }

@@ -30,4 +30,10 @@ export const validatorUpdateUserRole = [
     return validateResults(req, res, next);
   },
 ];
+export const validatorDeleteUserRole = [
+  check('id').custom(userRoleIdExist),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 
