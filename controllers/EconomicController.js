@@ -43,6 +43,10 @@ const updateEconomic = async (req, res) => {
     const data = req;
 
     console.log(data);
+    const economic = await EconomicRepository.get(+id);
+    if (!economic) {
+      handleHttpError(res, "NOT_EXIST_ID", 404);
+    }
     const updateEconomic = await EconomicRepository.updateEconomic(+id, data);
 
     res.status(201).json({
