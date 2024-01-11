@@ -1,12 +1,14 @@
 import express from "express";
 
 import {
+  allMiddleware,
   antecedentMiddleware,
   economicMiddleware,
   sessionSecretaryMiddleware,
 } from "../middleware/session.js";
 import {
   deleteChildren,
+  getAllFamilies,
   getFamilies,
   getFamily,
   getMessage,
@@ -29,6 +31,7 @@ import { validatorMessage } from "../validators/message.js";
 import {
   createEconomic,
   getEconomic,
+  updateEconomic,
 } from "../controllers/EconomicController.js";
 import {
   createAntecedent,
@@ -84,6 +87,13 @@ router.post(
   economicMiddleware,
   createEconomic
 );
+router.put(
+  "/economic/:id",
+  validatorEconomic,
+  sessionSecretaryMiddleware,
+  economicMiddleware,
+  updateEconomic
+);
 
 //ev antecedentes
 router.get(
@@ -100,6 +110,13 @@ router.post(
   sessionSecretaryMiddleware,
   antecedentMiddleware,
   createAntecedent
+);
+
+router.get(
+  "/all-families",
+  sessionSecretaryMiddleware,
+  allMiddleware,
+  getAllFamilies
 );
 
 export default router;

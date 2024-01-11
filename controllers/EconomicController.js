@@ -42,15 +42,20 @@ const updateEconomic = async (req, res) => {
     req = matchedData(req);
     const data = req;
 
-    const createEconomic = await EconomicRepository.updateEconomic(id, data);
+    console.log(data);
+    const economic = await EconomicRepository.get(+id);
+    if (!economic) {
+      handleHttpError(res, "NOT_EXIST_ID", 404);
+    }
+    const updateEconomic = await EconomicRepository.updateEconomic(+id, data);
 
     res.status(201).json({
       success: true,
-      data: createEconomic,
+      data: updateEconomic,
     });
   } catch (e) {
     console.log(e);
-    handleHttpError(res, "ERROR_CREATE_ECONOMIC");
+    handleHttpError(res, "ERROR_UPDATE_ECONOMIC");
   }
 };
 

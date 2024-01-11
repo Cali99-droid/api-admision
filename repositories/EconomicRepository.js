@@ -2,6 +2,13 @@ import UserNotFoundError from "../errors/UserNotFoundError.js";
 import prisma from "../utils/prisma.js";
 
 class EconomicRepository {
+  async get(id) {
+    return prisma.economic_evaluation.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
   async getAllEconomic() {
     return prisma.economic_evaluation.findMany();
   }
@@ -20,6 +27,9 @@ class EconomicRepository {
     });
   }
   async updateEconomic(economicId, data) {
+    const update_time = new Date();
+
+    data = { ...data, update_time };
     return prisma.economic_evaluation.update({
       where: {
         id: economicId,

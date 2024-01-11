@@ -6,6 +6,8 @@ import prisma from "../utils/prisma.js";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
+import FamilyRepository from "../repositories/FamilyRepository.js";
+import sendMessageFromSecretary from "../message/fromUser.js";
 
 const store = async (req, res) => {
   try {
@@ -17,6 +19,9 @@ const store = async (req, res) => {
         user_roles: {
           some: {
             roles_id: 2,
+            AND: {
+              status: 1,
+            },
           },
         },
       },
@@ -25,20 +30,9 @@ const store = async (req, res) => {
       },
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
+    console.log(secretaries);
     const secretariaMenosOcupada = secretaries[0];
-    // return res.status(201).json({
-    //   success: true,
-    //   data: secretariaMenosOcupada,
-    // });
-    // const userExists = await prisma.user.findFirst({
-    //   where: {
-    //     id,
-    //   },
-    // });
-    // if (!userExists) {
-    //   handleHttpError(res, "USER_NOT_EXIST", 404);
-    //   return;
-    // }
+
     const AnotherFamily = await prisma.family.findFirst({
       where: {
         mainParent: user.id,
@@ -56,6 +50,9 @@ const store = async (req, res) => {
         where: {
           family_id: AnotherFamily.id,
         },
+        include: {
+          user: true,
+        },
       });
 
       const familyAsig = await prisma.familiy_secretary.create({
@@ -64,6 +61,14 @@ const store = async (req, res) => {
           family_id: family.id,
         },
       });
+      const phone = existFamilySecretary.user.phone;
+      const token = process.env.TOKEN;
+      const body = `Hola ${existFamilySecretary.user.email}, se te ha asignado una nueva familia: ${family.name}, ingresa a la plataforma para darle seguimiento 😉 `;
+      const sendNotification = await sendMessageFromSecretary(
+        phone,
+        body,
+        token
+      );
     } else {
       console.log("asignando como nuevo");
       const familyAsig = await prisma.familiy_secretary.create({
@@ -71,7 +76,18 @@ const store = async (req, res) => {
           user_id: secretariaMenosOcupada.id,
           family_id: family.id,
         },
+        include: {
+          user: true,
+        },
       });
+      const phone = familyAsig.user.phone;
+      const token = process.env.TOKEN;
+      const body = `Hola ${familyAsig.user.email}, se te ha asignado una nueva familia: *${family.name}*, ingresa a la plataforma para darle seguimiento 😉 `;
+      const sendNotification = await sendMessageFromSecretary(
+        phone,
+        body,
+        token
+      );
     }
 
     // console.log(secretariaMenosOcupada);
@@ -149,6 +165,53 @@ const show = async (req, res) => {
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_GET_FAMILIES");
+  }
+};
+const update = async (req, res) => {
+  try {
+    const { user } = req;
+
+    const { name, id } = matchedData(req);
+    const family = await FamilyRepository.getFamilyById(+id);
+    if (!family) {
+      handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+      return;
+    }
+    const updateFamily = await FamilyRepository.update(+id, { name });
+
+    res.status(201).json({
+      success: true,
+      data: updateFamily,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_FAMILY");
+  }
+};
+const destroy = async (req, res) => {
+  try {
+    const { user } = req;
+
+    const { id } = matchedData(req);
+    const family = await FamilyRepository.getFamilyById(+id);
+    if (!family) {
+      handleHttpError(res, "NOT_EXIST_FAMILY", 404);
+      return;
+    }
+    const destroyFamily = await FamilyRepository.destroy(+id);
+    const logger = await prisma.deletion_log.create({
+      data: {
+        table: `delete id:${destroyFamily.id}${destroyFamily.name}`,
+        user: user.id + "",
+      },
+    });
+    res.status(201).json({
+      success: true,
+      data: destroyFamily,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_UPDATE_FAMILY");
   }
 };
 
@@ -871,58 +934,105 @@ const getStatus = async (req, res) => {
   }
 };
 
-const setFamilyToSecretary = async (req, res) => {
-  const families = await prisma.family.findMany();
+// const setFamilyToSecretary = async (req, res) => {
+//   const families = await prisma.family.findMany();
 
-  const data = await prisma.user_roles.findMany({
-    where: {
-      roles_id: 2,
-    },
-    select: {
-      user: true,
-    },
-  });
-  const secretaries = data.map((dat) => dat.user);
+//   const data = await prisma.user_roles.findMany({
+//     where: {
+//       roles_id: 2,
+//     },
+//     select: {
+//       user: true,
+//     },
+//   });
+//   const secretaries = data.map((dat) => dat.user);
 
-  // Obtener la cantidad actual de familias asignadas a cada secretaria
-  const familySecretaryRelations = await prisma.familiy_secretary.findMany();
-  const asignaments = {};
-  secretaries.forEach((secretary) => {
-    const assignedFamilies = familySecretaryRelations.filter(
-      (rel) => rel.user_id === secretary.id
+//   // Obtener la cantidad actual de familias asignadas a cada secretaria
+//   const familySecretaryRelations = await prisma.familiy_secretary.findMany();
+//   const asignaments = {};
+//   secretaries.forEach((secretary) => {
+//     const assignedFamilies = familySecretaryRelations.filter(
+//       (rel) => rel.user_id === secretary.id
+//     );
+//     asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
+//   });
+
+//   // Asignar las familias no asignadas
+//   families.forEach((family) => {
+//     const secretariaIds = Object.keys(asignaments);
+//     const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
+//       asignaments[a].length < asignaments[b].length ? a : b
+//     );
+//     asignaments[secretariaMenosOcupada].push(family.id);
+//   });
+//   // Actualizar la base de datos con las asignaciones
+//   const updatePromises = Object.entries(asignaments).map(
+//     ([user_id, familiaIds]) => {
+//       const data = familiaIds.map((id) => {
+//         return { user_id: parseInt(user_id), family_id: id };
+//       });
+
+//       return prisma.familiy_secretary.createMany({
+//         data,
+//       });
+//     }
+//   );
+
+//   await Promise.all(updatePromises);
+
+//   res.json({ message: "Familias asignadas con éxito." });
+// };
+
+const assignamentSecretary = async (req, res) => {
+  try {
+    const { idFamily, idSecretary } = req.params;
+    console.log(idFamily, idSecretary);
+    const updatedAssignament = await FamilyRepository.setFamilyToSecretary(
+      +idFamily,
+      +idSecretary
     );
-    asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
-  });
-
-  // Asignar las familias no asignadas
-  families.forEach((family) => {
-    const secretariaIds = Object.keys(asignaments);
-    const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
-      asignaments[a].length < asignaments[b].length ? a : b
-    );
-    asignaments[secretariaMenosOcupada].push(family.id);
-  });
-  // Actualizar la base de datos con las asignaciones
-  const updatePromises = Object.entries(asignaments).map(
-    ([user_id, familiaIds]) => {
-      const data = familiaIds.map((id) => {
-        return { user_id: parseInt(user_id), family_id: id };
-      });
-
-      return prisma.familiy_secretary.createMany({
-        data,
-      });
+    res.status(200).json({
+      success: true,
+      updatedAssignament,
+    });
+  } catch (error) {
+    if (error.code === "P2003") {
+      handleHttpError(res, `Invalid idSecretary  , not found in db `, 400);
+      console.log(error);
+      return;
     }
-  );
-
-  await Promise.all(updatePromises);
-
-  res.json({ message: "Familias asignadas con éxito." });
+    handleHttpError(res, "ERROR_ASSIG_SECRETARY");
+    console.log(error);
+  }
+};
+const assignamentPsichology = async (req, res) => {
+  try {
+    const { idFamily, idPsychology } = req.params;
+    console.log(idFamily, idPsychology);
+    const updatedAssignament = await FamilyRepository.setFamilyToPsychology(
+      +idFamily,
+      +idPsychology
+    );
+    res.status(200).json({
+      success: true,
+      updatedAssignament,
+    });
+  } catch (error) {
+    if (error.code === "P2003") {
+      handleHttpError(res, `Invalid idPsychology  , not found in db `, 400);
+      console.log(error);
+      return;
+    }
+    handleHttpError(res, "ERROR_ASSIG_PSYCHOLOGY");
+    console.log(error);
+  }
 };
 export {
   store,
+  update,
   show,
   get,
+  destroy,
   saveHome,
   updateHome,
   getHome,
@@ -931,5 +1041,7 @@ export {
   getIncome,
   getSpouse,
   getStatus,
-  setFamilyToSecretary,
+  assignamentSecretary,
+  assignamentPsichology,
+  // setFamilyToSecretary,
 };

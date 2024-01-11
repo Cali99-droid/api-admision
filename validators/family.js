@@ -203,3 +203,21 @@ export const validatorAntecedent = [
     return validateResults(req, res, next);
   },
 ];
+
+export const validatorAssignament = [
+  check("idFamily")
+    .exists()
+    .notEmpty()
+    .withMessage("parameto idFamily no valido")
+    .isNumeric()
+    .withMessage("el parametro no es un numero"),
+  check("idPsychology")
+    .exists()
+    .notEmpty()
+    .withMessage("parameto idPsychology no valido")
+    .isNumeric()
+    .withMessage("el parametro no es un numero"),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];

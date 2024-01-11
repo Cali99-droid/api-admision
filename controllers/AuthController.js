@@ -76,7 +76,7 @@ const registerUser = async (req, res) => {
     const data = { id: user.id, email: user.email, name: person.name };
     res.status(201).json({
       success: true,
-      data: data,
+      data,
     });
   } catch (error) {
     console.log(error);
@@ -198,6 +198,7 @@ const forgotPassword = async (req, res) => {
     if (!resp) {
       console.log(error);
       handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+      return;
     }
 
     const data = { email: updateUser.email };

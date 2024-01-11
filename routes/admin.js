@@ -1,23 +1,34 @@
 import express from "express";
 
-import { adminMiddleware } from "../middleware/session.js";
+import { adminMiddleware, authMiddleware } from "../middleware/session.js";
 import {
+  assignVacant,
+  getAllVacants,
   getFamiliesEvaluationStatus,
+  getFilterByLevelGrade,
   getPsychologists,
   getPsychologyAssignments,
   getSecretaries,
   getSecretaryAssignments,
+  getStatusFamilies,
+  getStatusFamilyAndChildren,
   getSuccessFamilies,
   getAllUsers,
   createUserRole,
   updateUserRole,
   deleteUserRole,
 } from "../controllers/AdminController.js";
+
 import { 
   validatorCreateUserRole,
   validatorUpdateUserRole,
   validatorDeleteUserRole,
 } from "../validators/userRole.js";
+
+import { destroy, update } from "../controllers/FamilyController.js";
+import { validatorFamily, validatorGetFamily } from "../validators/family.js";
+
+
 const router = express.Router();
 /**
  * Get all users
@@ -136,8 +147,32 @@ router.get(
 );
 router.get("/secretaries", adminMiddleware, getSecretaries);
 router.get("/psychologists", adminMiddleware, getPsychologists);
+/**Gestion familias */
+router.put(
+  "/family/:id",
+  authMiddleware,
+  validatorFamily,
+  validatorGetFamily,
+  update
+);
+router.delete("/family/:id", adminMiddleware, validatorGetFamily, destroy);
 
 router.get("/success-families", adminMiddleware, getSuccessFamilies);
-router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+// router.get("/status-families", adminMiddleware, getStatusFamilies);
+router.get("/status-families", adminMiddleware, getStatusFamilyAndChildren);
 
+//dashboard
+// router.get("/statistics/", adminMiddleware, getFilterByLevelGrade);
+router.get(
+  "/statistics/vacant/:level/:grade",
+  adminMiddleware,
+  getFilterByLevelGrade
+);
+router.get("/statistics/vacant/all", adminMiddleware, getAllVacants);
+// router.get("/status-family", adminMiddleware, getStatusFamilies);
+// router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+//
+
+router.post("/assign/vacant/:idChildren", adminMiddleware, assignVacant);
+// router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;

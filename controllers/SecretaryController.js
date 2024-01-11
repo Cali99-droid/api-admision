@@ -11,6 +11,7 @@ import PersonRepository from "../repositories/PersonRepository.js";
 const getFamilies = async (req, res) => {
   try {
     const { user } = req;
+
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: user.id,
@@ -34,18 +35,18 @@ const getFamilies = async (req, res) => {
       },
     });
 
-    const verifyLevel = (level) => {
-      switch (level) {
-        case "1":
-          return "Inicial";
-        case "2":
-          return "Primaria";
-        case "3":
-          return "Secundaria";
-        default:
-          break;
-      }
-    };
+    // const verifyLevel = (level) => {
+    //   switch (level) {
+    //     case "1":
+    //       return "Inicial";
+    //     case "2":
+    //       return "Primaria";
+    //     case "3":
+    //       return "Secundaria";
+    //     default:
+    //       break;
+    //   }
+    // };
     const data = families.map((f) => {
       return {
         id: f.family.id,
@@ -54,9 +55,11 @@ const getFamilies = async (req, res) => {
         email: f.family.mainConyugue.email,
         phone: f.family.mainConyugue.phone,
         nameParent:
-          f.family.mainConyugue.person.name +
+          f.family.mainConyugue.person.lastname +
           " " +
-          f.family.mainConyugue.person.lastname,
+          f.family.mainConyugue.person.mLastname +
+          " " +
+          f.family.mainConyugue.person.name,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,
@@ -511,6 +514,17 @@ const setServed = async (req, res) => {
     where: {
       family_id: parseInt(id),
     },
+    include: {
+      family: {
+        include: {
+          children: {
+            include: {
+              person: true,
+            },
+          },
+        },
+      },
+    },
   });
   if (!family) {
     handleHttpError(res, "FAMILY_NOT_EXIST", 404);
@@ -522,6 +536,9 @@ const setServed = async (req, res) => {
       user_roles: {
         some: {
           roles_id: 3,
+          AND: {
+            status: 1,
+          },
         },
       },
     },
@@ -533,7 +550,7 @@ const setServed = async (req, res) => {
   // console.log(psychology);
   const lessPsychology = psychology[0];
 
-  const updateFamily = await prisma.familiy_secretary.update({
+  const updateStatusFamily = await prisma.familiy_secretary.update({
     where: {
       id: family.id,
     },
@@ -541,6 +558,19 @@ const setServed = async (req, res) => {
       status: 1,
     },
   });
+  if (family.family.children.length > 0) {
+    const lastname = family.family.children[0].person.lastname.toUpperCase();
+    const mlastname = family.family.children[0].person.mLastname.toUpperCase();
+
+    const updateNameFamily = await prisma.family.update({
+      where: {
+        id: family.family.id,
+      },
+      data: {
+        name: lastname + " " + mlastname,
+      },
+    });
+  }
 
   const asigFamilyToPsy = await PsychologyRepository.assignFamily({
     user_id: lessPsychology.id,
@@ -549,7 +579,7 @@ const setServed = async (req, res) => {
   res.status(201).json({
     success: true,
     data: {
-      id: updateFamily.id,
+      id: updateStatusFamily.id,
     },
   });
 };
@@ -593,6 +623,81 @@ const deleteChildren = async (req, res) => {
   }
 };
 
+const getAllFamilies = async (req, res) => {
+  try {
+    const { user } = req;
+
+    user.permi;
+    const families = await prisma.familiy_secretary.findMany({
+      select: {
+        status: true,
+        family: {
+          include: {
+            children: {
+              include: {
+                vacant: true,
+              },
+            },
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
+            economic_evaluation: true,
+            background_assessment: true,
+          },
+        },
+      },
+    });
+
+    // const verifyLevel = (level) => {
+    //   switch (level) {
+    //     case "1":
+    //       return "Inicial";
+    //     case "2":
+    //       return "Primaria";
+    //     case "3":
+    //       return "Secundaria";
+    //     default:
+    //       break;
+    //   }
+    // };
+    const data = families.map((f) => {
+      return {
+        id: f.family.id,
+
+        name: f.family.name,
+        email: f.family.mainConyugue.email,
+        phone: f.family.mainConyugue.phone,
+        nameParent:
+          f.family.mainConyugue.person.name +
+          " " +
+          f.family.mainConyugue.person.lastname,
+        vacant: f.family.children.map((child) => {
+          const vacant = {
+            level: child.vacant[0]?.level || null,
+            grade: child.vacant[0]?.grade || null,
+            campus: child.vacant[0]?.campus || null,
+          };
+          return vacant;
+        }),
+        children: f.family.children.length,
+        served: f.status,
+        economic: f.family.economic_evaluation.length || 0,
+        antecedent: f.family.background_assessment.length || 0,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_FAMILIES");
+  }
+};
+
 export {
   getFamilies,
   getFamily,
@@ -606,4 +711,5 @@ export {
   setServed,
   getServed,
   deleteChildren,
+  getAllFamilies,
 };
