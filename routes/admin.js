@@ -43,7 +43,7 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/users",getAllUsers);
+router.get("/users", adminMiddleware, getAllUsers);
 /**
  *
  * Route create user-role
@@ -70,7 +70,7 @@ router.get("/users",getAllUsers);
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/user-role",validatorCreateUserRole,adminMiddleware , createUserRole);
+router.post("/user-role", adminMiddleware, validatorCreateUserRole, createUserRole);
 /**
  * Route put user-role
  * @openapi
@@ -101,7 +101,7 @@ router.post("/user-role",validatorCreateUserRole,adminMiddleware , createUserRol
  *                      description: No tiene permisos '403'
  *
  */
-router.put("/user-role/:id",validatorUpdateUserRole, adminMiddleware, updateUserRole);
+router.put("/user-role/:id", adminMiddleware, validatorUpdateUserRole, updateUserRole);
 /**
  * Route delete user-role
  * @openapi
@@ -127,7 +127,7 @@ router.put("/user-role/:id",validatorUpdateUserRole, adminMiddleware, updateUser
  *                      description: No tiene permisos '403'
  *
  */
-router.delete("/user-role/:id",validatorDeleteUserRole, deleteUserRole);
+router.delete("/user-role/:id",adminMiddleware,validatorDeleteUserRole, deleteUserRole);
 router.get("/secretary/assignments", adminMiddleware, getSecretaryAssignments);
 router.get(
   "/psychology/assignments",
