@@ -1,5 +1,7 @@
 import express from "express";
 import {
+  assignamentPsichology,
+  assignamentSecretary,
   createIncome,
   get,
   getHome,
@@ -7,14 +9,18 @@ import {
   getSpouse,
   getStatus,
   saveHome,
-  setFamilyToSecretary,
   show,
   store,
   updateHome,
   updateIncome,
 } from "../controllers/FamilyController.js";
-import { authMiddleware } from "../middleware/session.js";
 import {
+  authMiddleware,
+  sessionPsychologyMiddleware,
+  sessionSecretaryMiddleware,
+} from "../middleware/session.js";
+import {
+  validatorAssignament,
   validatorFamily,
   validatorGetFamily,
   validatorHome,
@@ -369,6 +375,17 @@ router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
 router.get("/spouse/:id", validatorGetFamily, authMiddleware, getSpouse);
 
 router.get("/status/:id", validatorGetFamily, authMiddleware, getStatus);
-router.post("/assignament", authMiddleware, setFamilyToSecretary);
-
+router.put(
+  "/:idFamily/secretary/:idSecretary",
+  validatorAssignament,
+  sessionSecretaryMiddleware,
+  assignamentSecretary
+);
+/**actualizar assignacion */
+router.put(
+  "/:idFamily/psychology/:idPsychology",
+  validatorAssignament,
+  sessionSecretaryMiddleware,
+  assignamentPsichology
+);
 export default router;

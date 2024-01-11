@@ -33,7 +33,7 @@ export const createFamilySIGE = async (name, token) => {
 export const createFamiliarsSIGE = async (id_gpf, data, token) => {
   try {
     const formData = new FormData();
-
+    console.log(data.person);
     formData.append("id", "");
     formData.append("id_fam", "");
     formData.append("id_gpf", id_gpf);

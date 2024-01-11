@@ -934,53 +934,98 @@ const getStatus = async (req, res) => {
   }
 };
 
-const setFamilyToSecretary = async (req, res) => {
-  const families = await prisma.family.findMany();
+// const setFamilyToSecretary = async (req, res) => {
+//   const families = await prisma.family.findMany();
 
-  const data = await prisma.user_roles.findMany({
-    where: {
-      roles_id: 2,
-    },
-    select: {
-      user: true,
-    },
-  });
-  const secretaries = data.map((dat) => dat.user);
+//   const data = await prisma.user_roles.findMany({
+//     where: {
+//       roles_id: 2,
+//     },
+//     select: {
+//       user: true,
+//     },
+//   });
+//   const secretaries = data.map((dat) => dat.user);
 
-  // Obtener la cantidad actual de familias asignadas a cada secretaria
-  const familySecretaryRelations = await prisma.familiy_secretary.findMany();
-  const asignaments = {};
-  secretaries.forEach((secretary) => {
-    const assignedFamilies = familySecretaryRelations.filter(
-      (rel) => rel.user_id === secretary.id
+//   // Obtener la cantidad actual de familias asignadas a cada secretaria
+//   const familySecretaryRelations = await prisma.familiy_secretary.findMany();
+//   const asignaments = {};
+//   secretaries.forEach((secretary) => {
+//     const assignedFamilies = familySecretaryRelations.filter(
+//       (rel) => rel.user_id === secretary.id
+//     );
+//     asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
+//   });
+
+//   // Asignar las familias no asignadas
+//   families.forEach((family) => {
+//     const secretariaIds = Object.keys(asignaments);
+//     const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
+//       asignaments[a].length < asignaments[b].length ? a : b
+//     );
+//     asignaments[secretariaMenosOcupada].push(family.id);
+//   });
+//   // Actualizar la base de datos con las asignaciones
+//   const updatePromises = Object.entries(asignaments).map(
+//     ([user_id, familiaIds]) => {
+//       const data = familiaIds.map((id) => {
+//         return { user_id: parseInt(user_id), family_id: id };
+//       });
+
+//       return prisma.familiy_secretary.createMany({
+//         data,
+//       });
+//     }
+//   );
+
+//   await Promise.all(updatePromises);
+
+//   res.json({ message: "Familias asignadas con éxito." });
+// };
+
+const assignamentSecretary = async (req, res) => {
+  try {
+    const { idFamily, idSecretary } = req.params;
+    console.log(idFamily, idSecretary);
+    const updatedAssignament = await FamilyRepository.setFamilyToSecretary(
+      +idFamily,
+      +idSecretary
     );
-    asignaments[secretary.id] = assignedFamilies.map((rel) => rel.family_id);
-  });
-
-  // Asignar las familias no asignadas
-  families.forEach((family) => {
-    const secretariaIds = Object.keys(asignaments);
-    const secretariaMenosOcupada = secretariaIds.reduce((a, b) =>
-      asignaments[a].length < asignaments[b].length ? a : b
-    );
-    asignaments[secretariaMenosOcupada].push(family.id);
-  });
-  // Actualizar la base de datos con las asignaciones
-  const updatePromises = Object.entries(asignaments).map(
-    ([user_id, familiaIds]) => {
-      const data = familiaIds.map((id) => {
-        return { user_id: parseInt(user_id), family_id: id };
-      });
-
-      return prisma.familiy_secretary.createMany({
-        data,
-      });
+    res.status(200).json({
+      success: true,
+      updatedAssignament,
+    });
+  } catch (error) {
+    if (error.code === "P2003") {
+      handleHttpError(res, `Invalid idSecretary  , not found in db `, 400);
+      console.log(error);
+      return;
     }
-  );
-
-  await Promise.all(updatePromises);
-
-  res.json({ message: "Familias asignadas con éxito." });
+    handleHttpError(res, "ERROR_ASSIG_SECRETARY");
+    console.log(error);
+  }
+};
+const assignamentPsichology = async (req, res) => {
+  try {
+    const { idFamily, idPsychology } = req.params;
+    console.log(idFamily, idPsychology);
+    const updatedAssignament = await FamilyRepository.setFamilyToPsychology(
+      +idFamily,
+      +idPsychology
+    );
+    res.status(200).json({
+      success: true,
+      updatedAssignament,
+    });
+  } catch (error) {
+    if (error.code === "P2003") {
+      handleHttpError(res, `Invalid idPsychology  , not found in db `, 400);
+      console.log(error);
+      return;
+    }
+    handleHttpError(res, "ERROR_ASSIG_PSYCHOLOGY");
+    console.log(error);
+  }
 };
 export {
   store,
@@ -996,5 +1041,7 @@ export {
   getIncome,
   getSpouse,
   getStatus,
-  setFamilyToSecretary,
+  assignamentSecretary,
+  assignamentPsichology,
+  // setFamilyToSecretary,
 };

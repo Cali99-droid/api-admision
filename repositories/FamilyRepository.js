@@ -146,6 +146,22 @@ class FamilyRepository {
       },
     });
   }
+  async setFamilyToSecretary(idFamily, idSecretary) {
+    return prisma.familiy_secretary.updateMany({
+      where: { family_id: idFamily },
+      data: {
+        user_id: idSecretary,
+      },
+    });
+  }
+  async setFamilyToPsychology(idFamily, idPsychology) {
+    return prisma.psy_evaluation.updateMany({
+      where: { family_id: idFamily },
+      data: {
+        user_id: idPsychology,
+      },
+    });
+  }
 }
 
 export default new FamilyRepository();
