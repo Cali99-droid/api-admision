@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { validateRol } from "../utils/handleRol.js";
 import { validatePersissions } from "../utils/handlePermissions.js";
 const prisma = new PrismaClient();
-
+//comment
 export const authMiddleware = async (req, res, next) => {
   try {
     if (!req.headers.authorization) {
