@@ -190,7 +190,7 @@ export const sessionPsychologyMiddleware = async (req, res, next) => {
         user_roles: {
           some: {
             roles_id: {
-              in: [2, 1], // Puedes ajustar los roles según tus necesidades
+              in: [3, 1], // Puedes ajustar los roles según tus necesidades
             },
           },
         },
