@@ -498,6 +498,8 @@ const assignVacant = async (req, res) => {
     const nameFamily = data.person.lastname + " " + data.person.mLastname;
     /**Crear Familia SIGE */
     const respFamily = await createFamilySIGE(nameFamily, token);
+    console.log('Respuesta al crear Familia SIGE');
+    console.log(respFamily);
     /**Crear Conyugue Principal SIGE */
     const respCreateMainConyugue = await createFamiliarsSIGE(
       respFamily.result.id_gpf,
@@ -511,6 +513,8 @@ const assignVacant = async (req, res) => {
         data.family.conyugue,
         token
       );
+      console.log('Respuesta al crear Conyugue SIGE');
+      console.log(respCreateConyugue);
     }
     /**Crear Estudiante SIGE */
     const respCreateStudent = await createStudentSIGE(
@@ -518,6 +522,8 @@ const assignVacant = async (req, res) => {
       data.person,
       token
     );
+    console.log('Respuesta al crear Estudiante SIGE');
+    console.log(respCreateStudent);
     /**Actualizar Vacante */
     const updateVacantStatus = await VacantRepository.updateVacant(
       data.vacant[0].id,
