@@ -18,22 +18,21 @@ import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
 
-
 const getAllUsers = async (req, res) => {
   try {
     const users = await UserRepository.getAllUsers();
     const data = users.map((u) => {
       return {
         id: u.id,
-        doc_number:u.person.doc_number,
+        doc_number: u.person.doc_number,
         name: u.person.name,
         lastname: u.person.lastname,
         mLastname: u.person.mLastname,
         date: u.email,
-        phone:u.phone,
+        phone: u.phone,
         create_time: u.create_time,
-        mautic:u.mauticId,
-        user_roles:u.user_roles
+        mautic: u.mauticId,
+        user_roles: u.user_roles,
       };
     });
     res.status(201).json({
@@ -45,49 +44,52 @@ const getAllUsers = async (req, res) => {
     handleHttpError(res, "ERROR_GET_USERS");
   }
 };
-const createUserRole = async( req,res ) =>{
+const createUserRole = async (req, res) => {
   try {
     req = matchedData(req);
     const userRoleCreate = await UserRoleRepository.createUserRole(req);
     res.status(201).json({
       success: true,
-      data:userRoleCreate,
+      data: userRoleCreate,
     });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_CREATE_USER_ROLE");
   }
-}
-const updateUserRole = async( req,res ) =>{
+};
+const updateUserRole = async (req, res) => {
   try {
     const idUserRole = parseInt(req.params.id);
     req = matchedData(req);
     const dateUpdate = new Date();
     req = { update_time: dateUpdate, ...req };
-    const {id, ... data} = req;
-    const userRoleUpdate = await UserRoleRepository.updateUserRole(idUserRole,data);
+    const { id, ...data } = req;
+    const userRoleUpdate = await UserRoleRepository.updateUserRole(
+      idUserRole,
+      data
+    );
     res.status(201).json({
-       success: true,
-       data:userRoleUpdate,
-     });
+      success: true,
+      data: userRoleUpdate,
+    });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_UPDATE_USER_ROLE");
   }
-}
-const deleteUserRole = async( req,res ) =>{
+};
+const deleteUserRole = async (req, res) => {
   try {
     const idUserRole = parseInt(req.params.id);
     const userRoleDelete = await UserRoleRepository.deleteUserRole(idUserRole);
     res.status(201).json({
-       success: true,
-       data:userRoleDelete,
-     });
+      success: true,
+      data: userRoleDelete,
+    });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_DELETE_USER_ROLE");
   }
-}
+};
 
 const getSecretaryAssignments = async (req, res) => {
   try {
@@ -498,7 +500,7 @@ const assignVacant = async (req, res) => {
     const nameFamily = data.person.lastname + " " + data.person.mLastname;
     /**Crear Familia SIGE */
     const respFamily = await createFamilySIGE(nameFamily, token);
-    console.log('Respuesta al crear Familia SIGE');
+    console.log("Respuesta al crear Familia SIGE");
     console.log(respFamily);
     /**Crear Conyugue Principal SIGE */
     const respCreateMainConyugue = await createFamiliarsSIGE(
@@ -513,7 +515,7 @@ const assignVacant = async (req, res) => {
         data.family.conyugue,
         token
       );
-      console.log('Respuesta al crear Conyugue SIGE');
+      console.log("Respuesta al crear Conyugue SIGE");
       console.log(respCreateConyugue);
     }
     /**Crear Estudiante SIGE */
@@ -522,7 +524,7 @@ const assignVacant = async (req, res) => {
       data.person,
       token
     );
-    console.log('Respuesta al crear Estudiante SIGE');
+    console.log("Respuesta al crear Estudiante SIGE");
     console.log(respCreateStudent);
     /**Actualizar Vacante */
     const updateVacantStatus = await VacantRepository.updateVacant(
@@ -562,6 +564,34 @@ const assignVacant = async (req, res) => {
   } catch (error) {
     console.log(error);
     // handleHttpError(res, "ERROR_ASSIGN_FAMILY");
+  }
+};
+
+const denyVacant = async (req, res) => {
+  try {
+    const { idChildren } = req.params;
+    const data = await FamilyRepository.getFamilyMembers(+idChildren);
+
+    const updateVacant = await VacantRepository.updateVacant(
+      data.vacant[0].id,
+      { status: "3" }
+    );
+    const updatePsi = await prisma.psy_evaluation.updateMany({
+      where: {
+        family_id: data.family_id,
+      },
+      data: {
+        applied: 3,
+      },
+    });
+    res.status(201).json({
+      success: true,
+      updateVacant,
+      updatePsi,
+    });
+  } catch (error) {
+    handleHttpError(res, "ERROR_DENY_FAMILY");
+    console.log(error);
   }
 };
 
@@ -620,6 +650,7 @@ export {
   getStatistics,
   getStatusFamilyAndChildren,
   assignVacant,
+  denyVacant,
   //sctipots
   changeNameFamily,
 };

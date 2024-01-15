@@ -17,9 +17,10 @@ import {
   createUserRole,
   updateUserRole,
   deleteUserRole,
+  denyVacant,
 } from "../controllers/AdminController.js";
 
-import { 
+import {
   validatorCreateUserRole,
   validatorUpdateUserRole,
   validatorDeleteUserRole,
@@ -27,7 +28,6 @@ import {
 
 import { destroy, update } from "../controllers/FamilyController.js";
 import { validatorFamily, validatorGetFamily } from "../validators/family.js";
-
 
 const router = express.Router();
 /**
@@ -81,7 +81,12 @@ router.get("/users", adminMiddleware, getAllUsers);
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/user-role", adminMiddleware, validatorCreateUserRole, createUserRole);
+router.post(
+  "/user-role",
+  adminMiddleware,
+  validatorCreateUserRole,
+  createUserRole
+);
 /**
  * Route put user-role
  * @openapi
@@ -112,7 +117,12 @@ router.post("/user-role", adminMiddleware, validatorCreateUserRole, createUserRo
  *                      description: No tiene permisos '403'
  *
  */
-router.put("/user-role/:id", adminMiddleware, validatorUpdateUserRole, updateUserRole);
+router.put(
+  "/user-role/:id",
+  adminMiddleware,
+  validatorUpdateUserRole,
+  updateUserRole
+);
 /**
  * Route delete user-role
  * @openapi
@@ -138,7 +148,12 @@ router.put("/user-role/:id", adminMiddleware, validatorUpdateUserRole, updateUse
  *                      description: No tiene permisos '403'
  *
  */
-router.delete("/user-role/:id",adminMiddleware,validatorDeleteUserRole, deleteUserRole);
+router.delete(
+  "/user-role/:id",
+  adminMiddleware,
+  validatorDeleteUserRole,
+  deleteUserRole
+);
 router.get("/secretary/assignments", adminMiddleware, getSecretaryAssignments);
 router.get(
   "/psychology/assignments",
@@ -174,5 +189,6 @@ router.get("/statistics/vacant/all", adminMiddleware, getAllVacants);
 //
 
 router.post("/assign/vacant/:idChildren", adminMiddleware, assignVacant);
+router.post("/deny/vacant/:idChildren", adminMiddleware, denyVacant);
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;
