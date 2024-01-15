@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { validateRol } from "../utils/handleRol.js";
 import { validatePersissions } from "../utils/handlePermissions.js";
 const prisma = new PrismaClient();
-
+//comment
 export const authMiddleware = async (req, res, next) => {
   try {
     if (!req.headers.authorization) {
@@ -187,9 +187,11 @@ export const sessionPsychologyMiddleware = async (req, res, next) => {
     const user = await prisma.user.findUnique({
       where: {
         id: dataToken["id"],
-        some: {
-          roles_id: {
-            in: [2, 1], // Puedes ajustar los roles según tus necesidades
+        user_roles: {
+          some: {
+            roles_id: {
+              in: [3, 1], // Puedes ajustar los roles según tus necesidades
+            },
           },
         },
       },
