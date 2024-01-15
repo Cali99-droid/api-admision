@@ -568,6 +568,8 @@ const assignVacant = async (req, res) => {
 };
 
 const denyVacant = async (req, res) => {
+  const NODE_ENV = process.env.NODE_ENV;
+  const emailId = process.env.MAUTIC_ID_EMAIL_DENY_VACANT;
   try {
     const { idChildren } = req.params;
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
@@ -584,6 +586,21 @@ const denyVacant = async (req, res) => {
         applied: 3,
       },
     });
+    /**Enviar email */
+    const body =
+      data.person.name +
+      " " +
+      data.person.lastname +
+      " " +
+      data.person.mLastname;
+    const contactId =
+      NODE_ENV === "production" ? data.family.mainConyugue.mauticId : 5919;
+    const respMAutic = await sendEmail(contactId, emailId, body);
+    if (!respMAutic) {
+      console.log(error);
+      handleHttpError(res, "ERROR_MAUTIC_DONT_SEND_EMAIL");
+      return;
+    }
     res.status(201).json({
       success: true,
       updateVacant,
