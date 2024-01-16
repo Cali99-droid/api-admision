@@ -1,5 +1,5 @@
 import axios from "axios";
-import FormData from "form-data";
+
 export const getVacantSIGE = async () => {
   const loginUrl = process.env.SIGE_URL_LOGIN;
   const vacantUrl = process.env.SIGE_URL_VACANT;
