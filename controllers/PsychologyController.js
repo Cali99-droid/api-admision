@@ -12,7 +12,15 @@ const getFamilies = async (req, res) => {
   try {
     //commit
     const s = await PsychologyRepository.getFamiliesByUser(user.id);
-    const data = s.map((f) => {
+    const filterFamilies = s.filter((f) => {
+      if (f.applied === 3 && f.family.children.length === 1) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+
+    const data = filterFamilies.map((f) => {
       return {
         id: f.family.id,
         name: f.family.name,
@@ -24,11 +32,12 @@ const getFamilies = async (req, res) => {
           f.quotes[0]?.status === undefined ? "pending" : f.quotes[0]?.status,
         idCitation: f.quotes[0]?.id === undefined ? null : f.quotes[0]?.id,
         psy_evaluation_id: f.id,
+        children: f.family.children.length,
       };
     });
     res.status(201).json({
       success: true,
-      data,
+      data: data,
     });
   } catch (error) {
     console.log(error);
@@ -47,12 +56,14 @@ const getFamily = async (req, res) => {
     const children = family.children.map((c) => {
       return {
         id: c.person.id,
+        idChild: c.id,
         name: c.person.name,
         lastname: c.person.lastname,
         mLastname: c.person.mLastname,
         campus: c.vacant[0]?.campus || null,
         level: c.vacant[0]?.level || null,
         grade: c.vacant[0]?.grade || null,
+        status: c.vacant[0]?.status || null,
         report: c.report_psy,
       };
     });
@@ -66,7 +77,7 @@ const getFamily = async (req, res) => {
         }
       });
     }
-    console.log(children);
+
     const evPsy = family.psy_evaluation[0];
 
     // const vacant = family.children.map((c) => {

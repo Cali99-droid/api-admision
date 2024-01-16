@@ -26,6 +26,87 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+      userRole:{
+        type: "object",
+        required: ["user_id","roles_id"],
+        properties: {
+          user_id: {
+            type: "number",
+          },
+          roles_id: {
+            type: "number",
+          },
+          token_boss:{
+            type: "string",
+            type: "string",
+          }
+        },
+      },
+      users: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: {
+                type: "number"
+              },
+              doc_number: {
+                type: "string"
+              },
+              name: {
+                type: "string"
+              },
+              lastname: {
+                type: "string"
+              },
+              mLastname: {
+                type: "string"
+              },
+              date: {
+                type: "string"
+              },
+              phone: {
+                type: "string"
+              },
+              create_time: {
+                type: "string",
+                format: "date-time"
+              },
+              mautic: {
+                type: "number"
+              },
+              user_roles: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "number"
+                    },
+                    roles: {
+                      type: "object",
+                      properties: {
+                        id: {
+                          type: "number"
+                        },
+                        rol: {
+                          type: "string"
+                        }
+                      }
+                    },
+                    create_time: {
+                      "type": "string"
+                    },
+                    update_time: {
+                      type: "string",
+                      format: "nullable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+      },
       authLogin: {
         type: "object",
         required: ["email", "password"],

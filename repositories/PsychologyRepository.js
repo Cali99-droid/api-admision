@@ -22,12 +22,18 @@ class PsychologyRepository {
     const data = prisma.psy_evaluation.findMany({
       where: {
         user_id: userId,
+        //  AND:{
+        //   applied:{
+        //     not:2
+        //   }
+        //  }
       },
       select: {
         id: true,
         family: {
           include: {
             mainConyugue: true,
+            children: true,
           },
         },
         applied: true,
@@ -55,6 +61,7 @@ class PsychologyRepository {
         },
         children: {
           select: {
+            id: true,
             person: true,
             vacant: true,
             report_psy: {
