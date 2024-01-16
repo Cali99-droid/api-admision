@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { body, matchedData } from "express-validator";
 import axios from "axios";
-import FormData from "form-data";
 
 const prisma = new PrismaClient();
 

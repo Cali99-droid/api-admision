@@ -1,5 +1,5 @@
 import axios from "axios";
-import FormData from "form-data";
+
 export const createFamilySIGE = async (name, token) => {
   try {
     const formData = new FormData();
