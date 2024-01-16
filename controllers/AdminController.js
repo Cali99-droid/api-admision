@@ -573,12 +573,12 @@ const denyVacant = async (req, res) => {
   try {
     const { idChildren } = req.params;
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
+    let updateVacant = null;
     console.log(data.vacant);
     if (data.vacant[0].id) {
-      const updateVacant = await VacantRepository.updateVacant(
-        data.vacant[0].id,
-        { status: "3" }
-      );
+      updateVacant = await VacantRepository.updateVacant(data.vacant[0].id, {
+        status: "3",
+      });
     }
 
     const updatePsi = await prisma.psy_evaluation.updateMany({
@@ -606,7 +606,7 @@ const denyVacant = async (req, res) => {
     }
     res.status(201).json({
       success: true,
-
+      updateVacant,
       updatePsi,
     });
   } catch (error) {
