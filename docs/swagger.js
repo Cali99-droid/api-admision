@@ -15,7 +15,7 @@ const swaggerDefinition = {
       url: "http://localhost:3001/api",
     },
     {
-      url: "https://api.dev-solware.com/api",
+      url: "https://api-admision.dev-solware.com/api",
     },
   ],
   components: {
@@ -26,9 +26,9 @@ const swaggerDefinition = {
       },
     },
     schemas: {
-      userRole:{
+      userRole: {
         type: "object",
-        required: ["user_id","roles_id"],
+        required: ["user_id", "roles_id"],
         properties: {
           user_id: {
             type: "number",
@@ -36,76 +36,76 @@ const swaggerDefinition = {
           roles_id: {
             type: "number",
           },
-          token_boss:{
+          token_boss: {
             type: "string",
             type: "string",
-          }
+          },
         },
       },
       users: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: {
-                type: "number"
-              },
-              doc_number: {
-                type: "string"
-              },
-              name: {
-                type: "string"
-              },
-              lastname: {
-                type: "string"
-              },
-              mLastname: {
-                type: "string"
-              },
-              date: {
-                type: "string"
-              },
-              phone: {
-                type: "string"
-              },
-              create_time: {
-                type: "string",
-                format: "date-time"
-              },
-              mautic: {
-                type: "number"
-              },
-              user_roles: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    id: {
-                      type: "number"
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: {
+              type: "number",
+            },
+            doc_number: {
+              type: "string",
+            },
+            name: {
+              type: "string",
+            },
+            lastname: {
+              type: "string",
+            },
+            mLastname: {
+              type: "string",
+            },
+            date: {
+              type: "string",
+            },
+            phone: {
+              type: "string",
+            },
+            create_time: {
+              type: "string",
+              format: "date-time",
+            },
+            mautic: {
+              type: "number",
+            },
+            user_roles: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: {
+                    type: "number",
+                  },
+                  roles: {
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "number",
+                      },
+                      rol: {
+                        type: "string",
+                      },
                     },
-                    roles: {
-                      type: "object",
-                      properties: {
-                        id: {
-                          type: "number"
-                        },
-                        rol: {
-                          type: "string"
-                        }
-                      }
-                    },
-                    create_time: {
-                      "type": "string"
-                    },
-                    update_time: {
-                      type: "string",
-                      format: "nullable"
-                    }
-                  }
-                }
-              }
-            }
-          }
+                  },
+                  create_time: {
+                    type: "string",
+                  },
+                  update_time: {
+                    type: "string",
+                    format: "nullable",
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       authLogin: {
         type: "object",
