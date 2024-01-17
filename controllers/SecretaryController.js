@@ -530,6 +530,14 @@ const setServed = async (req, res) => {
     handleHttpError(res, "FAMILY_NOT_EXIST", 404);
     return;
   }
+  /**Cambiar la asignacion de psicologas */
+  const psi = await prisma.psy_evaluation.findMany({
+    orderBy: {
+      create_time: "desc", // Ordenar de forma descendente para obtener el último elemento
+    },
+    take: 1, // Tomar solo el primer resultado
+  });
+
   //asignar a la psicologa menos ocupada rol: 3
   const psychology = await prisma.user.findMany({
     where: {
@@ -547,7 +555,13 @@ const setServed = async (req, res) => {
     },
     orderBy: { psy_evaluation: { _count: "asc" } },
   });
-  // console.log(psychology);
+  console.log(psychology);
+  let idPsychology = 110;
+  if (psi[0].id % 2 === 0) {
+    idPsychology = psychology[0].id;
+  } else {
+    idPsychology = psychology[1].id;
+  }
   const lessPsychology = psychology[0];
 
   const updateStatusFamily = await prisma.familiy_secretary.update({
@@ -573,7 +587,8 @@ const setServed = async (req, res) => {
   }
 
   const asigFamilyToPsy = await PsychologyRepository.assignFamily({
-    user_id: lessPsychology.id,
+    // user_id: lessPsychology.id,
+    user_id: idPsychology,
     family_id: id,
   });
   res.status(201).json({

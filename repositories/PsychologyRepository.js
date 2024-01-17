@@ -84,7 +84,6 @@ class PsychologyRepository {
       },
     });
 
-    console.log(data);
     return data;
   }
 
