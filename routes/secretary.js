@@ -41,6 +41,29 @@ import {
 const router = express.Router();
 
 router.get("/", sessionSecretaryMiddleware, getFamilies);
+
+/**
+ * @openapi
+ * /secretary/family/{id}:
+ *    get:
+ *      tags:
+ *        - secretary
+ *      summary: "detalle familia "
+ *      description: obtiene el detalle de una familia, las secretarias y los admin tiene permisos de consulta
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: id de la familia
+ *        required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna el objecto de la familia incluyendo hijos y conyugue.
+ *
+ *        '422':
+ *          description: Error de validacion.
+ */
 router.get(
   "/family/:id",
   validatorGetFamily,

@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { body, matchedData } from "express-validator";
 import axios from "axios";
+import VacantRepository from "../repositories/VacantRepository.js";
 
 const prisma = new PrismaClient();
 
@@ -162,4 +163,25 @@ const getVacantAvailable = async (req, res) => {
     });
   }
 };
-export { store, get, getVacantAvailable };
+
+const update = async (req, res) => {
+  try {
+    let body = matchedData(req);
+    const id = parseInt(body.id);
+    delete body.id;
+    const updatedVacant = await VacantRepository.updateVacant(id, body);
+    res.status(200).json({
+      success: true,
+      data: updatedVacant,
+    });
+  } catch (error) {
+    if (error.code) {
+      handleHttpError(res, error.meta.cause, 400);
+
+      return;
+    }
+    handleHttpError(res, "ERROR_UPDATE_VACANT", 401);
+    console.log(error);
+  }
+};
+export { store, get, getVacantAvailable, update };

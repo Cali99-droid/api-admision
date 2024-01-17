@@ -23,6 +23,15 @@ export const authMiddleware = async (req, res, next) => {
     const user = await prisma.user.findUnique({
       where: {
         id: dataToken["id"],
+        // OR: {
+        //   user_roles: {
+        //     some: {
+        //       roles_id: {
+        //         in: [2, 1], // Puedes ajustar los roles según tus necesidades
+        //       },
+        //     },
+        //   },
+        // },
       },
       include: {
         user_roles: {
@@ -241,14 +250,13 @@ export const adminMiddleware = async (req, res, next) => {
       where: {
         id: dataToken["id"],
       },
-      include:{
-        user_roles:{
-          select:{
-            roles:true,
-          }
+      include: {
+        user_roles: {
+          select: {
+            roles: true,
+          },
         },
-      }
-
+      },
     });
     const haveRol = await validateRol(user.user_roles, 1);
     if (!haveRol) {

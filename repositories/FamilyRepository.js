@@ -6,6 +6,9 @@ class FamilyRepository {
       where: {
         id,
       },
+      include: {
+        children: true,
+      },
     });
   }
   async update(id, data) {

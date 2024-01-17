@@ -122,5 +122,5 @@ router.get("/validate-session", authMiddleware, validateSession);
 router.get("/permissions", authMiddleware, getPermissions);
 
 /**Scripts */
-router.post("/change", changeNameFamily);
+// router.post("/change", changeNameFamily);
 export default router;
