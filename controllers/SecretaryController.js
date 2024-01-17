@@ -533,7 +533,7 @@ const setServed = async (req, res) => {
   /**Cambiar la asignacion de psicologas */
   const psi = await prisma.psy_evaluation.findMany({
     orderBy: {
-      createdAt: "desc", // Ordenar de forma descendente para obtener el último elemento
+      create_time: "desc", // Ordenar de forma descendente para obtener el último elemento
     },
     take: 1, // Tomar solo el primer resultado
   });
