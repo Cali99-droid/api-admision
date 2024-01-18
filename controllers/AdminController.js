@@ -362,7 +362,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
       dat.map(async (f) => {
         // Destructure with default values
         const {
-          vacant: [{ campus, level, grade } = {}] = [],
+          vacant: [{ id, campus, level, grade } = {}] = [],
           schoolId,
           family,
           person,
@@ -398,6 +398,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
           inscription: family.create_time,
           phone: family.mainConyugue.phone,
           email: family.mainConyugue.email,
+          vacantId: id,
           campus: parseInt(campus),
           level: parseInt(level),
           grade: parseInt(grade),

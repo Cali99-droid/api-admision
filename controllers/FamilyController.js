@@ -198,10 +198,25 @@ const destroy = async (req, res) => {
       handleHttpError(res, "NOT_EXIST_FAMILY", 404);
       return;
     }
+    const destroyMembers = await FamilyRepository.getFamilyById(+id);
+    if (destroyMembers.children.length > 0) {
+      const ids = destroyMembers.children.map((child) => {
+        return child.person_id;
+      });
+      console.log(ids);
+      await prisma.person.deleteMany({
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+      });
+    }
+
     const destroyFamily = await FamilyRepository.destroy(+id);
     const logger = await prisma.deletion_log.create({
       data: {
-        table: `delete id:${destroyFamily.id}${destroyFamily.name}`,
+        table: `${destroyFamily.name}  ${destroyFamily.id} `,
         user: user.id + "",
       },
     });
@@ -211,7 +226,7 @@ const destroy = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_UPDATE_FAMILY");
+    handleHttpError(res, "ERROR_DELETE_FAMILY");
   }
 };
 
@@ -225,6 +240,9 @@ const get = async (req, res) => {
     if (!user) {
       handleHttpError(res, "NOT_EXIST_USER");
     }
+    // console.log(user.user_roles);
+    // const isAdmin = user.user_roles.filter((rol) => rol.roles_id === 1);
+    // console.log(isAdmin);
     req = matchedData(req);
     const id = parseInt(req.id);
 

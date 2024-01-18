@@ -26,6 +26,17 @@ export const validatorGetFamily = [
     return validateResults(req, res, next);
   },
 ];
+export const validatorParamId = [
+  check("id")
+    .exists()
+    .notEmpty()
+    .withMessage("parameto id no válido")
+    .isNumeric()
+    .withMessage("el parametro id no es un numero"),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 export const validatorIdFamily = [
   check("familyId")
     .exists()
