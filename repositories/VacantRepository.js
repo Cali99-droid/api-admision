@@ -33,53 +33,7 @@ class VacantRepository {
       },
     });
   }
-  async getUserByEmail(email) {
-    return prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-  }
-  async getUserByEmailErrorTest(email) {
-    const user = prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
 
-    if (!user) {
-      throw new UserNotFoundError(`Person with ID ${email} not found`);
-    }
-    return user;
-  }
-  async getUserByToken(token) {
-    return prisma.user.findFirst({
-      where: {
-        token,
-      },
-    });
-  }
-  async getUsersByRole(role) {
-    return prisma.user_roles.findMany({
-      where: {
-        roles_id: role,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            person: true,
-          },
-        },
-      },
-    });
-  }
-
-  async createUser(data) {
-    return prisma.user.create({
-      data,
-    });
-  }
   async updateVacant(vacantId, data) {
     return prisma.vacant.update({
       where: {
@@ -89,7 +43,51 @@ class VacantRepository {
     });
   }
 
-  // Otros métodos relacionados con el repositorio de usuario
+  // async getVacantWithAntecedents() {
+  //   // return prisma.background_assessment.groupBy({
+  //   //   by: ["conclusion"],
+  //   //   _count: {
+  //   //     id: true,
+  //   //   },
+
+  //   // });
+  //   const dataSummary = [];
+
+  //   const result = await prisma.vacant.findMany({
+  //     include: {
+  //       children: {
+  //         select: {
+  //           family: {
+  //             select: {
+  //               background_assessment: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+  //   let countAptos = -1;
+  //   let countNoAptos = -1;
+  //   let countNoEvaluados = -1;
+
+  //   const data = result.forEach((v) => {
+  //     if (
+  //       v.children.family.background_assessment[0] &&
+  //       v.campus === "3" &&
+  //       v.level === "1"
+  //     ) {
+  //       if (v.children.family.background_assessment[0].conclusion === "apto") {
+  //         countAptos = countAptos += 1;
+  //       } else {
+  //         countNoAptos += 1;
+  //       }
+  //     } else {
+  //       countNoEvaluados += 1;
+  //     }
+  //   });
+
+  //   return { countAptos, countNoAptos, countNoEvaluados };
+  // }
 }
 
 export default new VacantRepository();
