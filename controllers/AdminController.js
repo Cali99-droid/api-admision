@@ -576,7 +576,7 @@ const denyVacant = async (req, res) => {
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     let updateVacant = null;
     console.log(data.vacant);
-    if (data.vacant[0].id) {
+    if (data.vacant[0]?.id) {
       updateVacant = await VacantRepository.updateVacant(data.vacant[0].id, {
         status: "3",
       });
