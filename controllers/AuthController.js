@@ -147,6 +147,10 @@ const login = async (req, res) => {
         handleHttpError(res, "NOT_HAVE_ROL", 403);
         return;
       }
+      if (foundRole.status === 0) {
+        handleHttpError(res, "INACTIVE_USER", 403);
+        return;
+      }
     } else if (role) {
       handleHttpError(res, "NOT_HAVE_PERMISSIONS", 403);
       return;
