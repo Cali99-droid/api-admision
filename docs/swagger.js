@@ -26,9 +26,18 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+      permissions:{
+        type:"object",
+        properties:{
+          id: {
+            type: "number",
+          },
+          permission: {
+            type: "string",
+          },
+        }
+      },
       roles:{
-        type:"array",
-        items:{
           type:"object",
           properties:{
             id: {
@@ -37,8 +46,29 @@ const swaggerDefinition = {
             rol: {
               type: "string",
             },
-          }
-        }
+            roles_permissions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: {
+                    type: "number",
+                  },
+                  permissions: {
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "number",
+                      },
+                      permissions: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          } 
       },
       role: {
         type: "object",
@@ -51,7 +81,6 @@ const swaggerDefinition = {
       },
       rolePermissions:{
         type:"array",
-        items:{
           type:"object",
           properties:{
             roles_id: {
@@ -61,7 +90,6 @@ const swaggerDefinition = {
               type: "number",
             },
           }
-        }
       },
       rolePermission: {
         type: "object",
@@ -93,7 +121,7 @@ const swaggerDefinition = {
       },
       users: {
         type: "array",
-        items: {
+        
           type: "object",
           properties: {
             id: {
@@ -153,7 +181,7 @@ const swaggerDefinition = {
                 },
               },
             },
-          },
+          
         },
       },
       authLogin: {
