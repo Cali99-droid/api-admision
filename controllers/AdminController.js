@@ -25,15 +25,17 @@ const getAllUsers = async (req, res) => {
       return {
         id: u.id,
         doc_number: u.person.doc_number,
-
         name:
           u.person.lastname + " " + u.person.mLastname + " " + u.person.name,
-
         date: u.email,
         phone: u.phone,
         create_time: u.create_time,
         mautic: u.mauticId,
-        user_roles: u.user_roles,
+        userRolId: u.user_roles[0]?.id || null,
+        rolId: u.user_roles[0]?.roles.id || null,
+        rol: u.user_roles[0]?.roles.rol || null,
+        status: u.user_roles[0]?.status || null,
+        permissions: u.auth,
       };
     });
     res.status(201).json({
