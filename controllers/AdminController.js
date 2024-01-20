@@ -25,9 +25,10 @@ const getAllUsers = async (req, res) => {
       return {
         id: u.id,
         doc_number: u.person.doc_number,
-        name: u.person.name,
-        lastname: u.person.lastname,
-        mLastname: u.person.mLastname,
+
+        name:
+          u.person.lastname + " " + u.person.mLastname + " " + u.person.name,
+
         date: u.email,
         phone: u.phone,
         create_time: u.create_time,
