@@ -26,6 +26,55 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+      roles:{
+        type:"array",
+        items:{
+          type:"object",
+          properties:{
+            id: {
+              type: "number",
+            },
+            rol: {
+              type: "string",
+            },
+          }
+        }
+      },
+      role: {
+        type: "object",
+        required: ["rol"],
+        properties: {
+          rol: {
+            type: "string",
+          },
+        },
+      },
+      rolePermissions:{
+        type:"array",
+        items:{
+          type:"object",
+          properties:{
+            roles_id: {
+              type: "number",
+            },
+            permissions_id: {
+              type: "number",
+            },
+          }
+        }
+      },
+      rolePermission: {
+        type: "object",
+        required: ["roles_id", "permissions_id"],
+        properties: {
+          roles_id: {
+            type: "number",
+          },
+          permissions_id: {
+            type: "number",
+          },
+        },
+      },
       userRole: {
         type: "object",
         required: ["user_id", "roles_id"],
