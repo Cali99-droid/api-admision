@@ -50,10 +50,32 @@ const getAllUsers = async (req, res) => {
 const createUserRole = async (req, res) => {
   try {
     req = matchedData(req);
-    const userRoleCreate = await UserRoleRepository.createUserRole(req);
+    const { permissions = [], ...rest } = req;
+    const userRoleCreate = await UserRoleRepository.createUserRole(rest);
+    /**actualizar permisisos */
+    console.log(permissions);
+    if (rest.roles_id === 2) {
+      const deletedPermissions = await prisma.auth.deleteMany({
+        where: {
+          user_id: userRoleCreate.user_id,
+        },
+      });
+      console.log(deletedPermissions);
+      const user_id = userRoleCreate.user_id;
+
+      const data = permissions.map((perm) => ({
+        name: perm,
+        user_id,
+      }));
+      console.log(data);
+      const insert = await prisma.auth.createMany({
+        data,
+      });
+      console.log(insert);
+    }
     res.status(201).json({
       success: true,
-      data: userRoleCreate,
+      data: { userRoleCreate },
     });
   } catch (error) {
     console.log(error);
@@ -63,14 +85,36 @@ const createUserRole = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const idUserRole = parseInt(req.params.id);
+
     req = matchedData(req);
+    const { permissions = [], ...rest } = req;
+    console.log(permissions);
+    // console.log(req);
     const dateUpdate = new Date();
-    req = { update_time: dateUpdate, ...req };
-    const { id, ...data } = req;
+    req = { update_time: dateUpdate, ...rest };
+    const { id, ...data } = rest;
     const userRoleUpdate = await UserRoleRepository.updateUserRole(
       idUserRole,
       data
     );
+    /**actualizar permisisos */
+    if (req.roles_id === 2) {
+      const deletedPermissions = await prisma.auth.deleteMany({
+        where: {
+          user_id: userRoleUpdate.user_id,
+        },
+      });
+      const user_id = userRoleUpdate.user_id;
+
+      const data = permissions.map((perm) => ({
+        name: perm,
+        user_id,
+      }));
+
+      const insert = await prisma.auth.createMany({
+        data,
+      });
+    }
     res.status(201).json({
       success: true,
       data: userRoleUpdate,

@@ -26,19 +26,19 @@ const swaggerDefinition = {
       },
     },
     schemas: {
-      roles:{
-        type:"array",
-        items:{
-          type:"object",
-          properties:{
+      roles: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
             id: {
               type: "number",
             },
             rol: {
               type: "string",
             },
-          }
-        }
+          },
+        },
       },
       role: {
         type: "object",
@@ -49,19 +49,19 @@ const swaggerDefinition = {
           },
         },
       },
-      rolePermissions:{
-        type:"array",
-        items:{
-          type:"object",
-          properties:{
+      rolePermissions: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
             roles_id: {
               type: "number",
             },
             permissions_id: {
               type: "number",
             },
-          }
-        }
+          },
+        },
       },
       rolePermission: {
         type: "object",
@@ -77,7 +77,7 @@ const swaggerDefinition = {
       },
       userRole: {
         type: "object",
-        required: ["user_id", "roles_id"],
+        required: ["roles_id", "status"],
         properties: {
           user_id: {
             type: "number",
@@ -85,9 +85,17 @@ const swaggerDefinition = {
           roles_id: {
             type: "number",
           },
+          status: {
+            type: "number",
+          },
           token_boss: {
             type: "string",
-            type: "string",
+          },
+          permissions: {
+            type: "array",
+            items: {
+              type: "string",
+            },
           },
         },
       },
