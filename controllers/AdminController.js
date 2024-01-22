@@ -17,7 +17,7 @@ import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
-const getAssignedFamiliesBySecretary = async (req, res) => {
+const getSummaryOfApplicantsBySecretary = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -91,7 +91,7 @@ const getAssignedFamiliesBySecretary = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_GET_FAMILIES");
+    handleHttpError(res, "ERROR_GET_SUMMARY_APPLICANTS");
   }
 };
 const getBackgroundSummary = async (req, res) => {
@@ -163,7 +163,6 @@ const getBackgroundSummary = async (req, res) => {
       return result;
     }, {});
 
-    // Convertir el objeto agrupado de nuevo a un array
     const finalResult = Object.values(groupedData);
     const sortedResult = finalResult.sort((a, b) => {
       if (a.campus !== b.campus) {
@@ -180,6 +179,7 @@ const getBackgroundSummary = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    handleHttpError(res, "ERROR_GET_BACKGROUND_SUMMARY");
   }
 };
 const getAllUsers = async (req, res) => {
@@ -775,7 +775,7 @@ const assignVacant = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    // handleHttpError(res, "ERROR_ASSIGN_FAMILY");
+    handleHttpError(res, "ERROR_ASSIGN_FAMILY");
   }
 };
 
@@ -883,9 +883,8 @@ export {
   getStatusFamilyAndChildren,
   assignVacant,
   denyVacant,
-  getPrueba,
   getBackgroundSummary,
-  getAssignedFamiliesBySecretary,
+  getSummaryOfApplicantsBySecretary,
   //sctipots
   changeNameFamily,
 };

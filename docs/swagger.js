@@ -52,7 +52,7 @@ const swaggerDefinition = {
           },
         },
       },
-      assignedFamilies: {
+      summaryOfApplicantsBySecretary: {
         type: "object",
         properties: {
           campus: {

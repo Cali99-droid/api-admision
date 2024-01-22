@@ -18,9 +18,8 @@ import {
   updateUserRole,
   deleteUserRole,
   denyVacant,
-  getPrueba,
   getBackgroundSummary,
-  getAssignedFamiliesBySecretary,
+  getSummaryOfApplicantsBySecretary,
 } from "../controllers/AdminController.js";
 
 import {
@@ -84,9 +83,9 @@ router.get("/users", adminMiddleware, getAllUsers);
  */
 router.get("/background-summary", adminMiddleware, getBackgroundSummary);
 /**
- * Get all assigned-families
+ * Get all summary-applicants
  * @openapi
- * /admin/assigned-families/{id}:
+ * /admin/summary-applicants/{id}:
  *    get:
  *      tags:
  *        - Admin
@@ -107,15 +106,15 @@ router.get("/background-summary", adminMiddleware, getBackgroundSummary);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/assignedFamilies'
+ *                 $ref: '#/components/schemas/summaryOfApplicantsBySecretary'
  *
  *        '422':
  *          description: Error de validacion.
  */
 router.get(
-  "/assigned-families/:id",
+  "/summary-applicants/:id",
   adminMiddleware,
-  getAssignedFamiliesBySecretary
+  getSummaryOfApplicantsBySecretary
 );
 
 /**
