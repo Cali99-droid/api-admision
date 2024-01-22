@@ -17,7 +17,171 @@ import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
+const getAssignedFamiliesBySecretary = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
 
+    const families = await prisma.familiy_secretary.findMany({
+      where: id ? { user_id: parseInt(id) } : {},
+      select: {
+        status: true,
+        family: {
+          include: {
+            children: {
+              include: {
+                vacant: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const data = families.map((f) => {
+      return {
+        vacant: f.family.children.map((child) => {
+          const vacant = {
+            level: child.vacant[0]?.level || null,
+            grade: child.vacant[0]?.grade || null,
+            campus: child.vacant[0]?.campus || null,
+          };
+          return vacant;
+        }),
+        served: f.status,
+      };
+    });
+    const groupedData = data.reduce((result, item) => {
+      const key = JSON.stringify({
+        level: item.vacant[0]?.level || null,
+        grade: item.vacant[0]?.grade || null,
+        campus: item.vacant[0]?.campus || null,
+      });
+
+      if (!result[key]) {
+        result[key] = {
+          campus: item.vacant[0]?.campus || null,
+          level: item.vacant[0]?.level || null,
+          grade: item.vacant[0]?.grade || null,
+          noServed: 0,
+          served: 0,
+        };
+      }
+
+      if (item.served === 0) {
+        result[key].noServed += 1;
+      }
+      if (item.served === 1) {
+        result[key].served += 1;
+      }
+      return result;
+    }, {});
+
+    const finalResult = Object.values(groupedData);
+    const sortedResult = finalResult.sort((a, b) => {
+      if (a.campus !== b.campus) {
+        return a.campus.localeCompare(b.campus);
+      }
+      if (a.level !== b.level) {
+        return a.level.localeCompare(b.level);
+      }
+      return a.grade.localeCompare(b.grade);
+    });
+    res.status(200).json({
+      success: true,
+      data: sortedResult,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_FAMILIES");
+  }
+};
+const getBackgroundSummary = async (req, res) => {
+  try {
+    const families = await prisma.familiy_secretary.findMany({
+      select: {
+        status: true,
+        family: {
+          include: {
+            children: {
+              include: {
+                vacant: true,
+              },
+            },
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
+            economic_evaluation: true,
+            background_assessment: true,
+          },
+        },
+      },
+    });
+
+    const data = families.map((f) => {
+      return {
+        vacant: f.family.children.map((child) => {
+          const vacant = {
+            level: child.vacant[0]?.level || null,
+            grade: child.vacant[0]?.grade || null,
+            campus: child.vacant[0]?.campus || null,
+          };
+          return vacant;
+        }),
+        antecedent: f.family.background_assessment.length || 0,
+        resultAntecedent: f.family.background_assessment[0]?.conclusion || null,
+      };
+    });
+    const groupedData = data.reduce((result, item) => {
+      const key = JSON.stringify({
+        level: item.vacant[0]?.level || null,
+        grade: item.vacant[0]?.grade || null,
+        campus: item.vacant[0]?.campus || null,
+      });
+
+      if (!result[key]) {
+        result[key] = {
+          campus: item.vacant[0]?.campus || null,
+          level: item.vacant[0]?.level || null,
+          grade: item.vacant[0]?.grade || null,
+          notAssigned: 0,
+          apto: 0,
+          noApto: 0,
+        };
+      }
+
+      if (item.antecedent === 0) {
+        result[key].notAssigned += 1;
+      }
+
+      if (item.resultAntecedent == "apto") {
+        result[key].apto += 1;
+      }
+      if (item.resultAntecedent == "no_apto") {
+        result[key].noApto += 1;
+      }
+      return result;
+    }, {});
+
+    // Convertir el objeto agrupado de nuevo a un array
+    const finalResult = Object.values(groupedData);
+    const sortedResult = finalResult.sort((a, b) => {
+      if (a.campus !== b.campus) {
+        return a.campus.localeCompare(b.campus);
+      }
+      if (a.level !== b.level) {
+        return a.level.localeCompare(b.level);
+      }
+      return a.grade.localeCompare(b.grade);
+    });
+    res.status(200).json({
+      success: true,
+      data: sortedResult,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 const getAllUsers = async (req, res) => {
   try {
     const users = await UserRepository.getAllUsers();
@@ -719,6 +883,9 @@ export {
   getStatusFamilyAndChildren,
   assignVacant,
   denyVacant,
+  getPrueba,
+  getBackgroundSummary,
+  getAssignedFamiliesBySecretary,
   //sctipots
   changeNameFamily,
 };

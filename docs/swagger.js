@@ -26,6 +26,52 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+      backgroundSummary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            apto: {
+              type: "number",
+            },
+            noApto: {
+              type: "number",
+            },
+          },
+        },
+      },
+      assignedFamilies: {
+        type: "object",
+        properties: {
+          campus: {
+            type: "string",
+          },
+          level: {
+            type: "string",
+          },
+          grade: {
+            type: "string",
+          },
+          noServed: {
+            type: "number",
+          },
+          served: {
+            type: "number",
+          },
+        },
+      },
       roles: {
         type: "array",
         items: {
