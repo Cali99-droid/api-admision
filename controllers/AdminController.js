@@ -309,6 +309,15 @@ const getSecretaryAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
+        email: a.family.mainConyugue.email,
+        phone: a.family.mainConyugue.phone,
+        nameParent:
+          a.family.mainConyugue.person.lastname +
+          " " +
+          a.family.mainConyugue.person.mLastname +
+          " " +
+          a.family.mainConyugue.person.name,
+        count_children: a.family.children.length,
         status: a.status,
         agent: a.user.person.name,
         date: a.family.create_time,
