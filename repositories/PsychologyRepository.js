@@ -6,7 +6,20 @@ class PsychologyRepository {
       select: {
         applied: true,
         approved: true,
-        family: true,
+        family: {
+          include: {
+            children: {
+              include: {
+                vacant: true,
+              },
+            },
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
+          },
+        },
         user: {
           select: {
             person: true,
