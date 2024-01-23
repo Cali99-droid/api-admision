@@ -53,7 +53,7 @@ const createUserRole = async (req, res) => {
     const { permissions = [], ...rest } = req;
     const userRoleCreate = await UserRoleRepository.createUserRole(rest);
     /**actualizar permisisos */
-    console.log(permissions);
+
     if (rest.roles_id === 2) {
       const deletedPermissions = await prisma.auth.deleteMany({
         where: {
