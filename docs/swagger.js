@@ -26,11 +26,60 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+
+      backgroundSummary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            apto: {
+              type: "number",
+            },
+            noApto: {
+              type: "number",
+            },
+          },
+        },
+      },
+      summaryOfApplicantsBySecretary: {
+        type: "object",
+        properties: {
+          campus: {
+            type: "string",
+          },
+          level: {
+            type: "string",
+          },
+          grade: {
+            type: "string",
+          },
+          noServed: {
+            type: "number",
+          },
+          served: {
+            type: "number",
+          },
+        },
+      },
+
       roles: {
         type: "array",
         items: {
           type: "object",
           properties: {
+
             id: {
               type: "number",
             },
@@ -49,6 +98,7 @@ const swaggerDefinition = {
           },
         },
       },
+
       rolePermissions: {
         type: "array",
         items: {
@@ -60,8 +110,10 @@ const swaggerDefinition = {
             permissions_id: {
               type: "number",
             },
+
           },
         },
+
       },
       rolePermission: {
         type: "object",
@@ -101,7 +153,7 @@ const swaggerDefinition = {
       },
       users: {
         type: "array",
-        items: {
+        
           type: "object",
           properties: {
             id: {
@@ -161,7 +213,7 @@ const swaggerDefinition = {
                 },
               },
             },
-          },
+          
         },
       },
       authLogin: {
