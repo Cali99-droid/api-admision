@@ -26,6 +26,7 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+
       backgroundSummary: {
         type: "array",
         items: {
@@ -72,11 +73,13 @@ const swaggerDefinition = {
           },
         },
       },
+
       roles: {
         type: "array",
         items: {
           type: "object",
           properties: {
+
             id: {
               type: "number",
             },
@@ -95,6 +98,7 @@ const swaggerDefinition = {
           },
         },
       },
+
       rolePermissions: {
         type: "array",
         items: {
@@ -106,8 +110,10 @@ const swaggerDefinition = {
             permissions_id: {
               type: "number",
             },
+
           },
         },
+
       },
       rolePermission: {
         type: "object",
@@ -147,7 +153,7 @@ const swaggerDefinition = {
       },
       users: {
         type: "array",
-        items: {
+        
           type: "object",
           properties: {
             id: {
@@ -207,7 +213,7 @@ const swaggerDefinition = {
                 },
               },
             },
-          },
+          
         },
       },
       authLogin: {
