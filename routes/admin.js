@@ -18,8 +18,6 @@ import {
   updateUserRole,
   deleteUserRole,
   denyVacant,
-  getBackgroundSummary,
-  getSummaryOfApplicantsBySecretary,
 } from "../controllers/AdminController.js";
 
 import {
@@ -57,92 +55,6 @@ const router = express.Router();
  *          description: Error de validacion.
  */
 router.get("/users", adminMiddleware, getAllUsers);
-/**
- * Get all background-summary
- * @openapi
- * /admin/background-summary:
- *    get:
- *      tags:
- *        - Admin
- *      summary: "Listar Resumen de Evaluacion de Atencedentes"
- *      description: Obtiene todos los Resumenes de Evaluacion de Atencedentes
- *      security:
- *        - bearerAuth: []
- *      responses:
- *        '200':
- *          description: Retorna El Resumen de Evaluacion de Atencedentes.
- *          content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/backgroundSummary'
- *
- *        '422':
- *          description: Error de validacion.
- */
-router.get("/background-summary", adminMiddleware, getBackgroundSummary);
-/**
- * Get all summary-applicants
- * @openapi
- * /admin/summary-applicants/{id}:
- *    get:
- *      tags:
- *        - Admin
- *      summary: "Listar Resumen de Postulantes por Secretaria"
- *      description: Obtiene todos los Postulantes por Secretaria
- *      security:
- *        - bearerAuth: []
- *      parameters:
- *          - name: id
- *            in: path
- *            description: id de de la secretaria por la cual se buscara sus Postulantes de la  Secretaria
- *            required: true
- *      responses:
- *        '200':
- *          description: Retorna el resumen de Postulantes por Secretaria".
- *          content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/summaryOfApplicantsBySecretary'
- *
- *        '422':
- *          description: Error de validacion.
- */
-router.get(
-  "/summary-applicants/:id",
-  adminMiddleware,
-  getSummaryOfApplicantsBySecretary
-);
-
-/**
- *
- * Route create user-role
- * @openapi
- * /admin/user-role/{id}:
- *      post:
- *          tags:
- *              - Admin
- *          summary: "Asignar  rol a usuario"
- *          description: "Esta ruta crear rol-user donde token_boss no es obligatorio"
- *          security:
- *            - bearerAuth: []
- *          requestBody:
- *              content:
- *                  application/json:
- *                      schema:
- *                          $ref: "#/components/schemas/userRole"
- *          responses:
- *                  '201':
- *                      description: User-role se creo de manera correcta
- *                  '401':
- *                      description: Error por validación de datos
- *                  '403':
- *                      description: No tiene permisos '403'
- *
- */
 router.post(
   "/user-role",
   adminMiddleware,

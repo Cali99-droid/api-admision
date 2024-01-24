@@ -21,12 +21,38 @@ import {
   getFamilies,
   getFamily,
   updateCitation,
+  SummaryPsyEvaluation,
 } from "../controllers/PsychologyController.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
 import { assignamentPsichology } from "../controllers/FamilyController.js";
 
 const router = express.Router();
+/**
+ * Get all summary-evaluation
+ * @openapi
+ * /psychology/summary-evaluation:
+ *    get:
+ *      tags:
+ *        - Pychology
+ *      summary: "Listar Resumen de Evaluacion de Pspicologa"
+ *      description: Obtiene el resumen de Evaluacion de Pspicologa por la cual requiere token de Psicologa
+ *      security:
+ *        - bearerAuth: []
+ *      responses:
+ *        '200':
+ *          description: Retorna el Resumen de Evaluacion de Pspicologa".
+ *          content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/summaryEvaluation'
+ *
+ *        '422':
+ *          description: Error de validacion.
+ */
+router.get("/summary-evaluation",sessionPsychologyMiddleware, SummaryPsyEvaluation);
 
 router.get("/families", sessionPsychologyMiddleware, getFamilies);
 router.get(

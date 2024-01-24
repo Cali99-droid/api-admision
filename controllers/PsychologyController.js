@@ -6,7 +6,53 @@ import PsychologyReportRepository from "../repositories/PsychologyReportReposito
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import PersonRepository from "../repositories/PersonRepository.js";
 import prisma from "../utils/prisma.js";
+import { verifyToken } from "../utils/handleJwt.js";
+const SummaryPsyEvaluation = async (req, res) => {
+  try {
+    if (!req.headers.authorization) {
+      handleHttpError(res, "NEED_SESSION", 403);
+      return;
+    }
 
+    const token = req.headers.authorization.split(" ").pop();
+    const dataToken = await verifyToken(token);
+
+    if (!dataToken) {
+      handleHttpError(res, "NOT_PAYLOAD_DATA", 401);
+      return;
+    }
+    const data = await prisma.$queryRaw`
+    SELECT
+      v.campus,
+      v.level,
+      v.grade,
+      SUM(CASE WHEN p.applied = 0 THEN 1 ELSE 0 END) AS notAssigned,
+      SUM(CASE WHEN p.applied = 3 THEN 1 ELSE 0 END) AS notNecessary,
+      SUM(CASE WHEN p.approved = 1 AND p.applied = 1 THEN 1 ELSE 0 END) AS apto,
+      SUM(CASE WHEN p.approved = 0 AND p.applied = 1 THEN 1 ELSE 0 END) AS noApto
+    FROM
+      vacant v
+      JOIN children c ON v.children_id = c.id
+      JOIN family f ON c.family_id = f.id
+      JOIN psy_evaluation p ON f.id = p.family_id
+    WHERE
+      p.applied IN (0,1,3) and 
+      p.approved IN (0,1) and
+      p.user_id = ${dataToken["id"]}    
+    GROUP BY
+      v.campus,v.level,v.grade
+    ORDER BY
+      v.campus, v.level, v.grade`;
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_BACKGROUND_SUMMARY");
+  }
+};
 const getFamilies = async (req, res) => {
   const { user } = req;
   try {
@@ -411,4 +457,5 @@ export {
   cancelCitation,
   getCitations,
   getCompleted,
+  SummaryPsyEvaluation,
 };

@@ -26,7 +26,61 @@ const swaggerDefinition = {
       },
     },
     schemas: {
-
+      summaryEvaluation: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            notNecessary: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      backgroundSummarySecretary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
       backgroundSummary: {
         type: "array",
         items: {
@@ -44,10 +98,10 @@ const swaggerDefinition = {
             notAssigned: {
               type: "number",
             },
-            apto: {
+            served: {
               type: "number",
             },
-            noApto: {
+            noServed: {
               type: "number",
             },
           },
