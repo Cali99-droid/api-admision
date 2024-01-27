@@ -55,32 +55,6 @@ const router = express.Router();
  *          description: Error de validacion.
  */
 router.get("/users", adminMiddleware, getAllUsers);
-/**
- *
- * Route create user-role
- * @openapi
- * /admin/user-role:
- *      post:
- *          tags:
- *              - Admin
- *          summary: "Asignar  rol a usuario"
- *          description: "Esta ruta crear rol-user donde token_boss no es obligatorio"
- *          security:
- *            - bearerAuth: []
- *          requestBody:
- *              content:
- *                  application/json:
- *                      schema:
- *                          $ref: "#/components/schemas/userRole"
- *          responses:
- *                  '201':
- *                      description: User-role se creo de manera correcta
- *                  '401':
- *                      description: Error por validación de datos
- *                  '403':
- *                      description: No tiene permisos '403'
- *
- */
 router.post(
   "/user-role",
   adminMiddleware,

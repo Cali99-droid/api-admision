@@ -25,14 +25,17 @@ const getAllUsers = async (req, res) => {
       return {
         id: u.id,
         doc_number: u.person.doc_number,
-        name: u.person.name,
-        lastname: u.person.lastname,
-        mLastname: u.person.mLastname,
+        name:
+          u.person.lastname + " " + u.person.mLastname + " " + u.person.name,
         date: u.email,
         phone: u.phone,
         create_time: u.create_time,
         mautic: u.mauticId,
-        user_roles: u.user_roles,
+        userRolId: u.user_roles[0]?.id || null,
+        rolId: u.user_roles[0]?.roles.id || null,
+        rol: u.user_roles[0]?.roles.rol || null,
+        status: u.user_roles[0]?.status || null,
+        permissions: u.auth,
       };
     });
     res.status(201).json({
@@ -47,10 +50,32 @@ const getAllUsers = async (req, res) => {
 const createUserRole = async (req, res) => {
   try {
     req = matchedData(req);
-    const userRoleCreate = await UserRoleRepository.createUserRole(req);
+    const { permissions = [], ...rest } = req;
+    const userRoleCreate = await UserRoleRepository.createUserRole(rest);
+    /**actualizar permisisos */
+
+    if (rest.roles_id === 2) {
+      const deletedPermissions = await prisma.auth.deleteMany({
+        where: {
+          user_id: userRoleCreate.user_id,
+        },
+      });
+      console.log(deletedPermissions);
+      const user_id = userRoleCreate.user_id;
+
+      const data = permissions.map((perm) => ({
+        name: perm,
+        user_id,
+      }));
+      console.log(data);
+      const insert = await prisma.auth.createMany({
+        data,
+      });
+      console.log(insert);
+    }
     res.status(201).json({
       success: true,
-      data: userRoleCreate,
+      data: { userRoleCreate },
     });
   } catch (error) {
     console.log(error);
@@ -60,14 +85,36 @@ const createUserRole = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const idUserRole = parseInt(req.params.id);
+
     req = matchedData(req);
+    const { permissions = [], ...rest } = req;
+    console.log(permissions);
+    // console.log(req);
     const dateUpdate = new Date();
-    req = { update_time: dateUpdate, ...req };
-    const { id, ...data } = req;
+    req = { update_time: dateUpdate, ...rest };
+    const { id, ...data } = rest;
     const userRoleUpdate = await UserRoleRepository.updateUserRole(
       idUserRole,
       data
     );
+    /**actualizar permisisos */
+    if (req.roles_id === 2) {
+      const deletedPermissions = await prisma.auth.deleteMany({
+        where: {
+          user_id: userRoleUpdate.user_id,
+        },
+      });
+      const user_id = userRoleUpdate.user_id;
+
+      const data = permissions.map((perm) => ({
+        name: perm,
+        user_id,
+      }));
+
+      const insert = await prisma.auth.createMany({
+        data,
+      });
+    }
     res.status(201).json({
       success: true,
       data: userRoleUpdate,
@@ -98,6 +145,15 @@ const getSecretaryAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
+        email: a.family.mainConyugue.email,
+        phone: a.family.mainConyugue.phone,
+        nameParent:
+          a.family.mainConyugue.person.lastname +
+          " " +
+          a.family.mainConyugue.person.mLastname +
+          " " +
+          a.family.mainConyugue.person.name,
+        count_children: a.family.children.length,
         status: a.status,
         agent: a.user.person.name,
         date: a.family.create_time,
@@ -120,6 +176,15 @@ const getPsychologyAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
+        email: a.family.mainConyugue.email,
+        phone: a.family.mainConyugue.phone,
+        nameParent:
+          a.family.mainConyugue.person.lastname +
+          " " +
+          a.family.mainConyugue.person.mLastname +
+          " " +
+          a.family.mainConyugue.person.name,
+        count_children: a.family.children.length,
         applied: a.applied,
         approved: a.applied === 0 ? 3 : a.approved,
         agent: a.user.person.name,
@@ -564,7 +629,7 @@ const assignVacant = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    // handleHttpError(res, "ERROR_ASSIGN_FAMILY");
+    handleHttpError(res, "ERROR_ASSIGN_FAMILY");
   }
 };
 
@@ -576,7 +641,7 @@ const denyVacant = async (req, res) => {
     const data = await FamilyRepository.getFamilyMembers(+idChildren);
     let updateVacant = null;
     console.log(data.vacant);
-    if (data.vacant[0].id) {
+    if (data.vacant[0]?.id) {
       updateVacant = await VacantRepository.updateVacant(data.vacant[0].id, {
         status: "3",
       });
@@ -672,6 +737,7 @@ export {
   getStatusFamilyAndChildren,
   assignVacant,
   denyVacant,
+
   //sctipots
   changeNameFamily,
 };

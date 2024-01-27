@@ -6,7 +6,20 @@ class SecretaryRepository {
     const data = prisma.familiy_secretary.findMany({
       select: {
         status: true,
-        family: true,
+        family: {
+          include: {
+            children: {
+              include: {
+                vacant: true,
+              },
+            },
+            mainConyugue: {
+              include: {
+                person: true,
+              },
+            },
+          },
+        },
         user: {
           select: {
             person: true,

@@ -26,9 +26,164 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+      summaryEvaluation: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            notNecessary: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      backgroundSummarySecretary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      backgroundSummary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      summaryOfApplicantsBySecretary: {
+        type: "object",
+        properties: {
+          campus: {
+            type: "string",
+          },
+          level: {
+            type: "string",
+          },
+          grade: {
+            type: "string",
+          },
+          noServed: {
+            type: "number",
+          },
+          served: {
+            type: "number",
+          },
+        },
+      },
+
+      roles: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+
+            id: {
+              type: "number",
+            },
+            rol: {
+              type: "string",
+            },
+          },
+        },
+      },
+      role: {
+        type: "object",
+        required: ["rol"],
+        properties: {
+          rol: {
+            type: "string",
+          },
+        },
+      },
+
+      rolePermissions: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            roles_id: {
+              type: "number",
+            },
+            permissions_id: {
+              type: "number",
+            },
+
+          },
+        },
+
+      },
+      rolePermission: {
+        type: "object",
+        required: ["roles_id", "permissions_id"],
+        properties: {
+          roles_id: {
+            type: "number",
+          },
+          permissions_id: {
+            type: "number",
+          },
+        },
+      },
       userRole: {
         type: "object",
-        required: ["user_id", "roles_id"],
+        required: ["roles_id", "status"],
         properties: {
           user_id: {
             type: "number",
@@ -36,15 +191,23 @@ const swaggerDefinition = {
           roles_id: {
             type: "number",
           },
+          status: {
+            type: "number",
+          },
           token_boss: {
             type: "string",
-            type: "string",
+          },
+          permissions: {
+            type: "array",
+            items: {
+              type: "string",
+            },
           },
         },
       },
       users: {
         type: "array",
-        items: {
+        
           type: "object",
           properties: {
             id: {
@@ -104,7 +267,7 @@ const swaggerDefinition = {
                 },
               },
             },
-          },
+          
         },
       },
       authLogin: {

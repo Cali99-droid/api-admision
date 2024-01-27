@@ -4,38 +4,38 @@ import prisma from "../utils/prisma.js";
 class UserRepository {
   async getAllUsers() {
     return prisma.user.findMany({
-      select:{
+      select: {
         id: true,
         email: true,
         phone: true,
         mauticId: true,
-        create_time:true,
-        person:{
-          select:{
-            name:true,
-            lastname:true,
-            mLastname:true,
-            doc_number:true,
-          }
-        },
-        user_roles:{
-          
-          select:{
-            id:true,
-            roles:true,
-            create_time:true,
-            update_time:true,
-            status:true,
+        create_time: true,
+        auth: {
+          select: {
+            name: true,
           },
-          where:{
-            status: 1,
-          }
-          
+        },
+        person: {
+          select: {
+            name: true,
+            lastname: true,
+            mLastname: true,
+            doc_number: true,
+          },
+        },
+        user_roles: {
+          select: {
+            id: true,
+            roles: true,
+            create_time: true,
+            update_time: true,
+            status: true,
+          },
         },
       },
-      where:{
-        NOT: [{ mauticId:null }],
-      }
+      where: {
+        NOT: [{ mauticId: null }],
+      },
     });
   }
 
