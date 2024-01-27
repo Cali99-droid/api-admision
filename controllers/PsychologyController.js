@@ -47,7 +47,7 @@ const SummaryPsyEvaluation = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: formatData,
+      data: data,
     });
   } catch (error) {
     console.log(error);
