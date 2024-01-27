@@ -50,7 +50,7 @@ const getSummaryOfApplicantsBySecretary = async (req, res) => {
           };
           return vacant;
         }),
-        served: f.status,
+        served: f.status.toString(),
       };
     });
     const groupedData = data.reduce((result, item) => {
@@ -65,15 +65,15 @@ const getSummaryOfApplicantsBySecretary = async (req, res) => {
           campus: item.vacant[0]?.campus || null,
           level: item.vacant[0]?.level || null,
           grade: item.vacant[0]?.grade || null,
-          noServed: 0,
-          served: 0,
+          noServed: "0",
+          served: "0",
         };
       }
 
-      if (item.served === 0) {
+      if (item.served === "0") {
         result[key].noServed += 1;
       }
-      if (item.served === 1) {
+      if (item.served === "1") {
         result[key].served += 1;
       }
       return result;
