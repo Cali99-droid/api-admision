@@ -82,12 +82,12 @@ const getSummaryOfApplicantsBySecretary = async (req, res) => {
     const finalResult = Object.values(groupedData);
     const sortedResult = finalResult.sort((a, b) => {
       if (a.campus !== b.campus) {
-        return a.campus.localeCompare(b.campus);
+        return a.campus?.localeCompare(b.campus);
       }
       if (a.level !== b.level) {
-        return a.level.localeCompare(b.level);
+        return a.level?.localeCompare(b.level);
       }
-      return a.grade.localeCompare(b.grade);
+      return a.grade?.localeCompare(b.grade);
     });
     res.status(200).json({
       success: true,
@@ -185,12 +185,12 @@ const getBackgroundSummary = async (req, res) => {
     const finalResult = Object.values(groupedData);
     const sortedResult = finalResult.sort((a, b) => {
       if (a.campus !== b.campus) {
-        return a.campus.localeCompare(b.campus);
+        return a.campus?.localeCompare(b.campus);
       }
       if (a.level !== b.level) {
-        return a.level.localeCompare(b.level);
+        return a.level?.localeCompare(b.level);
       }
-      return a.grade.localeCompare(b.grade);
+      return a.grade?.localeCompare(b.grade);
     });
     res.status(200).json({
       success: true,
@@ -215,7 +215,7 @@ const getEconomicEvaluationSummary = async (req, res) => {
       handleHttpError(res, "NOT_PAYLOAD_DATA", 401);
       return;
     }
-    
+
     const families = await prisma.familiy_secretary.findMany({
       where: {
         // user_id: 104,
@@ -285,12 +285,12 @@ const getEconomicEvaluationSummary = async (req, res) => {
     const finalResult = Object.values(groupedData);
     const sortedResult = finalResult.sort((a, b) => {
       if (a.campus !== b.campus) {
-        return a.campus.localeCompare(b.campus);
+        return a.campus?.localeCompare(b.campus);
       }
       if (a.level !== b.level) {
-        return a.level.localeCompare(b.level);
+        return a.level?.localeCompare(b.level);
       }
-      return a.grade.localeCompare(b.grade);
+      return a.grade?.localeCompare(b.grade);
     });
     res.status(200).json({
       success: true,
