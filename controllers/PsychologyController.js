@@ -43,16 +43,24 @@ const SummaryPsyEvaluation = async (req, res) => {
       v.campus,v.level,v.grade
     ORDER BY
       v.campus, v.level, v.grade`;
+    const formatData = data.forEach(convertirAEntero);
 
     res.status(200).json({
       success: true,
-      data,
+      data: formatData,
     });
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_GET_BACKGROUND_SUMMARY");
   }
 };
+function convertirAEntero(objeto) {
+  for (const propiedad in objeto) {
+    if (["notAssigned", "notNecessary", "apto", "noApto"].includes(propiedad)) {
+      objeto[propiedad] = parseInt(objeto[propiedad], 10);
+    }
+  }
+}
 const getFamilies = async (req, res) => {
   const { user } = req;
   try {
