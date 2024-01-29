@@ -9,7 +9,7 @@ class SecretaryRepository {
         family: {
           include: {
             children: {
-              include: {
+              select: {
                 vacant: true,
               },
             },
