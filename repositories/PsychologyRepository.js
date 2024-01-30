@@ -9,7 +9,7 @@ class PsychologyRepository {
         family: {
           include: {
             children: {
-              include: {
+              select: {
                 vacant: true,
               },
             },
