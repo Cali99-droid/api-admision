@@ -866,8 +866,12 @@ const setServed = async (req, res) => {
     },
   });
   if (family.family.children.length > 0) {
-    const lastname = family.family.children[0].person.lastname.toUpperCase();
-    const mlastname = family.family.children[0].person.mLastname.toUpperCase();
+    const lastname = family.family.children[0].person.lastname
+      .toUpperCase()
+      .trim();
+    const mlastname = family.family.children[0].person.mLastname
+      .toUpperCase()
+      .trim();
 
     const updateNameFamily = await prisma.family.update({
       where: {
