@@ -154,9 +154,12 @@ const getSecretaryAssignments = async (req, res) => {
           " " +
           a.family.mainConyugue.person.name,
         count_children: a.family.children.length,
+        vacants: a.family.children.map((v) => {
+          return v.vacant[0];
+        }),
         status: a.status,
         agent: a.user.person.name,
-        date: a.family.create_time,
+        register_date: a.family.create_time,
       };
     });
     res.status(201).json({
@@ -185,10 +188,11 @@ const getPsychologyAssignments = async (req, res) => {
           " " +
           a.family.mainConyugue.person.name,
         count_children: a.family.children.length,
+        vacants: a.family.children.map((vacant) => vacant.vacant[0]),
         applied: a.applied,
         approved: a.applied === 0 ? 3 : a.approved,
         agent: a.user.person.name,
-        date: a.family.create_time,
+        register_date: a.family.create_time,
       };
     });
     res.status(201).json({
