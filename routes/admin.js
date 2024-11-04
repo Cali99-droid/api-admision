@@ -54,7 +54,7 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/users", adminMiddleware, getAllUsers);
+router.get("/users", getAllUsers);
 router.post(
   "/user-role",
   adminMiddleware,
