@@ -30,15 +30,17 @@ const getYearById = async (req, res) => {
 const createYear = async (req, res) => {
     try {
       req = matchedData(req);
+      const startDate = new Date(req.dateStart);
+      const endDate = new Date(req.dateEnd);
       const existingYearWithConflict = await prisma.year.findFirst({
         where: {
           OR: [
             {
               dateStart: {
-                lte: req.dateEnd,
+                lte: startDate,
               },
               dateEnd: {
-                gte: req.dateStart,
+                gte: endDate,
               },
             },
           ],
@@ -50,7 +52,11 @@ const createYear = async (req, res) => {
           message: `Las fechas proporcionadas chocan con el año ${existingYearWithConflict.name}`,
         });
       }
-      const yearCreate = await YearReporistory.createYear(req);
+      const yearCreate = await YearReporistory.createYear({
+        name:req.name,
+        dateStart:startDate,
+        dateEnd:endDate,
+      });
       res.status(201).json({
         success: true,
         data: yearCreate,
@@ -64,6 +70,8 @@ const updateYear = async (req, res) => {
     try {
       const idYear = parseInt(req.params.id);
       req = matchedData(req);
+      const dateStart = new Date(req.dateStart);
+      const dateEnd = new Date(req.dateEnd);
       const existingYearWithConflict = await prisma.year.findFirst({
         where: {
           AND: [
@@ -72,10 +80,10 @@ const updateYear = async (req, res) => {
               OR: [
                 {
                   dateStart: {
-                    lte: req.dateEnd,
+                    lte: dateEnd,
                   },
                   dateEnd: {
-                    gte: req.dateStart,
+                    gte: dateStart,
                   },
                 },
               ],
@@ -91,7 +99,7 @@ const updateYear = async (req, res) => {
       }
       const yearUpdate = await YearReporistory.updateYear(
         idYear,
-        data
+        {dateEnd,dateStart}
       );
       res.status(201).json({
         success: true,

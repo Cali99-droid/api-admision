@@ -230,5 +230,61 @@ router.post("/", validatorCreateYear,createYear);
  *         description: Año no encontrado
  */
 router.put("/:id", validatorUpdateYear,updateYear);
+/**
+ * @swagger
+ * /year/{id}:
+ *   delete:
+ *     summary: "Eliminar un año"
+ *     description: "Elimina un año específico de la base de datos utilizando su ID."
+ *     tags: [Year]
+ *     operationId: deleteYear
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: "ID del año a eliminar."
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: "Año eliminado con éxito."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Año eliminado con éxito."
+ *       '404':
+ *         description: "Año no encontrado."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Año no encontrado."
+ *       '400':
+ *         description: "Solicitud inválida."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error al eliminar el año."
+ */
 router.delete("/:id", validatorDeleteYear,deleteYear);
 export default router;
