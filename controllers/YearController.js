@@ -30,16 +30,25 @@ const getYearById = async (req, res) => {
 const createYear = async (req, res) => {
     try {
       req = matchedData(req);
-      const existRol = await prisma.year.findMany({
+      const existingYearWithConflict = await prisma.year.findFirst({
         where: {
-            rol: req.rol || '',
-          },
-      })
-      if(existRol){
-        res.status(400).json({
-            success: false,
-            message: `Ya existe el rol: ${req.rol}`,
-          });
+          OR: [
+            {
+              dateStart: {
+                lte: req.dateEnd,
+              },
+              dateEnd: {
+                gte: req.dateStart,
+              },
+            },
+          ],
+        },
+      });
+      if (existingYearWithConflict) {
+        return res.status(400).json({
+          success: false,
+          message: `Las fechas proporcionadas chocan con el año ${existingYearWithConflict.name}`,
+        });
       }
       const yearCreate = await YearReporistory.createYear(req);
       res.status(201).json({
@@ -55,7 +64,31 @@ const updateYear = async (req, res) => {
     try {
       const idYear = parseInt(req.params.id);
       req = matchedData(req);
-      const { id, ...data } = req;
+      const existingYearWithConflict = await prisma.year.findFirst({
+        where: {
+          AND: [
+            { id: { not: idYear } },
+            {
+              OR: [
+                {
+                  dateStart: {
+                    lte: req.dateEnd,
+                  },
+                  dateEnd: {
+                    gte: req.dateStart,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      });
+      if (existingYearWithConflict) {
+        return res.status(400).json({
+          success: false,
+          message: `Las fechas proporcionadas chocan con el año ${existingYearWithConflict.name}`,
+        });
+      }
       const yearUpdate = await YearReporistory.updateYear(
         idYear,
         data
@@ -69,9 +102,22 @@ const updateYear = async (req, res) => {
       handleHttpError(res, "ERROR_UPDATE_YEAR");
     }
 };
+const deleteYear = async (req, res) => {
+  const { id } = req.params;
+
+  await prisma.year.delete({
+    where: { id: Number(id) },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: `El año con ID ${id} ha sido eliminado correctamente`,
+  });
+};
 export {
     getAllYears,
     getYearById,
     createYear,
     updateYear,
+    deleteYear,
 };
