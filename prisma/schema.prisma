@@ -191,17 +191,17 @@ model docsIncome {
 }
 
 model vacant {
-  id          Int       @id @default(autoincrement())
-  year        String?   @db.VarChar(45)
-  campus      String?   @db.VarChar(45)
-  level       String?   @db.VarChar(45)
-  grade       String?   @db.VarChar(45)
+  id          Int            @id @default(autoincrement())
+  year        String?        @db.VarChar(45)
+  campus      String?        @db.VarChar(45)
+  level       String?        @db.VarChar(45)
+  grade       String?        @db.VarChar(45)
   children_id Int
-  status      String?   @db.VarChar(45)
-  create_time DateTime? @default(now()) @db.Timestamp(0)
-  update_time DateTime? @db.Timestamp(0)
-  validate    Int?      @default(0)
-  children    children  @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
+  status      vacant_status? @default(on_process)
+  create_time DateTime?      @default(now()) @db.Timestamp(0)
+  update_time DateTime?      @db.Timestamp(0)
+  validate    Int?           @default(0)
+  children    children       @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
 
   @@index([children_id], map: "fk_vacant_children1_idx")
 }
@@ -366,6 +366,16 @@ model deletion_log {
   date  DateTime? @default(now()) @db.Timestamp(0)
 }
 
+model year {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique(map: "name") @db.VarChar(20)
+  dateStart  DateTime? @db.DateTime(0)
+  dateEnd    DateTime? @db.DateTime(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  status     Boolean   @default(true)
+}
+
 enum person_gender {
   M
   F
@@ -403,4 +413,10 @@ enum background_assessment_conclusion {
 enum economic_evaluation_conclusion {
   apto
   no_apto @map("no apto")
+}
+
+enum vacant_status {
+  on_process @map("on process")
+  accepted
+  denied
 }
