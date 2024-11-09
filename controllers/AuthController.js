@@ -15,7 +15,7 @@ const prisma = new PrismaClient();
 const registerUser = async (req, res) => {
   try {
     req = matchedData(req);
-    const { name, lastname, mLastname, doc_number, email, phone } = req;
+    const { name, lastname, mLastname,role, doc_number, email, phone } = req;
 
     //verificar emails, phone y número de documento duplicados
     const existsDoc = await PersonRepository.getPersonByNumberDoc(doc_number);
@@ -59,7 +59,7 @@ const registerUser = async (req, res) => {
     }
 
     const code = generateId().substring(5, 10);
-    const dataPerson = { name, mLastname, lastname, doc_number };
+    const dataPerson = { name, mLastname, lastname, role, doc_number };
     const person = await PersonRepository.createPerson(dataPerson);
 
     const dataUser = {

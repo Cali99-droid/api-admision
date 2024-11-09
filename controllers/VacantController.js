@@ -130,7 +130,7 @@ const getVacantAvailable = async (req, res) => {
     const loginResponse = await axios.post(loginUrl, formData);
     const { data } = loginResponse;
     const token = data.result.token;
-
+    console.log(token);
     const matriculaUrl = `${vacantUrl}?id_anio=8&id_suc=${
       id_suc || ""
     }&id_niv=${id_niv || ""}&id_gir=1&id_gra=${id_gra || ""}`;
@@ -140,7 +140,10 @@ const getVacantAvailable = async (req, res) => {
       },
     });
     const resp = matriculaResponse.data.result;
-
+    if (!resp) {
+      handleHttpError(res, "NOT_EXIST_VACANT", 404);
+      return;
+    }
     const resultData = resp.map((v) => {
       return {
         giro: v.giro,

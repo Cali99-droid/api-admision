@@ -22,6 +22,12 @@ export const validatorRegister = [
     .notEmpty()
     .withMessage("El campo lastname no puede estar vacío")
     .isLength({ min: 3, max: 99 }),
+  body("role")
+    .exists()
+    .notEmpty()
+    .withMessage("El campo role no puede estar vacío")
+    .isIn(["P", "M"])
+    .withMessage("El campo role solo puede ser 'P'(PADRE) o 'M'(MADRE)"),
   body("doc_number")
     .trim()
     .exists()
