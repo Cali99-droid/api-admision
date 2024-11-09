@@ -201,9 +201,12 @@ model vacant {
   create_time DateTime?      @default(now()) @db.Timestamp(0)
   update_time DateTime?      @db.Timestamp(0)
   validate    Int?           @default(0)
+  years       Int?
   children    children       @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
+  year        year?          @relation(fields: [years], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_year_id")
 
   @@index([children_id], map: "fk_vacant_children1_idx")
+  @@index([years], map: "fk_year_id")
 }
 
 model familiy_secretary {
@@ -374,6 +377,7 @@ model year {
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
   status     Boolean   @default(true)
+  vacant     vacant[]
 }
 
 enum person_gender {
