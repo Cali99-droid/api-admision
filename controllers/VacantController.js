@@ -130,7 +130,6 @@ const getVacantAvailable = async (req, res) => {
     const loginResponse = await axios.post(loginUrl, formData);
     const { data } = loginResponse;
     const token = data.result.token;
-    console.log(token);
     const matriculaUrl = `${vacantUrl}?id_anio=8&id_suc=${
       id_suc || ""
     }&id_niv=${id_niv || ""}&id_gir=1&id_gra=${id_gra || ""}`;
