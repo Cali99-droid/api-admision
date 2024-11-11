@@ -316,6 +316,10 @@ const swaggerDefinition = {
           phone: {
             type: "integer",
           },
+          status_polit: {
+            type: "string",
+            example: true,
+          },
         },
       },
       authConfirm: {
