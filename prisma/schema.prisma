@@ -167,6 +167,7 @@ model user {
   mauticId                        Int?
   agree                           Int?                @default(0)
   person_id                       Int
+  status_polit                    Boolean?
   auth                            auth[]
   chat                            chat[]
   familiy_secretary               familiy_secretary[]
@@ -175,6 +176,7 @@ model user {
   psy_evaluation                  psy_evaluation[]
   person                          person              @relation(fields: [person_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_USER_PERSON")
   user_roles                      user_roles[]
+  vacant_secretary                vacant_secretary[]
 
   @@index([person_id], map: "fk_USER_PERSON_idx")
 }
@@ -191,22 +193,22 @@ model docsIncome {
 }
 
 model vacant {
-  id          Int            @id @default(autoincrement())
-  year        String?        @db.VarChar(45)
-  campus      String?        @db.VarChar(45)
-  level       String?        @db.VarChar(45)
-  grade       String?        @db.VarChar(45)
-  children_id Int
-  status      vacant_status? @default(on_process)
-  create_time DateTime?      @default(now()) @db.Timestamp(0)
-  update_time DateTime?      @db.Timestamp(0)
-  validate    Int?           @default(0)
-  years       Int?
-  children    children       @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
-  year        year?          @relation(fields: [years], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_year_id")
+  id               Int                @id @default(autoincrement())
+  campus           String?            @db.VarChar(45)
+  level            String?            @db.VarChar(45)
+  grade            String?            @db.VarChar(45)
+  children_id      Int
+  status           vacant_status?     @default(on_process)
+  create_time      DateTime?          @default(now()) @db.Timestamp(0)
+  update_time      DateTime?          @db.Timestamp(0)
+  validate         Int?               @default(0)
+  year_id          Int?
+  children         children           @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
+  year             year?              @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_year_id")
+  vacant_secretary vacant_secretary[]
 
   @@index([children_id], map: "fk_vacant_children1_idx")
-  @@index([years], map: "fk_year_id")
+  @@index([year_id], map: "fk_year_id")
 }
 
 model familiy_secretary {
@@ -378,6 +380,20 @@ model year {
   updated_at DateTime? @default(now()) @db.Timestamp(0)
   status     Boolean   @default(true)
   vacant     vacant[]
+}
+
+model vacant_secretary {
+  id         Int       @id @default(autoincrement())
+  vacant_id  Int
+  user_id    Int
+  status     Boolean?  @default(false)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  vacant     vacant    @relation(fields: [vacant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "vacant_secretary_ibfk_1")
+  user       user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "vacant_secretary_ibfk_2")
+
+  @@index([user_id], map: "user_id")
+  @@index([vacant_id], map: "vacant_id")
 }
 
 enum person_gender {

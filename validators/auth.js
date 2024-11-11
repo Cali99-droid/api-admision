@@ -44,6 +44,16 @@ export const validatorRegister = [
     .isLength({ min: 9, max: 9 })
     .withMessage("El campo phone debe ser de 9 caracteres"),
 
+  body("status_polit")
+    .exists()
+    .withMessage("El campo status_polit es requerido.")
+    .isBoolean()
+    .custom((value) => {
+      if (value !== true) {
+        throw new Error("Debe aceptar los términos y condiciones para continuar.");
+      }
+      return true;
+    }),
   body("email")
     .trim()
     .exists()
