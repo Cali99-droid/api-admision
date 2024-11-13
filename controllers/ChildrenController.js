@@ -2,19 +2,46 @@ import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import prisma from "../utils/prisma.js";
+import FamilyRepository from "../repositories/FamilyRepository.js";
 
 const store = async (req, res) => {
   try {
     const { user } = req;
-    const { img1, img2 } = req.files;
-
-    const children = matchedData(req);
-    const { id } = children;
-
-    if (!img1 || !img2) {
+    console.log(user)
+    const { children_img1, children_img2 } = req.files;
+    // Luego aplicamos matchedData para obtener solo los datos validados
+    const data = matchedData(req);
+    const { id } = req.params;
+    console.log(id);
+    if (!children_img1 || !children_img2) {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
       return;
     }
+    const children = {
+      name: data.children_name,
+      lastname: data.children_lastname,
+      mLastname: data.children_mLastname,
+      type_doc: data.children_type_doc,
+      doc_number: data.children_doc_number.toString(),
+      gender: data.children_gender,
+      birthdate: new Date(data.children_birthdate).toISOString(),
+    };
+    const father = {
+      name: data.father_name,
+      lastname: data.father_lastname,
+      mLastname: data.father_mLastname,
+      type_doc: data.father_type_doc,
+      doc_number: data.father_doc_number.toString(),
+    };
+    
+    const mother = {
+      name: data.mother_name,
+      lastname: data.mother_lastname,
+      mLastname: data.mother_mLastname,
+      type_doc: data.mother_type_doc,
+      doc_number: data.mother_doc_number.toString(),
+    };
+    console.log(children,father,mother)
     const pers = await prisma.person.findFirst({
       where: {
         doc_number: children.doc_number.toString(),
@@ -24,24 +51,46 @@ const store = async (req, res) => {
       handleHttpError(res, "NUMBER_DOC_EXIST");
       return;
     }
-    // const family = await prisma.family.findUnique({
-    //   where: {
-    //     id: parseInt(id),
-    //     AND: {
-    //       mainParent: user.id,
-    //     },
-    //   },
-    // });
-    // if (!family) {
-    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE");
-    //   return;
-    // }
-
-    children.birthdate = new Date(children.birthdate).toISOString();
+    const family = await prisma.family.findUnique({
+      where: {
+        id: parseInt(id),
+        AND: {
+          mainParent: user.id,
+        },
+      },
+    });
+    if (!family) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+      return;
+    }
+    if(user.role_parent === 'P' && user.doc_number !== father.doc_number){
+      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH",404);
+    }
+    if(user.role_parent === 'M' && user.doc_number !== mother.doc_number){
+      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH",404);
+    }
+    if(!family.parent){
+      if(user.role_parent === 'P'){
+        mother.role='M';
+        const parent = await prisma.person.create({
+          data: mother,
+        });
+        await FamilyRepository.update(+family.id, { parent:parent.id });
+      }
+      if(user.role_parent === 'M'){
+        father.role='p';
+        const parent = await prisma.person.create({
+          data: father,
+        });
+        await FamilyRepository.update(+family.id, { parent:parent.id });
+      }
+    }
+    
+    
     children.doc_number = children.doc_number.toString();
-    const image1 = await uploadImage(img1[0]);
-    const image2 = await uploadImage(img2[0]);
-    delete children.id;
+    const image1 = await uploadImage(children_img1[0]);
+    const image2 = await uploadImage(children_img2[0]);
+    // delete children.id;
     const personCreate = await prisma.person.create({
       data: children,
     });
@@ -67,10 +116,11 @@ const store = async (req, res) => {
         },
       ],
     });
-    const data = { id: personCreate.id };
     res.status(200).json({
       success: true,
-      data,
+      data:{
+        id: personCreate.id
+      },
     });
   } catch (error) {
     console.log(error);

@@ -67,37 +67,87 @@ export const idValidationRules = [
 ];
 
 export const childValidationRules = [
-  body("name")
+  body("children_name")
     .trim()
     .exists()
     .notEmpty()
-    .withMessage("el name es incorrecto children"),
-  body("lastname").exists().notEmpty().withMessage("el lastname es incorrecto"),
-  body("mLastname")
+    .withMessage("el children_name es incorrecto children"),
+  body("children_lastname")
     .exists()
     .notEmpty()
-    .withMessage("el mLastname es incorrecto"),
-  body("type_doc")
+    .withMessage("el children_lastname es incorrecto"),
+  body("children_mLastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el children_mLastname es incorrecto"),
+  body("children_type_doc")
     .isIn(["DNI", "CE"])
-    .withMessage("el tipo de documento debe ser DNI o CE"),
-  body("doc_number")
+    .withMessage("el children_type_doc de documento debe ser DNI o CE"),
+  body("children_doc_number")
     .isNumeric()
-    .withMessage("el numero de documento debe ser numerico")
+    .withMessage("el children_doc_number de documento debe ser numerico")
     .isLength({ min: 8, max: 8 })
-    .withMessage("el numero de documento debe ser de 8 caracteres"),
-  body("gender")
+    .withMessage(
+      "el children de documento debe ser de 8 caracteres"
+    ),
+  body("children_gender")
     .trim()
     .isIn(["M", "F"])
-    .withMessage("el gender debe ser M o F")
+    .withMessage("el children_gender debe ser M o F")
     .isAlpha()
-    .withMessage("el campo gender es incorrecto"),
-  body("birthdate").isISO8601().withMessage("el birthdate es incorrecto"),
-  body("ubigeo").optional(),
-  body("issuance_doc").optional().isISO8601(),
-  body("civil_status").optional(),
-  body("validate").optional().isNumeric(),
-  body("img1").optional(),
-  body("img2").optional(),
+    .withMessage("el campo children es incorrecto"),
+  body("children_birthdate")
+    .isISO8601()
+    .withMessage("el children_birthdate es incorrecto"),
+  body("children_img1").optional(),
+  body("children_img2").optional(),
+  body("father_name")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("el father es incorrecto children"),
+  body("father_lastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el father es incorrecto"),
+  body("father_mLastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el father es incorrecto"),
+  body("father_type_doc")
+    .isIn(["DNI", "CE"])
+    .withMessage("el father de documento debe ser DNI o CE"),
+  body("father_doc_number")
+    .isNumeric()
+    .withMessage("el father de documento debe ser numerico")
+    .isLength({ min: 8, max: 8 })
+    .withMessage("el father de documento debe ser de 8 caracteres"),
+
+  body("mother_name")
+    .trim()
+    .exists()
+    .notEmpty()
+    .withMessage("el mother es incorrecto children"),
+  body("mother_lastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el mother es incorrecto"),
+  body("mother_mLastname")
+    .exists()
+    .notEmpty()
+    .withMessage("el mother es incorrecto"),
+  body("mother_type_doc")
+    .isIn(["DNI", "CE"])
+    .withMessage("el mother.type_doc de documento debe ser DNI o CE"),
+  body("mother_doc_number")
+    .isNumeric()
+    .withMessage("el mother de documento debe ser numerico")
+    .isLength({ min: 8, max: 8 })
+    .withMessage("el mother de documento debe ser de 8 caracteres"),
+  // body("ubigeo").optional(),
+  // body("issuance_doc").optional().isISO8601(),
+  // body("civil_status").optional(),
+  // body("validate").optional().isNumeric(),
 
   (req, res, next) => {
     return validateResults(req, res, next);
