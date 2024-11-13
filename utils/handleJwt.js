@@ -11,6 +11,8 @@ export const tokenSign = async (user) => {
     {
       id: user.id,
       role: user.role,
+      doc_number: user.doc_number,
+      role_parent: user.role_parent,
     },
     JWT_SECRET,
     {

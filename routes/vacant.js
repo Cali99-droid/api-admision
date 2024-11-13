@@ -6,15 +6,68 @@ import {
   getVacantAvailable,
   store,
   update,
+  createVacant,
 } from "../controllers/VacantController.js";
 import { validatorParamId } from "../validators/family.js";
-import { validatorVacant } from "../validators/vacant.js";
+import {
+  validatorVacant,
+  validatorCreateVacant,
+} from "../validators/vacant.js";
 
 const router = express.Router();
 
 router.post("/:id", validatorParamId, validatorVacant, authMiddleware, store);
 router.get("/:id", validatorParamId, authMiddleware, get);
 router.post("/check/available", getVacantAvailable);
+/**
+ * @openapi
+ * /vacant:
+ *   post:
+ *     tags:
+ *       - vacant
+ *     summary: Crea un nuevo registro de vacante
+ *     description: Este endpoint crea un nuevo registro de vacante con los datos proporcionados.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               campus:
+ *                 type: string
+ *                 example: "Sede1"
+ *               level:
+ *                 type: string
+ *                 example: "Primaria"
+ *               grade:
+ *                 type: string
+ *                 example: "3er grado"
+ *               children_id:
+ *                 type: string
+ *                 example: "12345"
+ *             required:
+ *               - campus
+ *               - level
+ *               - grade
+ *               - children_id
+ *     responses:
+ *       200:
+ *         description: Registro creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Registro creado exitosamente"
+ *       400:
+ *         description: Error en la solicitud
+ */
+// router.post("/", validatorCreateVacant, authMiddleware, createVacant);
+router.post("/", validatorCreateVacant, createVacant);
+
 /**
  * @openapi
  * /vacant/{id}:

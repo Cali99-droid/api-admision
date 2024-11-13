@@ -26,26 +26,46 @@ const router = express.Router();
  *             type: object
  *             properties:
  *
- *               name:
+ *               children_name:
  *                 type: string
- *               lastname:
+ *               children_lastname:
  *                 type: string
- *               mLastname:
+ *               children_mLastname:
  *                 type: string
- *               type_doc:
+ *               children_type_doc:
  *                 type: string
- *               doc_number:
+ *               children_doc_number:
  *                 type: integer
- *               gender:
+ *               children_gender:
  *                 type: string
- *               birthdate:
+ *               children_birthdate:
  *                 type: string
- *               img1:
- *                 type: string
- *                 format: binary
- *               img2:
+ *               children_img1:
  *                 type: string
  *                 format: binary
+ *               children_img2:
+ *                 type: string
+ *                 format: binary
+ *               father_name:
+ *                 type: string
+ *               father_lastname:
+ *                 type: string
+ *               father_mLastname:
+ *                 type: string
+ *               father_type_doc:
+ *                 type: string
+ *               father_doc_number:
+ *                 type: integer
+ *               mother_name:
+ *                 type: string
+ *               mother_lastname:
+ *                 type: string
+ *               mother_mLastname:
+ *                 type: string
+ *               mother_type_doc:
+ *                 type: string
+ *               mother_doc_number:
+ *                 type: integer
  *     parameters:
  *     - name: id
  *       in: path
@@ -62,7 +82,7 @@ const router = express.Router();
 router.post(
   "/family/:id",
   authMiddleware,
-  upload.fields([{ name: "img1" }, { name: "img2" }]),
+  upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
   childValidationRules,
   store

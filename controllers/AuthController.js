@@ -157,7 +157,8 @@ const login = async (req, res) => {
 
     // user.set("password", undefined, { strict: false });
     const person = await PersonRepository.getPersonById(user.person_id);
-
+    user.doc_number =person.doc_number ;
+    user.role_parent =person.role ;
     const data = {
       token: await tokenSign(user),
       id: user.id,
