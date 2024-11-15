@@ -381,10 +381,17 @@ const get = async (req, res) => {
       docNumberMain: {
         role: mainParent?.role ? mainParent?.role : null,
         docNumber: mainParent?.doc_number ? mainParent?.doc_number : null,
+        name: mainParent?.name ? mainParent?.name : null,
+        lastname: mainParent?.lastname ? mainParent?.lastname : null,
+        mLastname: mainParent?.mLastname ? mainParent?.mLastname : null,
+
       },
       docNumber: {
         role: parent?.role ? parent?.role : null,
         docNumber: parent?.doc_number ? parent?.doc_number : null,
+        name: parent?.name ? parent?.name : null,
+        lastname: parent?.lastname ? parent?.lastname : null,
+        mLastname: parent?.mLastname ? parent?.mLastname : null,
       },
     };
     res.status(200).json({
