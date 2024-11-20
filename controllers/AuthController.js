@@ -169,6 +169,7 @@ const login = async (req, res) => {
       lastname: person.lastname,
       mLastname: person.mLastname,
       agree: user.agree,
+      role_parent:person.role,
     };
     res.status(201).json({
       success: true,

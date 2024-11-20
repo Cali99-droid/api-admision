@@ -25,7 +25,6 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *
  *               children_name:
  *                 type: string
  *               children_lastname:
@@ -90,7 +89,7 @@ router.post(
 
 /**
  * @openapi
- * /children/{id}:
+ * /children/family/{id}:
  *   put:
  *     tags:
  *       - children
@@ -105,27 +104,50 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *
- *               name:
+ *               children_name:
  *                 type: string
- *               lastname:
+ *               children_lastname:
  *                 type: string
- *               mLastname:
+ *               children_mLastname:
  *                 type: string
- *               type_doc:
+ *               children_type_doc:
  *                 type: string
- *               doc_number:
+ *               children_doc_number:
  *                 type: integer
- *               gender:
+ *               children_gender:
  *                 type: string
- *               birthdate:
+ *               children_birthdate:
  *                 type: string
- *               img1:
- *                 type: string
- *                 format: binary
- *               img2:
+ *               children_img1:
  *                 type: string
  *                 format: binary
+ *               children_img2:
+ *                 type: string
+ *                 format: binary
+ *               father_id:
+ *                 type: number
+ *               father_name:
+ *                 type: string
+ *               father_lastname:
+ *                 type: string
+ *               father_mLastname:
+ *                 type: string
+ *               father_type_doc:
+ *                 type: string
+ *               father_doc_number:
+ *                 type: integer
+ *               mother_id:
+ *                 type: number
+ *               mother_name:
+ *                 type: string
+ *               mother_lastname:
+ *                 type: string
+ *               mother_mLastname:
+ *                 type: string
+ *               mother_type_doc:
+ *                 type: string
+ *               mother_doc_number:
+ *                 type: integer
  *     parameters:
  *     - name: id
  *       in: path
@@ -140,9 +162,9 @@ router.post(
  *         description: No tiene permisos '403'
  */
 router.put(
-  "/:id",
+  "/family/:id",
   authMiddleware,
-  upload.fields([{ name: "img1" }, { name: "img2" }]),
+  upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
   childValidationRules,
   update

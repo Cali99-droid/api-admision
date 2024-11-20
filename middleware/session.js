@@ -39,6 +39,7 @@ export const authMiddleware = async (req, res, next) => {
             roles_id: true,
           },
         },
+        person: true,
       },
     });
     req.user = user;

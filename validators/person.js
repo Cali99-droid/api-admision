@@ -87,20 +87,24 @@ export const childValidationRules = [
     .isNumeric()
     .withMessage("el children_doc_number de documento debe ser numerico")
     .isLength({ min: 8, max: 8 })
-    .withMessage(
-      "el children de documento debe ser de 8 caracteres"
-    ),
+    .withMessage("el children de documento debe ser de 8 caracteres"),
   body("children_gender")
     .trim()
     .isIn(["M", "F"])
     .withMessage("el children_gender debe ser M o F")
     .isAlpha()
-    .withMessage("el campo children es incorrecto"),
+    .withMessage("el campo children_gender es incorrecto"),
   body("children_birthdate")
     .isISO8601()
     .withMessage("el children_birthdate es incorrecto"),
   body("children_img1").optional(),
   body("children_img2").optional(),
+  body("father_id")
+    .exists()
+    .notEmpty()
+    .withMessage("father_id no valido")
+    .isNumeric()
+    .withMessage("el father_id no es un numero"),
   body("father_name")
     .trim()
     .exists()
@@ -122,7 +126,12 @@ export const childValidationRules = [
     .withMessage("el father de documento debe ser numerico")
     .isLength({ min: 8, max: 8 })
     .withMessage("el father de documento debe ser de 8 caracteres"),
-
+  body("mother_id")
+    .exists()
+    .notEmpty()
+    .withMessage("father_id no valido")
+    .isNumeric()
+    .withMessage("el father_id no es un numero"),
   body("mother_name")
     .trim()
     .exists()
