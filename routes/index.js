@@ -2,6 +2,9 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import passport from "../middleware/auth.js";
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const router = express.Router();
 
@@ -39,4 +42,8 @@ const loadRoutes = async () => {
   }
 };
 loadRoutes();
+// Aplica autenticación globalmente a todas las rutas, excepto a /login y /callback
+// router.use((req, res, next) => {
+//   ensureAuthenticated(req, res, next);
+// });
 export default router;

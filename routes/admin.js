@@ -29,6 +29,8 @@ import {
 import { destroy, update } from "../controllers/FamilyController.js";
 import { validatorFamily, validatorGetFamily } from "../validators/family.js";
 
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
+
 const router = express.Router();
 /**
  * Get all users
@@ -54,7 +56,7 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/users", adminMiddleware, getAllUsers);
+router.get("/users", ensureAuthenticated(["psicologia-adm"]), getAllUsers);
 router.post(
   "/user-role",
   adminMiddleware,
