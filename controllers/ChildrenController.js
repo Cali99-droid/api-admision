@@ -69,10 +69,6 @@ const store = async (req, res) => {
     }
     console.log(user.person.doc_number);
     console.log(mother.doc_number);
-    if (user.person.role === "M" && user.person.doc_number === mother.doc_number) {
-      handleHttpError(res, "entra", 404);
-      return;
-    }
     if (user.person.role === "M" && user.person.doc_number !== mother.doc_number) {
       handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH2", 404);
       return;
@@ -129,11 +125,11 @@ const store = async (req, res) => {
           const parent = await prisma.person.create({
             data: father,
           });
-          const user = await prisma.user.create({
+          const findUser = await prisma.user.create({
             email: `${parent.doc_number}@gmail.com`,
             person_id: parent.id,
           });
-          userParent = user;
+          userParent = findUser;
         } else {
           userParent = exist;
         }
