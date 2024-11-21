@@ -2,7 +2,7 @@ import express from "express";
 import { authMiddleware } from "../middleware/session.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorGetFamily } from "../validators/family.js";
-import { childValidationRules } from "../validators/person.js";
+import { validatorCreateChildren,validatorUpdateChildren } from "../validators/person.js";
 
 import { get, show, store, update } from "../controllers/ChildrenController.js";
 
@@ -83,7 +83,7 @@ router.post(
   authMiddleware,
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
-  childValidationRules,
+  validatorCreateChildren,
   store
 );
 
@@ -166,7 +166,7 @@ router.put(
   authMiddleware,
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
-  childValidationRules,
+  validatorUpdateChildren,
   update
 );
 /**
