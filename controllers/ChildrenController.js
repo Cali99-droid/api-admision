@@ -67,7 +67,13 @@ const store = async (req, res) => {
       handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH1", 404);
       return;
     }
-    if (user.person.role === "M" && user.doc_number !== mother.doc_number) {
+    console.log(user.person.doc_number);
+    console.log(mother.doc_number);
+    if (user.person.role === "M" && user.person.doc_number === mother.doc_number) {
+      handleHttpError(res, "entra", 404);
+      return;
+    }
+    if (user.person.role === "M" && user.person.doc_number !== mother.doc_number) {
       handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH2", 404);
       return;
     }
