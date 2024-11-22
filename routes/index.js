@@ -43,7 +43,11 @@ const loadRoutes = async () => {
 };
 loadRoutes();
 // Aplica autenticación globalmente a todas las rutas, excepto a /login y /callback
-// router.use((req, res, next) => {
-//   ensureAuthenticated(req, res, next);
-// });
+router.use((req, res, next) => {
+  // const openRoutes = ["/login", "/callback"];
+  // if (openRoutes.includes(req.path)) {
+  //   return next(); // No aplicar autenticación a rutas abiertas
+  // }
+  ensureAuthenticated()(req, res, next); // Aplica autenticación a otras rutas
+});
 export default router;

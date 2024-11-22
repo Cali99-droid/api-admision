@@ -18,6 +18,7 @@ function getKey(header, callback) {
 // Middleware para validar el token
 export function ensureAuthenticated(requiredRoles = []) {
   return (req, res, next) => {
+    console.log("call");
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
 
