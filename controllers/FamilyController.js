@@ -177,13 +177,18 @@ const store = async (req, res) => {
 const show = async (req, res) => {
   try {
     const { user } = req;
-    console.log(user.resource_access["test-client"]?.roles);
+
     if (!user) {
       handleHttpError(res, "NOT_EXIST_USER");
     }
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const families = await prisma.family.findMany({
       where: {
-        parent_one: user.id,
+        parent_one: userSession.person_id,
       },
       select: {
         id: true,
