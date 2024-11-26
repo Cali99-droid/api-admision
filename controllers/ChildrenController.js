@@ -424,7 +424,7 @@ const get = async (req, res) => {
         person_id: id,
       },
     });
-    console.log("llego");
+
     if (!children) {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
@@ -433,23 +433,23 @@ const get = async (req, res) => {
       where: {
         id: children.family_id,
       },
-      select: {
-        conyugue: {
-          select: {
-            person: true,
-          },
-        },
-        mainConyugue: {
-          select: {
-            person: true,
-          },
-        },
+      // select: {
+      //   parent_one: {
+      //     select: {
+      //       person: true,
+      //     },
+      //   },
+
+      // },
+      include: {
+        person_family_parent_oneToperson: true,
+        person_family_parent_twoToperson: true,
       },
     });
 
-    const mainParent = dnisParents.mainConyugue.person;
-    const parent = dnisParents.conyugue?.person;
-    console.log(dnisParents);
+    const mainParent = dnisParents?.person_family_parent_oneToperson;
+    const parent = dnisParents.person_family_parent_twoToperson;
+    console.log(mainParent);
     const childrenExist = await prisma.person.findUnique({
       where: {
         id,
@@ -496,12 +496,12 @@ const get = async (req, res) => {
         father_doc_number: mainParent.doc_number,
       };
       mother = {
-        mother_id: parent.id,
-        mother_name: parent.name,
-        mother_lastname: parent.lastname,
-        mother_mLastname: parent.mLastname,
-        mother_type_doc: parent.type_doc ? parent?.type_doc : null,
-        mother_doc_number: parent.doc_number,
+        mother_id: parent?.id || null,
+        mother_name: parent?.name || null,
+        mother_lastname: parent?.lastname || null,
+        mother_mLastname: parent?.mLastname || null,
+        mother_type_doc: parent?.type_doc ? parent?.type_doc : null,
+        mother_doc_number: parent?.doc_number || null,
       };
     }
     if (mainParent?.role === "M") {
@@ -513,12 +513,12 @@ const get = async (req, res) => {
         mother_doc_number: mainParent.doc_number,
       };
       father = {
-        father_id: parent.id,
-        father_name: parent.name,
-        father_lastname: parent.lastname,
-        father_mLastname: parent.mLastname,
-        father_type_doc: parent.type_doc ? parent?.type_doc : null,
-        father_doc_number: parent.doc_number,
+        father_id: parent?.id || null,
+        father_name: parent?.name || null,
+        father_lastname: parent?.lastname || null,
+        father_mLastname: parent?.mLastname || null,
+        father_type_doc: parent?.type_doc ? parent?.type_doc : null,
+        father_doc_number: parent?.doc_number || null,
       };
     }
     const data = {
