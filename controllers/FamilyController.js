@@ -157,7 +157,7 @@ const store = async (req, res) => {
 
     const family = await prisma.family.create({
       data: {
-        parent_one: userSession,
+        parent_one: userSession.id,
         name,
       },
     });
