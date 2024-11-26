@@ -2,11 +2,11 @@ import axios from "axios";
 import qs from "qs";
 export async function getKeycloakToken() {
   const data = qs.stringify({
-    username: "carlosjhardel4@gmail.com",
-    password: "admin12",
+    username: process.env.KY_USERNAME,
+    password: process.env.KY_PASSWORD,
     grant_type: "password",
-    client_id: "test-client", // ID del cliente en Keycloak
-    client_secret: "68b489DOZbybCI7Z0wdsicepeLBINbLT", // Secreto del cliente en Keycloak
+    client_id: process.env.KEYCLOAK_RESOURCE, // ID del cliente en Keycloak
+    client_secret: process.env.KEYCLOAK_CREDENTIALS_SECRET, // Secreto del cliente en Keycloak
   });
   try {
     const response = await axios.post(
