@@ -149,11 +149,11 @@ const store = async (req, res) => {
       },
     });
 
-    const AnotherFamily = await prisma.family.findFirst({
-      where: {
-        mainParent: userSession,
-      },
-    });
+    // const AnotherFamily = await prisma.family.findFirst({
+    //   where: {
+    //     mainParent: userSession,
+    //   },
+    // });
 
     const family = await prisma.family.create({
       data: {
