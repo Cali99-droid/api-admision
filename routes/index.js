@@ -44,7 +44,12 @@ loadRoutes();
 // Aplica autenticación globalmente a todas las rutas, excepto a /login y /callback
 
 router.use((req, res, next) => {
-  const openRoutes = ["/district", "/province", "/region", "/check/available"];
+  const openRoutes = [
+    "/cities/district",
+    "/cities/province",
+    "/cities/region",
+    "/check/available",
+  ];
   if (openRoutes.includes(req.path)) {
     return next(); // No aplicar autenticación a rutas abiertas
   }
