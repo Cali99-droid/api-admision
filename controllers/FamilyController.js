@@ -153,7 +153,7 @@ const store = async (req, res) => {
     //     mainParent: userSession,
     //   },
     // });
-    console.log(userSession);
+
     const family = await prisma.family.create({
       data: {
         parent_one: parseInt(userSession.person_id),

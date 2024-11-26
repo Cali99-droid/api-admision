@@ -7,6 +7,11 @@ import FamilyRepository from "../repositories/FamilyRepository.js";
 const store = async (req, res) => {
   try {
     const { user } = req;
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const { children_img1, children_img2 } = req.files;
     // Luego aplicamos matchedData para obtener solo los datos validados
     const data = matchedData(req);
@@ -52,7 +57,7 @@ const store = async (req, res) => {
       where: {
         id: parseInt(id),
         AND: {
-          mainParent: user.id,
+          mainParent: userSession.person_id,
         },
       },
     });
@@ -61,28 +66,30 @@ const store = async (req, res) => {
       return;
     }
     if (
-      user.person.role === "P" &&
-      user.person.doc_number !== father.doc_number
+      userSession.parentesco === "Padre" &&
+      userSession.dni !== father.doc_number
     ) {
       handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH1", 404);
       return;
     }
-    console.log(user.person.doc_number);
-    console.log(mother.doc_number);
-    if (user.person.role === "M" && user.person.doc_number !== mother.doc_number) {
+
+    if (
+      userSession.parentesco === "Madre" &&
+      userSession.dni !== mother.doc_number
+    ) {
       handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH2", 404);
       return;
     }
     if (!family.parent) {
       console.log("entra pariente");
-      if (user.person.role === "P") {
+      if (userSession.parentesco === "Padre") {
         let userParent;
         const exist = await prisma.person.findFirst({
           where: {
-              doc_number: mother.doc_number,
+            doc_number: mother.doc_number,
           },
         });
-        
+
         if (!exist) {
           mother.role = "M";
           const parent = await prisma.person.create({
@@ -93,25 +100,25 @@ const store = async (req, res) => {
             data: {
               email: `${parent.doc_number}@gmail.com`,
               person_id: parent.id,
-              phone:parent.doc_number,
+              phone: parent.doc_number,
             },
           });
           userParent = user;
         } else {
-          console.log('entra2')
+          console.log("entra2");
           const findUser = await prisma.user.findFirst({
-            where:{
-              person_id:exist.id,
+            where: {
+              person_id: exist.id,
             },
           });
-          console.log(exist.id)
+          console.log(exist.id);
           console.log(findUser);
           userParent = findUser;
         }
 
         await FamilyRepository.update(+family.id, { parent: userParent.id });
       }
-      if (user.person.role === "M") {
+      if (userSession.parentesco === "Madre") {
         let userParent;
         const exist = await prisma.user.findFirst({
           where: {
