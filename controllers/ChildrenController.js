@@ -57,7 +57,7 @@ const store = async (req, res) => {
       where: {
         id: parseInt(id),
         AND: {
-          mainParent: userSession.person_id,
+          parent_one: userSession.person_id,
         },
       },
     });
