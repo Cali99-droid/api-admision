@@ -154,6 +154,7 @@ model region {
 }
 
 model user {
+
   id                Int                 @id @default(autoincrement())
   sub               String              @unique(map: "sub_UNIQUE") @db.VarChar(255)
   create_time       DateTime?           @default(now()) @db.Timestamp(0)
@@ -163,6 +164,7 @@ model user {
   psy_evaluation    psy_evaluation[]
   person            person              @relation(fields: [person_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_USER_PERSON")
   vacant_secretary  vacant_secretary[]
+
 
   @@index([person_id], map: "fk_USER_PERSON_idx")
 }
@@ -294,6 +296,7 @@ model deletion_log {
   date  DateTime? @default(now()) @db.Timestamp(0)
 }
 
+
 model vacant_secretary {
   id         Int       @id @default(autoincrement())
   vacant_id  Int
@@ -308,6 +311,7 @@ model vacant_secretary {
   @@index([vacant_id], map: "vacant_id")
 }
 
+
 model year {
   id         Int       @id @default(autoincrement())
   name       String    @unique(map: "name") @db.VarChar(20)
@@ -318,6 +322,7 @@ model year {
   status     Boolean   @default(true)
   vacant     vacant[]
 }
+
 
 enum person_gender {
   M

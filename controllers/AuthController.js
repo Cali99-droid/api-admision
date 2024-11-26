@@ -15,7 +15,7 @@ const prisma = new PrismaClient();
 const registerUser = async (req, res) => {
   try {
     req = matchedData(req);
-    const { name, lastname, mLastname, doc_number, email, phone } = req;
+    const { name, lastname, mLastname,role, doc_number, email, phone,status_polit } = req;
 
     //verificar emails, phone y número de documento duplicados
     const existsDoc = await PersonRepository.getPersonByNumberDoc(doc_number);
@@ -24,7 +24,6 @@ const registerUser = async (req, res) => {
       handleHttpError(res, "EXIST_DATA");
       return;
     }
-
     const existsEmail = await UserRepository.getUserByEmail(email);
 
     if (existsEmail) {
@@ -59,15 +58,15 @@ const registerUser = async (req, res) => {
     }
 
     const code = generateId().substring(5, 10);
-    const dataPerson = { name, mLastname, lastname, doc_number };
+    const dataPerson = { name, mLastname, lastname, role, doc_number };
     const person = await PersonRepository.createPerson(dataPerson);
-
     const dataUser = {
       email,
       phone,
       person_id: person.id,
       token,
       code,
+      status_polit,
       mauticId: process.env.NODE_ENV === "production" ? contactId : null,
       // mauticId: 0,
     };
@@ -158,7 +157,8 @@ const login = async (req, res) => {
 
     // user.set("password", undefined, { strict: false });
     const person = await PersonRepository.getPersonById(user.person_id);
-
+    user.doc_number =person.doc_number ;
+    user.role_parent =person.role ;
     const data = {
       token: await tokenSign(user),
       id: user.id,
@@ -169,6 +169,7 @@ const login = async (req, res) => {
       lastname: person.lastname,
       mLastname: person.mLastname,
       agree: user.agree,
+      role_parent:person.role,
     };
     res.status(201).json({
       success: true,

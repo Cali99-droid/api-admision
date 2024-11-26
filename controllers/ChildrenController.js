@@ -2,19 +2,43 @@ import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import prisma from "../utils/prisma.js";
+import FamilyRepository from "../repositories/FamilyRepository.js";
 
 const store = async (req, res) => {
   try {
     const { user } = req;
-    const { img1, img2 } = req.files;
-
-    const children = matchedData(req);
-    const { id } = children;
-
-    if (!img1 || !img2) {
+    const { children_img1, children_img2 } = req.files;
+    // Luego aplicamos matchedData para obtener solo los datos validados
+    const data = matchedData(req);
+    const { id } = req.params;
+    if (!children_img1 || !children_img2) {
       handleHttpError(res, "INSUFFICIENT_IMAGES");
       return;
     }
+    const children = {
+      name: data.children_name,
+      lastname: data.children_lastname,
+      mLastname: data.children_mLastname,
+      type_doc: data.children_type_doc,
+      doc_number: data.children_doc_number.toString(),
+      gender: data.children_gender,
+      birthdate: new Date(data.children_birthdate).toISOString(),
+    };
+    const father = {
+      name: data.father_name,
+      lastname: data.father_lastname,
+      mLastname: data.father_mLastname,
+      type_doc: data.father_type_doc,
+      doc_number: data.father_doc_number.toString(),
+    };
+
+    const mother = {
+      name: data.mother_name,
+      lastname: data.mother_lastname,
+      mLastname: data.mother_mLastname,
+      type_doc: data.mother_type_doc,
+      doc_number: data.mother_doc_number.toString(),
+    };
     const pers = await prisma.person.findFirst({
       where: {
         doc_number: children.doc_number.toString(),
@@ -24,24 +48,110 @@ const store = async (req, res) => {
       handleHttpError(res, "NUMBER_DOC_EXIST");
       return;
     }
-    // const family = await prisma.family.findUnique({
-    //   where: {
-    //     id: parseInt(id),
-    //     AND: {
-    //       mainParent: user.id,
-    //     },
-    //   },
-    // });
-    // if (!family) {
-    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE");
-    //   return;
-    // }
+    const family = await prisma.family.findUnique({
+      where: {
+        id: parseInt(id),
+        AND: {
+          mainParent: user.id,
+        },
+      },
+    });
+    if (!family) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+      return;
+    }
+    if (
+      user.person.role === "P" &&
+      user.person.doc_number !== father.doc_number
+    ) {
+      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH1", 404);
+      return;
+    }
+    console.log(user.person.doc_number);
+    console.log(mother.doc_number);
+    if (user.person.role === "M" && user.person.doc_number !== mother.doc_number) {
+      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH2", 404);
+      return;
+    }
+    if (!family.parent) {
+      console.log("entra pariente");
+      if (user.person.role === "P") {
+        let userParent;
+        const exist = await prisma.person.findFirst({
+          where: {
+              doc_number: mother.doc_number,
+          },
+        });
+        
+        if (!exist) {
+          mother.role = "M";
+          const parent = await prisma.person.create({
+            data: mother,
+          });
+          console.log(parent);
+          const user = await prisma.user.create({
+            data: {
+              email: `${parent.doc_number}@gmail.com`,
+              person_id: parent.id,
+              phone:parent.doc_number,
+            },
+          });
+          userParent = user;
+        } else {
+          console.log('entra2')
+          const findUser = await prisma.user.findFirst({
+            where:{
+              person_id:exist.id,
+            },
+          });
+          console.log(exist.id)
+          console.log(findUser);
+          userParent = findUser;
+        }
 
-    children.birthdate = new Date(children.birthdate).toISOString();
+        await FamilyRepository.update(+family.id, { parent: userParent.id });
+      }
+      if (user.person.role === "M") {
+        let userParent;
+        const exist = await prisma.user.findFirst({
+          where: {
+            person: {
+              doc_number: father.doc_number,
+            },
+          },
+        });
+        if (!exist) {
+          father.role = "P";
+          const parent = await prisma.person.create({
+            data: father,
+          });
+          const findUser = await prisma.user.create({
+            email: `${parent.doc_number}@gmail.com`,
+            person_id: parent.id,
+          });
+          userParent = findUser;
+        } else {
+          userParent = exist;
+        }
+
+        await FamilyRepository.update(+family.id, { parent: userParent.id });
+      }
+      // if(user.person.role === 'M'){
+      //   father.role='P';
+      //   const parent = await prisma.person.create({
+      //     data: father,
+      //   });
+      //   const user = await prisma.user.create({
+      //     email:`${parent.doc_number}@gmail.com`,
+      //   })
+      //   await FamilyRepository.update(+family.id, { parent:user.id });
+      // }
+    }
+
     children.doc_number = children.doc_number.toString();
-    const image1 = await uploadImage(img1[0]);
-    const image2 = await uploadImage(img2[0]);
-    delete children.id;
+    const image1 = await uploadImage(children_img1[0]);
+    const image2 = await uploadImage(children_img2[0]);
+    // delete children.id;
     const personCreate = await prisma.person.create({
       data: children,
     });
@@ -67,10 +177,11 @@ const store = async (req, res) => {
         },
       ],
     });
-    const data = { id: personCreate.id };
     res.status(200).json({
       success: true,
-      data,
+      data: {
+        id: personCreate.id,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -80,14 +191,38 @@ const store = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { user } = req;
-    const { img1, img2 } = req.files;
+    const { children_img1, children_img2 } = req.files;
+    const data = matchedData(req);
+    const { id } = req.params;
+    const children = {
+      name: data.children_name,
+      lastname: data.children_lastname,
+      mLastname: data.children_mLastname,
+      type_doc: data.children_type_doc,
+      doc_number: data.children_doc_number.toString(),
+      gender: data.children_gender,
+      birthdate: new Date(data.children_birthdate).toISOString(),
+    };
+    const father = {
+      name: data.father_name,
+      lastname: data.father_lastname,
+      mLastname: data.father_mLastname,
+      type_doc: data.father_type_doc,
+      doc_number: data.father_doc_number.toString(),
+    };
 
-    const children = matchedData(req);
-    if (children.img1 && img2) {
+    const mother = {
+      name: data.mother_name,
+      lastname: data.mother_lastname,
+      mLastname: data.mother_mLastname,
+      type_doc: data.mother_type_doc,
+      doc_number: data.mother_doc_number.toString(),
+    };
+    if (data.children_img1 && children_img2) {
       console.log("se reemplaza imagen 2");
       const person = await prisma.doc.findFirst({
         where: {
-          name: children.img1,
+          name: data.children_img1,
         },
         select: {
           person_id: true,
@@ -98,13 +233,13 @@ const update = async (req, res) => {
           person_id: person.person_id,
           NOT: [
             {
-              name: children.img1,
+              name: data.children_img1,
             },
           ],
         },
       });
       console.log(imageReplace);
-      const image2 = await uploadImage(img2[0]);
+      const image2 = await uploadImage(children_img2[0]);
       const replaceImg = await prisma.doc.update({
         data: {
           name: image2.imageName,
@@ -117,11 +252,11 @@ const update = async (req, res) => {
       // console.log(imageReplace);
       // console.log("llego imagen ", req.img2);
     }
-    if (children.img2 && img1) {
+    if (data.children_img2 && children_img1) {
       console.log("se reemplaza imagen 1");
       const person = await prisma.doc.findFirst({
         where: {
-          name: children.img2,
+          name: data.children_img2,
         },
         select: {
           person_id: true,
@@ -132,13 +267,13 @@ const update = async (req, res) => {
           person_id: person.person_id,
           NOT: [
             {
-              name: children.img2,
+              name: data.children_img2,
             },
           ],
         },
       });
       console.log(imageReplace);
-      const image1 = await uploadImage(img1[0]);
+      const image1 = await uploadImage(children_img1[0]);
       const replaceImg = await prisma.doc.update({
         data: {
           name: image1.imageName,
@@ -151,19 +286,18 @@ const update = async (req, res) => {
       // console.log(imageReplace);
       // console.log("llego imagen ", req.img2);
     }
-    const { id } = children;
-    const pers = await prisma.person.findFirst({
+    const existChildren = await prisma.person.findFirst({
       where: {
         id: parseInt(id),
       },
     });
-    if (!pers) {
-      handleHttpError(res, "PERSON_DOES_NOT_EXIST");
+    if (!existChildren) {
+      handleHttpError(res, "CHILDREN_DOES_NOT_EXIST");
       return;
     }
     const persDoc = await prisma.person.findFirst({
       where: {
-        doc_number: children.doc_number,
+        doc_number: data.doc_number,
       },
     });
     if (persDoc) {
@@ -173,7 +307,7 @@ const update = async (req, res) => {
       }
     }
 
-    if (img1 && img2) {
+    if (children_img1 && children_img2) {
       const docs = await prisma.doc.findMany({
         where: {
           person_id: parseInt(id),
@@ -207,20 +341,20 @@ const update = async (req, res) => {
       // return;
     }
 
-    children.birthdate = new Date(children.birthdate).toISOString();
-    if (children.issuance_doc) {
-      children.issuance_doc = new Date(children.issuance_doc).toISOString();
-    }
-    if (children.validate) {
-      children.validate = parseInt(children.validate);
-    }
-    children.doc_number = children.doc_number.toString();
+    // data.birthdate = new Date(data.birthdate).toISOString();
+    // if (data.issuance_doc) {
+    //   data.issuance_doc = new Date(children.data).toISOString();
+    // }
+    // if (data.validate) {
+    //   data.validate = parseInt(data.validate);
+    // }
+    // data.doc_number = data.doc_number.toString();
 
-    const dateUpdate = new Date();
-    children.update_time = dateUpdate;
-    delete children.id;
-    if (children.img1) delete children.img1;
-    if (children.img2) delete children.img2;
+    // const dateUpdate = new Date();
+    // data.update_time = dateUpdate;
+    // // delete children.id;
+    // if (data.children_img1) delete data.children_img1;
+    // if (data.children_img2) delete data.children_img2;
 
     const childrenUpdate = await prisma.person.update({
       data: children,
@@ -228,6 +362,25 @@ const update = async (req, res) => {
         id: parseInt(id),
       },
     });
+    console.log(father);
+    console.log(mother);
+    if (data.father_id || data.father_id !== null) {
+      console.log(data.father_id);
+      await prisma.person.update({
+        data: father,
+        where: {
+          id: parseInt(data.father_id),
+        },
+      });
+    }
+    if (data.mother_id || data.mother_id !== null) {
+      await prisma.person.update({
+        data: mother,
+        where: {
+          id: parseInt(data.mother_id),
+        },
+      });
+    }
     const actChild = await prisma.children.updateMany({
       data: {
         validate: children.validate ? parseInt(children.validate) : 0,
@@ -242,10 +395,12 @@ const update = async (req, res) => {
     //   img1: image1.imageName,
     //   img2: image2.imageName,
     // };
-    const data = { id: childrenUpdate.id };
+    // const data = { id: childrenUpdate.id };
     res.status(200).json({
       success: true,
-      data,
+      data: {
+        id: childrenUpdate.id,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -287,7 +442,7 @@ const get = async (req, res) => {
 
     const mainParent = dnisParents.mainConyugue.person;
     const parent = dnisParents.conyugue?.person;
-
+    console.log(dnisParents);
     const childrenExist = await prisma.person.findUnique({
       where: {
         id,
@@ -322,20 +477,50 @@ const get = async (req, res) => {
     delete childrenExist.children;
     let docFather = mainParent?.role === "P" ? mainParent?.doc_number : null;
     let docMother = mainParent?.role === "P" ? mainParent?.doc_number : null;
-
+    let father;
+    let mother;
+    if (mainParent?.role === "P") {
+      father = {
+        father_id: mainParent.id,
+        father_name: mainParent.name,
+        father_lastname: mainParent.lastname,
+        father_mLastname: mainParent.mLastname,
+        father_type_doc: mainParent.type_doc ? mainParent?.type_doc : null,
+        father_doc_number: mainParent.doc_number,
+      };
+      mother = {
+        mother_id: parent.id,
+        mother_name: parent.name,
+        mother_lastname: parent.lastname,
+        mother_mLastname: parent.mLastname,
+        mother_type_doc: parent.type_doc ? parent?.type_doc : null,
+        mother_doc_number: parent.doc_number,
+      };
+    }
+    if (mainParent?.role === "M") {
+      mother = {
+        mother_id: mainParent.id,
+        mother_lastname: mainParent.lastname,
+        mother_mLastname: mainParent.mLastname,
+        mother_type_doc: mainParent.type_doc ? mainParent?.type_doc : null,
+        mother_doc_number: mainParent.doc_number,
+      };
+      father = {
+        father_id: parent.id,
+        father_name: parent.name,
+        father_lastname: parent.lastname,
+        father_mLastname: parent.mLastname,
+        father_type_doc: parent.type_doc ? parent?.type_doc : null,
+        father_doc_number: parent.doc_number,
+      };
+    }
     const data = {
       ...childrenExist,
       img1,
       img2,
+      ...father,
+      ...mother,
       validate,
-      docNumberMain: {
-        role: mainParent?.role ? mainParent?.role : null,
-        docNumber: mainParent?.doc_number ? mainParent?.doc_number : null,
-      },
-      docNumber: {
-        role: parent?.role ? parent?.role : null,
-        docNumber: parent?.doc_number ? parent?.doc_number : null,
-      },
     };
     res.status(200).json({
       success: true,

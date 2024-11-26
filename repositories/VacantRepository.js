@@ -33,7 +33,11 @@ class VacantRepository {
       },
     });
   }
-
+  async createVacant(data) {
+    return prisma.vacant.create({
+      data
+    });
+  }
   async updateVacant(vacantId, data) {
     return prisma.vacant.update({
       where: {

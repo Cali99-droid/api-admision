@@ -51,3 +51,24 @@ export const permissionsIdExist = async(id)=>{
       throw new Error(`El id: ${id},no existe`);
   }
 };
+
+export const yearIdExist = async(id)=>{
+  const rolExist = await prisma.year.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+  if(!rolExist){
+      throw new Error(`El id: ${id},no existe`);
+  }
+};
+export const childrenIdExist = async(id)=>{
+  const rolExist = await prisma.children.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+  if(!rolExist){
+      throw new Error(`El id: ${id},no existe`);
+  }
+};

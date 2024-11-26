@@ -56,8 +56,11 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
+
 router.get("/users", ensureAuthenticated(["administrador-adm"]), getAllUsers);
 router.post("/user-role", validatorCreateUserRole, createUserRole);
+
+
 /**
  * Route put user-role
  * @openapi
