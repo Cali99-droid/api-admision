@@ -50,7 +50,7 @@ const router = express.Router();
  */
 router.post(
   "/children/:id",
-  authMiddleware,
+
   upload.fields([{ name: "img" }]),
   validatorSchool,
   validatorGetFamily,
@@ -99,7 +99,7 @@ router.post(
  */
 router.put(
   "/:id",
-  authMiddleware,
+
   upload.fields([{ name: "img" }]),
   validatorSchool,
   update
@@ -125,6 +125,6 @@ router.put(
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/:id", authMiddleware, validatorGetFamily, get);
+router.get("/:id", validatorGetFamily, get);
 
 export default router;

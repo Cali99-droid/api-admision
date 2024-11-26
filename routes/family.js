@@ -58,7 +58,7 @@ const router = express.Router();
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/", authMiddleware, validatorFamily, store);
+router.post("/", validatorFamily, store);
 /**
  * @openapi
  * /family:

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
+import { saveUserIdIfNotExists } from "../helpers/sincronizeUser.js";
 
 // Configuración del cliente JWKS para obtener la clave pública de Keycloak
 const client = jwksClient({
@@ -18,7 +19,6 @@ function getKey(header, callback) {
 // Middleware para validar el token
 export function ensureAuthenticated(requiredRoles = []) {
   return (req, res, next) => {
-    console.log("call");
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
 
@@ -36,7 +36,7 @@ export function ensureAuthenticated(requiredRoles = []) {
           return res.status(401).json({ message: "No autenticado." });
         }
 
-        // Extrae los roles del token JWT
+        // Extrae los roles del token JWTs
         const userRoles =
           decodedToken.resource_access["test-client"]?.roles || [];
 
@@ -51,9 +51,21 @@ export function ensureAuthenticated(requiredRoles = []) {
             .json({ message: "Acceso denegado. Rol no autorizado." });
         }
 
+        saveUserIdIfNotExists(decodedToken)
+          .then(() => {
+            // Añadir el userId al request para acceder en rutas posteriores
+            req.user = decodedToken;
+            next();
+          })
+          .catch((error) => {
+            console.error("Error guardando el usuario en la BD:", error);
+            res.status(500).json({ message: "Error guardando usuario" });
+          });
+
         // Guarda la información del usuario en la solicitud
-        req.user = decodedToken;
-        next();
+        // req.user = decodedToken;
+
+        // next();
       }
     );
   };

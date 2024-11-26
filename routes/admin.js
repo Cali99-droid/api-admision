@@ -56,13 +56,8 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/users", ensureAuthenticated(["psicologia-adm"]), getAllUsers);
-router.post(
-  "/user-role",
-  adminMiddleware,
-  validatorCreateUserRole,
-  createUserRole
-);
+router.get("/users", ensureAuthenticated(["administrador-adm"]), getAllUsers);
+router.post("/user-role", validatorCreateUserRole, createUserRole);
 /**
  * Route put user-role
  * @openapi
@@ -95,7 +90,7 @@ router.post(
  */
 router.put(
   "/user-role/:id",
-  adminMiddleware,
+
   validatorUpdateUserRole,
   updateUserRole
 );
@@ -126,45 +121,76 @@ router.put(
  */
 router.delete(
   "/user-role/:id",
-  adminMiddleware,
+
   validatorDeleteUserRole,
   deleteUserRole
 );
-router.get("/secretary/assignments", adminMiddleware, getSecretaryAssignments);
+router.get(
+  "/secretary/assignments",
+  ensureAuthenticated(["administrador-adm"]),
+  getSecretaryAssignments
+);
 router.get(
   "/psychology/assignments",
-  adminMiddleware,
+
   getPsychologyAssignments
 );
-router.get("/secretaries", adminMiddleware, getSecretaries);
-router.get("/psychologists", adminMiddleware, getPsychologists);
-/**Gestion familias */
-router.put(
-  "/family/:id",
-  authMiddleware,
-  validatorFamily,
-  validatorGetFamily,
-  update
+router.get(
+  "/secretaries",
+  ensureAuthenticated(["administrador-adm"]),
+  getSecretaries
 );
-router.delete("/family/:id", adminMiddleware, validatorGetFamily, destroy);
+router.get(
+  "/psychologists",
+  ensureAuthenticated(["administrador-adm"]),
+  getPsychologists
+);
+/**Gestion familias */
+router.put("/family/:id", validatorFamily, validatorGetFamily, update);
+router.delete(
+  "/family/:id",
+  ensureAuthenticated(["administrador-adm"]),
+  validatorGetFamily,
+  destroy
+);
 
-router.get("/success-families", adminMiddleware, getSuccessFamilies);
-// router.get("/status-families", adminMiddleware, getStatusFamilies);
-router.get("/status-families", adminMiddleware, getStatusFamilyAndChildren);
+router.get(
+  "/success-families",
+  ensureAuthenticated(["administrador-adm"]),
+  getSuccessFamilies
+);
+// router.get("/status-families", ensureAuthenticated(["administrador-adm"]), getStatusFamilies);
+router.get(
+  "/status-families",
+  ensureAuthenticated(["administrador-adm"]),
+  getStatusFamilyAndChildren
+);
 
 //dashboard
-// router.get("/statistics/", adminMiddleware, getFilterByLevelGrade);
+// router.get("/statistics/", ensureAuthenticated(["administrador-adm"]), getFilterByLevelGrade);
 router.get(
   "/statistics/vacant/:level/:grade",
-  adminMiddleware,
+
   getFilterByLevelGrade
 );
-router.get("/statistics/vacant/all", adminMiddleware, getAllVacants);
-// router.get("/status-family", adminMiddleware, getStatusFamilies);
-// router.get("/status-families", adminMiddleware, getFamiliesEvaluationStatus);
+router.get(
+  "/statistics/vacant/all",
+  ensureAuthenticated(["administrador-adm"]),
+  getAllVacants
+);
+// router.get("/status-family", ensureAuthenticated(["administrador-adm"]), getStatusFamilies);
+// router.get("/status-families", ensureAuthenticated(["administrador-adm"]), getFamiliesEvaluationStatus);
 //
 
-router.post("/assign/vacant/:idChildren", adminMiddleware, assignVacant);
-router.post("/deny/vacant/:idChildren", adminMiddleware, denyVacant);
+router.post(
+  "/assign/vacant/:idChildren",
+  ensureAuthenticated(["administrador-adm"]),
+  assignVacant
+);
+router.post(
+  "/deny/vacant/:idChildren",
+  ensureAuthenticated(["administrador-adm"]),
+  denyVacant
+);
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;

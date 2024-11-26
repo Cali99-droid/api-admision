@@ -2,7 +2,6 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import passport from "../middleware/auth.js";
 import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,11 +42,12 @@ const loadRoutes = async () => {
 };
 loadRoutes();
 // Aplica autenticación globalmente a todas las rutas, excepto a /login y /callback
+
 router.use((req, res, next) => {
-  // const openRoutes = ["/login", "/callback"];
-  // if (openRoutes.includes(req.path)) {
-  //   return next(); // No aplicar autenticación a rutas abiertas
-  // }
+  const openRoutes = ["/district", "/province", "/region", "/check/available"];
+  if (openRoutes.includes(req.path)) {
+    return next(); // No aplicar autenticación a rutas abiertas
+  }
   ensureAuthenticated()(req, res, next); // Aplica autenticación a otras rutas
 });
 export default router;

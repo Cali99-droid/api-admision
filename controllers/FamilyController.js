@@ -8,29 +8,38 @@ import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import sendMessageFromSecretary from "../message/fromUser.js";
+import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 
 const store = async (req, res) => {
   try {
     const { user } = req;
 
     const { name } = matchedData(req);
+
+    const secretariesKey = await getUsersByRole("secretaria");
+
+    const ids = secretariesKey.map((s) => s.id);
     const secretaries = await prisma.user.findMany({
       where: {
-        user_roles: {
-          some: {
-            roles_id: 2,
-            AND: {
-              status: 1,
-            },
-          },
+        sub: {
+          in: ids,
         },
       },
       select: {
         id: true,
+        person: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
-    console.log(secretaries);
+
+    // return res.status(201).json({
+    //   success: true,
+    //   data: secretaries,
+    // });
     const secretariaMenosOcupada = secretaries[0];
 
     const AnotherFamily = await prisma.family.findFirst({

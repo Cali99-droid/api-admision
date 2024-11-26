@@ -29,6 +29,6 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/", authMiddleware, showRange);
+router.get("/", showRange);
 
 export default router;
