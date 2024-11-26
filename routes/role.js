@@ -1,18 +1,19 @@
 import express from "express";
 
 import { adminMiddleware, authMiddleware } from "../middleware/session.js";
-import { 
-    getAllRoles, 
-    getRoleById,
-    createUserRole,
-    updateUserRole,
+import {
+  getAllRoles,
+  getRoleById,
+  createUserRole,
+  updateUserRole,
 } from "../controllers/RoleController.js";
 import {
-    validatorCreateRole,
-    validatorUpdateRole,
+  validatorCreateRole,
+  validatorUpdateRole,
 } from "../validators/role.js";
-  const router = express.Router();
-  /**
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
+const router = express.Router();
+/**
  * Get all roles
  * @openapi
  * /role:
@@ -37,7 +38,7 @@ import {
  *          description: Error de validacion.
  */
 router.get("/", getAllRoles);
-  /**
+/**
  * Get one rol
  * @openapi
  * /role/{id}:
@@ -93,7 +94,12 @@ router.get("/:id", getRoleById);
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/", adminMiddleware, validatorCreateRole,createUserRole);
+router.post(
+  "/",
+  ensureAuthenticated(["administrador-adm"]),
+  validatorCreateRole,
+  createUserRole
+);
 /**
  * Route put role
  * @openapi
@@ -124,6 +130,11 @@ router.post("/", adminMiddleware, validatorCreateRole,createUserRole);
  *                      description: No tiene permisos '403'
  *
  */
-router.put("/:id", adminMiddleware, validatorUpdateRole,updateUserRole);
+router.put(
+  "/:id",
+  ensureAuthenticated(["administrador-adm"]),
+  validatorUpdateRole,
+  updateUserRole
+);
 
 export default router;

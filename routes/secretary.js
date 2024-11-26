@@ -4,7 +4,6 @@ import {
   allMiddleware,
   antecedentMiddleware,
   economicMiddleware,
-  sessionSecretaryMiddleware,
 } from "../middleware/session.js";
 import {
   deleteChildren,
@@ -40,10 +39,11 @@ import {
   createAntecedent,
   getAntecedent,
 } from "../controllers/AntecedentController.js";
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const router = express.Router();
 
-router.get("/", sessionSecretaryMiddleware, getFamilies);
+router.get("/", ensureAuthenticated(["secretaria-adm"]), getFamilies);
 /**
  * Get all summary-applicants
  * @openapi
@@ -70,7 +70,7 @@ router.get("/", sessionSecretaryMiddleware, getFamilies);
  */
 router.get(
   "/summary-applicants",
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   getSummaryOfApplicantsBySecretary
 );
 /**
@@ -97,7 +97,11 @@ router.get(
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/background-summary", sessionSecretaryMiddleware, getBackgroundSummary);
+router.get(
+  "/background-summary",
+  ensureAuthenticated(["secretaria-adm"]),
+  getBackgroundSummary
+);
 /**
  * Get all summary-evaluation
  * @openapi
@@ -124,7 +128,7 @@ router.get("/background-summary", sessionSecretaryMiddleware, getBackgroundSumma
  */
 router.get(
   "/economic-summary",
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   getEconomicEvaluationSummary
 );
 
@@ -153,78 +157,102 @@ router.get(
 router.get(
   "/family/:id",
   validatorGetFamily,
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   getFamily
 );
-router.post("/validate-home/:id", sessionSecretaryMiddleware, validateHome);
-router.post("/validate-income/:id", sessionSecretaryMiddleware, validateIncome);
+router.post(
+  "/validate-home/:id",
+  ensureAuthenticated(["secretaria-adm"]),
+  validateHome
+);
+router.post(
+  "/validate-income/:id",
+  ensureAuthenticated(["secretaria-adm"]),
+  validateIncome
+);
 router.post(
   "/validate-children/:id",
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   validateChildren
 );
-router.post("/validate-school/:id", sessionSecretaryMiddleware, validateSchool);
-router.post("/validate-spouse/:id", sessionSecretaryMiddleware, validateSpouse);
+router.post(
+  "/validate-school/:id",
+  ensureAuthenticated(["secretaria-adm"]),
+  validateSchool
+);
+router.post(
+  "/validate-spouse/:id",
+  ensureAuthenticated(["secretaria-adm"]),
+  validateSpouse
+);
 router.post(
   "/send-message/:id",
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   validatorMessage,
   sendMessageSecretary
 );
 
-router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
-// router.get("/get-message/:id", sessionSecretaryMiddleware, getMessage);
-router.post("/served/:id", sessionSecretaryMiddleware, setServed);
-router.get("/get-served", sessionSecretaryMiddleware, getServed);
+router.get(
+  "/get-message/:id",
+  ensureAuthenticated(["secretaria-adm"]),
+  getMessage
+);
+// router.get("/get-message/:id",  ensureAuthenticated(["secretaria-adm"]), getMessage);
+router.post("/served/:id", ensureAuthenticated(["secretaria-adm"]), setServed);
+router.get("/get-served", ensureAuthenticated(["secretaria-adm"]), getServed);
 
 //children
-router.delete("/children/:id", sessionSecretaryMiddleware, deleteChildren);
+router.delete(
+  "/children/:id",
+  ensureAuthenticated(["secretaria-adm"]),
+  deleteChildren
+);
 
 //ev economica
 router.get(
   "/economic-family/:familyId",
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm", "ev-economic-adm"]),
   validatorIdFamily,
-  economicMiddleware,
+
   getEconomic
 );
 
 router.post(
   "/economic",
   validatorEconomic,
-  sessionSecretaryMiddleware,
-  economicMiddleware,
+  ensureAuthenticated(["secretaria-adm", "ev-economic-adm"]),
+
   createEconomic
 );
 router.put(
   "/economic/:id",
   validatorEconomic,
-  sessionSecretaryMiddleware,
-  economicMiddleware,
+  ensureAuthenticated(["secretaria-adm", "ev-economic-adm"]),
+
   updateEconomic
 );
 
 //ev antecedentes
 router.get(
   "/antecedent-family/:familyId",
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm", "ev-antecedent-adm"]),
   validatorIdFamily,
-  antecedentMiddleware,
+
   getAntecedent
 );
 
 router.post(
   "/antecedent",
   validatorAntecedent,
-  sessionSecretaryMiddleware,
-  antecedentMiddleware,
+  ensureAuthenticated(["secretaria-adm", "ev-antecedent-adm"]),
+
   createAntecedent
 );
 
 router.get(
   "/all-families",
-  sessionSecretaryMiddleware,
-  allMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
+
   getAllFamilies
 );
 

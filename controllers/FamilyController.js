@@ -8,6 +8,7 @@ import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
 import sendMessageFromSecretary from "../message/fromUser.js";
+import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 
 // const store = async (req, res) => {
 //   try {
@@ -116,7 +117,40 @@ const store = async (req, res) => {
     const { user } = req;
 
     const { name } = matchedData(req);
-  
+
+
+    const secretariesKey = await getUsersByRole("secretaria");
+
+    const ids = secretariesKey.map((s) => s.id);
+    const secretaries = await prisma.user.findMany({
+      where: {
+        sub: {
+          in: ids,
+        },
+      },
+      select: {
+        id: true,
+        person: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { familiy_secretary: { _count: "asc" } },
+    });
+
+    // return res.status(201).json({
+    //   success: true,
+    //   data: secretaries,
+    // });
+    const secretariaMenosOcupada = secretaries[0];
+
+    const AnotherFamily = await prisma.family.findFirst({
+      where: {
+        mainParent: user.id,
+      },
+    });
+
     const family = await prisma.family.create({
       data: {
         mainParent: user.id,
@@ -139,12 +173,13 @@ const store = async (req, res) => {
 const show = async (req, res) => {
   try {
     const { user } = req;
+    console.log(user.resource_access["test-client"]?.roles);
     if (!user) {
       handleHttpError(res, "NOT_EXIST_USER");
     }
     const families = await prisma.family.findMany({
       where: {
-        mainParent: user.id,
+        parent_one: user.id,
       },
       select: {
         id: true,

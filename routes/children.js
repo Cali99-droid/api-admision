@@ -1,3 +1,4 @@
+
 import express from "express";
 import { authMiddleware } from "../middleware/session.js";
 import { upload } from "../utils/handleUpload.js";
@@ -80,7 +81,6 @@ const router = express.Router();
  */
 router.post(
   "/family/:id",
-  authMiddleware,
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
   validatorCreateChildren,
@@ -163,7 +163,7 @@ router.post(
  */
 router.put(
   "/family/:id",
-  authMiddleware,
+
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
   validatorUpdateChildren,
@@ -192,9 +192,10 @@ router.put(
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/:id", authMiddleware, validatorGetFamily, get);
+router.get("/:id",  validatorGetFamily, get);
 
 /**Trae todos los hijos de una familia */
-router.get("/family/:id", authMiddleware, validatorGetFamily, show);
+router.get("/family/:id",  validatorGetFamily, show);
 
 export default router;
+

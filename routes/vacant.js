@@ -16,8 +16,8 @@ import {
 
 const router = express.Router();
 
-router.post("/:id", validatorParamId, validatorVacant, authMiddleware, store);
-router.get("/:id", validatorParamId, authMiddleware, get);
+router.post("/:id", validatorParamId, validatorVacant, store);
+router.get("/:id", validatorParamId, get);
 router.post("/check/available", getVacantAvailable);
 /**
  * @openapi
@@ -107,5 +107,5 @@ router.post("/", validatorCreateVacant, createVacant);
  *       '403':
  *         description: No tiene permisos '403'
  */
-router.put("/:id", validatorParamId, validatorVacant, authMiddleware, update);
+router.put("/:id", validatorParamId, validatorVacant, update);
 export default router;

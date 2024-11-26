@@ -1,11 +1,6 @@
 import express from "express";
 
 import {
-  authMiddleware,
-  sessionPsychologyMiddleware,
-} from "../middleware/session.js";
-
-import {
   validateDate,
   validatorGetFamily,
   validatorQuote,
@@ -26,6 +21,7 @@ import {
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
 import { assignamentPsichology } from "../controllers/FamilyController.js";
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const router = express.Router();
 /**
@@ -52,25 +48,29 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/summary-evaluation",sessionPsychologyMiddleware, SummaryPsyEvaluation);
+router.get(
+  "/summary-evaluation",
+  ensureAuthenticated(["psicologia-adm"]),
+  SummaryPsyEvaluation
+);
 
-router.get("/families", sessionPsychologyMiddleware, getFamilies);
+router.get("/families", ensureAuthenticated(["psicologia-adm"]), getFamilies);
 router.get(
   "/family/:id",
   validatorGetFamily,
-  sessionPsychologyMiddleware,
+  ensureAuthenticated(["psicologia-adm"]),
   getFamily
 );
 router.post(
   "/interview",
-  sessionPsychologyMiddleware,
+  ensureAuthenticated(["psicologia-adm"]),
   upload.fields([{ name: "img1" }, { name: "img2" }]),
   validatorInterview,
   createInterview
 );
 router.post(
   "/report",
-  sessionPsychologyMiddleware,
+  ensureAuthenticated(["psicologia-adm"]),
   upload.fields([{ name: "img1" }, { name: "img2" }]),
   validatorReport,
 
@@ -79,19 +79,23 @@ router.post(
 
 router.post(
   "/citation",
-  sessionPsychologyMiddleware,
+  ensureAuthenticated(["psicologia-adm"]),
   validateDate,
   createCitation
 );
 router.put(
   "/citation/:id",
-  sessionPsychologyMiddleware,
+  ensureAuthenticated(["psicologia-adm"]),
   validateDate,
   updateCitation
 );
-router.put("/cancel-citation/:id", sessionPsychologyMiddleware, cancelCitation);
-router.get("/citation", sessionPsychologyMiddleware, getCitations);
-router.get("/completed", sessionPsychologyMiddleware, getCompleted);
+router.put(
+  "/cancel-citation/:id",
+  ensureAuthenticated(["psicologia-adm"]),
+  cancelCitation
+);
+router.get("/citation", ensureAuthenticated(["psicologia-adm"]), getCitations);
+router.get("/completed", ensureAuthenticated(["psicologia-adm"]), getCompleted);
 
 // router.post(
 //   "/gaa",
