@@ -119,7 +119,6 @@ const store = async (req, res) => {
     const { name } = matchedData(req);
 
     const secretariesKey = await getUsersByRole("secretaria");
-    console.log(secretariesKey);
     const ids = secretariesKey.map((s) => s.id);
     const secretaries = await prisma.user.findMany({
       where: {
@@ -154,13 +153,14 @@ const store = async (req, res) => {
     //     mainParent: userSession,
     //   },
     // });
-
+    console.log(userSession);
     const family = await prisma.family.create({
       data: {
-        parent_one: userSession.id,
+        parent_one: parseInt(userSession.person_id),
         name,
       },
     });
+
     const data = {
       id: family.id,
       name: family.name,
