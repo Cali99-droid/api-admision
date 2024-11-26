@@ -143,16 +143,21 @@ const store = async (req, res) => {
     //   data: secretaries,
     // });
     const secretariaMenosOcupada = secretaries[0];
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
 
     const AnotherFamily = await prisma.family.findFirst({
       where: {
-        mainParent: user.id,
+        mainParent: userSession,
       },
     });
 
     const family = await prisma.family.create({
       data: {
-        parent_one: user.id,
+        parent_one: userSession,
         name,
       },
     });
