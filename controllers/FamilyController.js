@@ -42,7 +42,7 @@ import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 //       },
 //     });
 //     console.timeEnd("Consulta AnotherFamily");
-    
+
 //     const family = await prisma.family.create({
 //       data: {
 //         mainParent: user.id,
@@ -52,7 +52,7 @@ import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 //     console.time("Creación if");
 //     if (AnotherFamily) {
 //       console.log("asignando como existente");
-      
+
 //       const existFamilySecretary = await prisma.familiy_secretary.findFirst({
 //         where: {
 //           family_id: AnotherFamily.id,
@@ -61,7 +61,7 @@ import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 //           user: true,
 //         },
 //       });
-     
+
 //       const familyAsig = await prisma.familiy_secretary.create({
 //         data: {
 //           user_id: existFamilySecretary.user_id,
@@ -118,9 +118,8 @@ const store = async (req, res) => {
 
     const { name } = matchedData(req);
 
-
     const secretariesKey = await getUsersByRole("secretaria");
-
+    console.log(secretariesKey);
     const ids = secretariesKey.map((s) => s.id);
     const secretaries = await prisma.user.findMany({
       where: {
