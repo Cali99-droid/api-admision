@@ -31,9 +31,6 @@ class UserRepository {
             update_time: true,
             status: true,
           },
-          where: {
-            status: 1,
-          },
         },
       },
       where: {

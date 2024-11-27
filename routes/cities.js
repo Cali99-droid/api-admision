@@ -32,7 +32,7 @@ const router = express.Router();
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/region", authMiddleware, showRegion);
+router.get("/region", showRegion);
 /**
  * Get all storages
  * @openapi
@@ -57,7 +57,7 @@ router.get("/region", authMiddleware, showRegion);
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/province", authMiddleware, showProvince);
+router.get("/province", showProvince);
 /**
  * Get all storages
  * @openapi
@@ -82,6 +82,6 @@ router.get("/province", authMiddleware, showProvince);
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/district", authMiddleware, showDistrict);
+router.get("/district", showDistrict);
 
 export default router;

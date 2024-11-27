@@ -1,8 +1,9 @@
+
 import express from "express";
 import { authMiddleware } from "../middleware/session.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorGetFamily } from "../validators/family.js";
-import { childValidationRules } from "../validators/person.js";
+import { validatorCreateChildren,validatorUpdateChildren } from "../validators/person.js";
 
 import { get, show, store, update } from "../controllers/ChildrenController.js";
 
@@ -25,27 +26,46 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *
- *               name:
+ *               children_name:
  *                 type: string
- *               lastname:
+ *               children_lastname:
  *                 type: string
- *               mLastname:
+ *               children_mLastname:
  *                 type: string
- *               type_doc:
+ *               children_type_doc:
  *                 type: string
- *               doc_number:
+ *               children_doc_number:
  *                 type: integer
- *               gender:
+ *               children_gender:
  *                 type: string
- *               birthdate:
+ *               children_birthdate:
  *                 type: string
- *               img1:
- *                 type: string
- *                 format: binary
- *               img2:
+ *               children_img1:
  *                 type: string
  *                 format: binary
+ *               children_img2:
+ *                 type: string
+ *                 format: binary
+ *               father_name:
+ *                 type: string
+ *               father_lastname:
+ *                 type: string
+ *               father_mLastname:
+ *                 type: string
+ *               father_type_doc:
+ *                 type: string
+ *               father_doc_number:
+ *                 type: integer
+ *               mother_name:
+ *                 type: string
+ *               mother_lastname:
+ *                 type: string
+ *               mother_mLastname:
+ *                 type: string
+ *               mother_type_doc:
+ *                 type: string
+ *               mother_doc_number:
+ *                 type: integer
  *     parameters:
  *     - name: id
  *       in: path
@@ -61,16 +81,15 @@ const router = express.Router();
  */
 router.post(
   "/family/:id",
-  authMiddleware,
-  upload.fields([{ name: "img1" }, { name: "img2" }]),
+  upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
-  childValidationRules,
+  validatorCreateChildren,
   store
 );
 
 /**
  * @openapi
- * /children/{id}:
+ * /children/family/{id}:
  *   put:
  *     tags:
  *       - children
@@ -85,27 +104,50 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *
- *               name:
+ *               children_name:
  *                 type: string
- *               lastname:
+ *               children_lastname:
  *                 type: string
- *               mLastname:
+ *               children_mLastname:
  *                 type: string
- *               type_doc:
+ *               children_type_doc:
  *                 type: string
- *               doc_number:
+ *               children_doc_number:
  *                 type: integer
- *               gender:
+ *               children_gender:
  *                 type: string
- *               birthdate:
+ *               children_birthdate:
  *                 type: string
- *               img1:
- *                 type: string
- *                 format: binary
- *               img2:
+ *               children_img1:
  *                 type: string
  *                 format: binary
+ *               children_img2:
+ *                 type: string
+ *                 format: binary
+ *               father_id:
+ *                 type: number
+ *               father_name:
+ *                 type: string
+ *               father_lastname:
+ *                 type: string
+ *               father_mLastname:
+ *                 type: string
+ *               father_type_doc:
+ *                 type: string
+ *               father_doc_number:
+ *                 type: integer
+ *               mother_id:
+ *                 type: number
+ *               mother_name:
+ *                 type: string
+ *               mother_lastname:
+ *                 type: string
+ *               mother_mLastname:
+ *                 type: string
+ *               mother_type_doc:
+ *                 type: string
+ *               mother_doc_number:
+ *                 type: integer
  *     parameters:
  *     - name: id
  *       in: path
@@ -120,11 +162,11 @@ router.post(
  *         description: No tiene permisos '403'
  */
 router.put(
-  "/:id",
-  authMiddleware,
-  upload.fields([{ name: "img1" }, { name: "img2" }]),
+  "/family/:id",
+
+  upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
-  childValidationRules,
+  validatorUpdateChildren,
   update
 );
 /**
@@ -150,9 +192,10 @@ router.put(
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/:id", authMiddleware, validatorGetFamily, get);
+router.get("/:id",  validatorGetFamily, get);
 
 /**Trae todos los hijos de una familia */
-router.get("/family/:id", authMiddleware, validatorGetFamily, show);
+router.get("/family/:id",  validatorGetFamily, show);
 
 export default router;
+

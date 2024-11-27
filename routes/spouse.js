@@ -99,7 +99,6 @@ const router = express.Router();
 router.post(
   "/family/:id",
 
-  authMiddleware,
   upload.fields([{ name: "img1" }, { name: "img2" }]),
   idValidationRules,
   userValidationRules,
@@ -170,7 +169,6 @@ router.post(
 router.put(
   "/:id",
 
-  authMiddleware,
   upload.fields([{ name: "img1" }, { name: "img2" }]),
   idValidationRules,
   userValidationRules,
@@ -207,6 +205,6 @@ router.put(
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/:id", authMiddleware, idValidationRules, get);
+router.get("/:id", idValidationRules, get);
 
 export default router;

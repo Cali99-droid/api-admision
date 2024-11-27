@@ -9,10 +9,27 @@ import prisma from "./utils/prisma.js";
 import morganBody from "morgan-body";
 
 import loggerStream from "./utils/handleLogger.js";
+import passport, { setupPassport } from "./middleware/auth.js";
+import session from "express-session";
 
 const app = express();
 
+// Configuración de la sesión (ajústala según tus necesidades)
+app.use(
+  session({
+    secret: "your-session-secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// Inicializa `passport`
+setupPassport();
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.json());
+
 dotenv.config();
 
 const dominiosPermitidos = [process.env.FRONTEND_URL, "http://localhost:3001"];

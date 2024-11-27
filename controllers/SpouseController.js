@@ -388,12 +388,17 @@ const update = async (req, res) => {
 
 const get = async (req, res) => {
   try {
+    const { user } = req;
     req = matchedData(req);
-
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const id = parseInt(req.id);
     const spouse = await prisma.person.findUnique({
       where: {
-        id,
+        userSession,
       },
       include: {
         user: {

@@ -26,6 +26,107 @@ const swaggerDefinition = {
       },
     },
     schemas: {
+      summaryEvaluation: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            notNecessary: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      backgroundSummarySecretary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      backgroundSummary: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            campus: {
+              type: "string",
+            },
+            level: {
+              type: "string",
+            },
+            grade: {
+              type: "string",
+            },
+            notAssigned: {
+              type: "number",
+            },
+            served: {
+              type: "number",
+            },
+            noServed: {
+              type: "number",
+            },
+          },
+        },
+      },
+      summaryOfApplicantsBySecretary: {
+        type: "object",
+        properties: {
+          campus: {
+            type: "string",
+          },
+          level: {
+            type: "string",
+          },
+          grade: {
+            type: "string",
+          },
+          noServed: {
+            type: "number",
+          },
+          served: {
+            type: "number",
+          },
+        },
+      },
 
       roles: {
         type: "array",
@@ -187,6 +288,7 @@ const swaggerDefinition = {
           "name",
           "lastname",
           "mLastname",
+          "role",
           "doc_number",
           "email",
           "phone",
@@ -201,6 +303,10 @@ const swaggerDefinition = {
           mLastname: {
             type: "string",
           },
+          role: {
+            type: "string",
+            example: "P O M",
+          },
           doc_number: {
             type: "string",
           },
@@ -209,6 +315,10 @@ const swaggerDefinition = {
           },
           phone: {
             type: "integer",
+          },
+          status_polit: {
+            type: "string",
+            example: true,
           },
         },
       },

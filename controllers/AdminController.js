@@ -20,27 +20,28 @@ import client from "../utils/client.js";
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await UserRepository.getAllUsers();
-    const data = users.map((u) => {
-      return {
-        id: u.id,
-        doc_number: u.person.doc_number,
-        name:
-          u.person.lastname + " " + u.person.mLastname + " " + u.person.name,
-        date: u.email,
-        phone: u.phone,
-        create_time: u.create_time,
-        mautic: u.mauticId,
-        userRolId: u.user_roles[0]?.id || null,
-        rolId: u.user_roles[0]?.roles.id || null,
-        rol: u.user_roles[0]?.roles.rol || null,
-        status: u.user_roles[0]?.status || null,
-        permissions: u.auth,
-      };
-    });
+    // const data = users.map((u) => {
+    //   return {
+    //     id: u.id,
+    //     doc_number: u.person.doc_number,
+    //     name:
+    //       u.person.lastname + " " + u.person.mLastname + " " + u.person.name,
+    //     date: u.email,
+    //     phone: u.phone,
+    //     create_time: u.create_time,
+    //     mautic: u.mauticId,
+    //     userRolId: u.user_roles[0]?.id || null,
+    //     rolId: u.user_roles[0]?.roles.id || null,
+    //     rol: u.user_roles[0]?.roles.rol || null,
+    //     status: u.user_roles[0]?.status || null,
+    //     permissions: u.auth,
+    //   };
+    // });
     res.status(201).json({
       success: true,
-      data,
+      data: {
+        status: "ok",
+      },
     });
   } catch (error) {
     console.log(error);
@@ -53,7 +54,7 @@ const createUserRole = async (req, res) => {
     const { permissions = [], ...rest } = req;
     const userRoleCreate = await UserRoleRepository.createUserRole(rest);
     /**actualizar permisisos */
-    console.log(permissions);
+
     if (rest.roles_id === 2) {
       const deletedPermissions = await prisma.auth.deleteMany({
         where: {
@@ -145,9 +146,21 @@ const getSecretaryAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
+        email: a.family.mainConyugue.email,
+        phone: a.family.mainConyugue.phone,
+        nameParent:
+          a.family.mainConyugue.person.lastname +
+          " " +
+          a.family.mainConyugue.person.mLastname +
+          " " +
+          a.family.mainConyugue.person.name,
+        count_children: a.family.children.length,
+        vacants: a.family.children.map((v) => {
+          return v.vacant[0];
+        }),
         status: a.status,
         agent: a.user.person.name,
-        date: a.family.create_time,
+        register_date: a.family.create_time,
       };
     });
     res.status(201).json({
@@ -167,10 +180,20 @@ const getPsychologyAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
+        email: a.family.mainConyugue.email,
+        phone: a.family.mainConyugue.phone,
+        nameParent:
+          a.family.mainConyugue.person.lastname +
+          " " +
+          a.family.mainConyugue.person.mLastname +
+          " " +
+          a.family.mainConyugue.person.name,
+        count_children: a.family.children.length,
+        vacants: a.family.children.map((vacant) => vacant.vacant[0]),
         applied: a.applied,
         approved: a.applied === 0 ? 3 : a.approved,
         agent: a.user.person.name,
-        date: a.family.create_time,
+        register_date: a.family.create_time,
       };
     });
     res.status(201).json({
@@ -611,7 +634,7 @@ const assignVacant = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    // handleHttpError(res, "ERROR_ASSIGN_FAMILY");
+    handleHttpError(res, "ERROR_ASSIGN_FAMILY");
   }
 };
 
@@ -719,6 +742,7 @@ export {
   getStatusFamilyAndChildren,
   assignVacant,
   denyVacant,
+
   //sctipots
   changeNameFamily,
 };
