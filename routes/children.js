@@ -162,7 +162,6 @@ router.post(
  *         description: No tiene permisos '403'
  */
 router.put(
-  "/family/:id",
   "/family/:id",ensureAuthenticated(["secretaria-adm", "padre-adm"]),
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,

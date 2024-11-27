@@ -7,7 +7,7 @@ import FamilyRepository from "../repositories/FamilyRepository.js";
 const store = async (req, res) => {
   try {
     const { user } = req;
-    const userSession = await prisma.user.findUnique({
+    const userBD = await prisma.user.findUnique({
       where: {
         sub: user.sub,
       },
@@ -60,7 +60,7 @@ const store = async (req, res) => {
       where: {
         id: parseInt(id),
         AND: {
-          parent_one: userSession.person_id,
+          parent_one: userBD.person.id,
         },
       },
     });
@@ -68,25 +68,30 @@ const store = async (req, res) => {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE");
       return;
     }
-    if (
-      user.parentesco === "Padre" &&
-      userSession.person.dni !== father.doc_number
-    ) {
-      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH1", 404);
-      return;
-    }
+    console.log(family);
+    console.log(userBD);
+    console.log(userBD.person.role);
+    console.log(userBD.person.doc_number);
+    console.log(father.doc_number);
 
     if (
-      userSession.parentesco === "Madre" &&
-      userSession.dni !== mother.doc_number
+      userBD.person.role === "P" &&
+      userBD.person.doc_number !== father.doc_number
     ) {
-      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH2", 404);
+      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH_FATHER", 404);
       return;
     }
-    if (!family.parent) {
+    if (
+      userBD.person.role === "M" &&
+      userBD.person.doc_number !== mother.doc_number
+    ) {
+      handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH_MOTHER", 404);
+      return;
+    }
+    if (!family.parent_two) {
       console.log("entra pariente");
-      if (userSession.parentesco === "Padre") {
-        let userParent;
+      if (userBD.person.role === "P") {
+        let parentTwo;
         const exist = await prisma.person.findFirst({
           where: {
             doc_number: mother.doc_number,
@@ -99,63 +104,34 @@ const store = async (req, res) => {
             data: mother,
           });
           console.log(parent);
-          const user = await prisma.user.create({
-            data: {
-              email: `${parent.doc_number}@gmail.com`,
-              person_id: parent.id,
-              phone: parent.doc_number,
-            },
-          });
-          userParent = user;
+          parentTwo = parent;
         } else {
-          console.log("entra2");
-          const findUser = await prisma.user.findFirst({
-            where: {
-              person_id: exist.id,
-            },
-          });
-          console.log(exist.id);
-          console.log(findUser);
-          userParent = findUser;
+          parentTwo = exist;
         }
 
-        await FamilyRepository.update(+family.id, { parent: userParent.id });
+        await FamilyRepository.update(+family.id, { parent_two: parentTwo.id });
       }
-      if (userSession.parentesco === "Madre") {
-        let userParent;
-        const exist = await prisma.user.findFirst({
+      if (userBD.person.role === "M") {
+        let parentTwo;
+        const exist = await prisma.person.findFirst({
           where: {
-            person: {
-              doc_number: father.doc_number,
-            },
+            doc_number: father.doc_number,
           },
         });
+
         if (!exist) {
-          father.role = "P";
+          mother.role = "P";
           const parent = await prisma.person.create({
             data: father,
           });
-          const findUser = await prisma.user.create({
-            email: `${parent.doc_number}@gmail.com`,
-            person_id: parent.id,
-          });
-          userParent = findUser;
+          console.log(parent);
+          parentTwo = parent;
         } else {
-          userParent = exist;
+          parentTwo = exist;
         }
 
-        await FamilyRepository.update(+family.id, { parent: userParent.id });
+        await FamilyRepository.update(+family.id, { parentTwo: parentTwo.id });
       }
-      // if(user.person.role === 'M'){
-      //   father.role='P';
-      //   const parent = await prisma.person.create({
-      //     data: father,
-      //   });
-      //   const user = await prisma.user.create({
-      //     email:`${parent.doc_number}@gmail.com`,
-      //   })
-      //   await FamilyRepository.update(+family.id, { parent:user.id });
-      // }
     }
 
     children.doc_number = children.doc_number.toString();
@@ -190,7 +166,8 @@ const store = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        id: personCreate.id,
+        person_id : personCreate.id,
+        children_id : childrenCreate.id,
       },
     });
   } catch (error) {
@@ -305,18 +282,21 @@ const update = async (req, res) => {
       handleHttpError(res, "CHILDREN_DOES_NOT_EXIST");
       return;
     }
-    const persDoc = await prisma.person.findFirst({
-      where: {
-        doc_number: data.doc_number,
-      },
-    });
-    if (persDoc) {
-      if (persDoc.doc_number == children.doc_number && persDoc.id != id) {
-        handleHttpError(res, "DOC_NUMBER_EXIST");
-        return;
-      }
+    // const persDoc = await prisma.person.findFirst({
+    //   where: {
+    //     doc_number: children.doc_number,
+    //   },
+    // });
+    // if (persDoc) {
+    //   if (persDoc.doc_number == children.doc_number && persDoc.id != id) {
+    //     handleHttpError(res, "DOC_NUMBER_EXIST");
+    //     return;
+    //   }
+    // }
+    if (existChildren.doc_number == children.doc_number && existChildren.id != id) {
+      handleHttpError(res, "DOC_NUMBER_EXIST");
+      return;
     }
-
     if (children_img1 && children_img2) {
       const docs = await prisma.doc.findMany({
         where: {
@@ -333,8 +313,8 @@ const update = async (req, res) => {
           deleteImage(i.name);
         });
       }
-      const image1 = await uploadImage(img1[0]);
-      const image2 = await uploadImage(img2[0]);
+      const image1 = await uploadImage(children_img1[0]);
+      const image2 = await uploadImage(children_img2[0]);
       const imgs = await prisma.doc.createMany({
         data: [
           {
