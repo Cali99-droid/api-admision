@@ -11,6 +11,9 @@ const store = async (req, res) => {
       where: {
         sub: user.sub,
       },
+      select: {
+        person: true,
+      },
     });
     const { children_img1, children_img2 } = req.files;
     // Luego aplicamos matchedData para obtener solo los datos validados
@@ -66,8 +69,8 @@ const store = async (req, res) => {
       return;
     }
     if (
-      userSession.parentesco === "Padre" &&
-      userSession.dni !== father.doc_number
+      user.parentesco === "Padre" &&
+      userSession.person.dni !== father.doc_number
     ) {
       handleHttpError(res, "NUMBER_DOC_DOES_NOT_MATCH1", 404);
       return;

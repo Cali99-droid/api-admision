@@ -8,6 +8,7 @@ export async function saveUserIdIfNotExists(user) {
   });
 
   if (!userDB) {
+    // const userCRM = await createCRMuser(user);
     const createdPerson = await prisma.person.create({
       data: {
         name: user.name,
@@ -24,6 +25,7 @@ export async function saveUserIdIfNotExists(user) {
         person_id: createdPerson.id,
       },
     });
+
     console.log("new user add succesfully");
   } else {
     console.log("exist user, not sincronized");
