@@ -154,7 +154,6 @@ model region {
 }
 
 model user {
-
   id                Int                 @id @default(autoincrement())
   sub               String              @unique(map: "sub_UNIQUE") @db.VarChar(255)
   create_time       DateTime?           @default(now()) @db.Timestamp(0)
@@ -163,8 +162,6 @@ model user {
   familiy_secretary familiy_secretary[]
   psy_evaluation    psy_evaluation[]
   person            person              @relation(fields: [person_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_USER_PERSON")
-  vacant_secretary  vacant_secretary[]
-
 
   @@index([person_id], map: "fk_USER_PERSON_idx")
 }
@@ -181,19 +178,18 @@ model docsIncome {
 }
 
 model vacant {
-  id               Int                @id @default(autoincrement())
-  campus           String?            @db.VarChar(45)
-  level            String?            @db.VarChar(45)
-  grade            String?            @db.VarChar(45)
-  children_id      Int
-  status           vacant_status?     @default(on_process)
-  create_time      DateTime?          @default(now()) @db.Timestamp(0)
-  update_time      DateTime?          @db.Timestamp(0)
-  validate         Int?               @default(0)
-  year_id          Int?
-  children         children           @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
-  year             year?              @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_year_id")
-  vacant_secretary vacant_secretary[]
+  id          Int            @id @default(autoincrement())
+  campus      String?        @db.VarChar(45)
+  level       String?        @db.VarChar(45)
+  grade       String?        @db.VarChar(45)
+  children_id Int
+  status      vacant_status? @default(on_process)
+  create_time DateTime?      @default(now()) @db.Timestamp(0)
+  update_time DateTime?      @db.Timestamp(0)
+  validate    Int?           @default(0)
+  year_id     Int?
+  children    children       @relation(fields: [children_id], references: [id], onDelete: Cascade, map: "fk_vacant_children1")
+  year        year?          @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_year_id")
 
   @@index([children_id], map: "fk_vacant_children1_idx")
   @@index([year_id], map: "fk_year_id")
@@ -206,11 +202,14 @@ model familiy_secretary {
   status      Int?      @default(0)
   create_time DateTime? @default(now()) @db.Timestamp(0)
   update_time DateTime? @db.Timestamp(0)
+  year_id     Int
   family      family    @relation(fields: [family_id], references: [id], onDelete: Cascade, map: "fk_familiy_secretary_family1")
   user        user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_familiy_secretary_user1")
+  year        year      @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_familiy_secretary_year1")
 
   @@index([family_id], map: "fk_familiy_secretary_family1_idx")
   @@index([user_id], map: "fk_familiy_secretary_user1_idx")
+  @@index([year_id], map: "fk_familiy_secretary_year1_idx")
 }
 
 model doc_interview_psy {
@@ -296,33 +295,17 @@ model deletion_log {
   date  DateTime? @default(now()) @db.Timestamp(0)
 }
 
-
-model vacant_secretary {
-  id         Int       @id @default(autoincrement())
-  vacant_id  Int
-  user_id    Int
-  status     Boolean?  @default(false)
-  created_at DateTime? @default(now()) @db.Timestamp(0)
-  updated_at DateTime? @default(now()) @db.Timestamp(0)
-  vacant     vacant    @relation(fields: [vacant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "vacant_secretary_ibfk_1")
-  user       user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "vacant_secretary_ibfk_2")
-
-  @@index([user_id], map: "user_id")
-  @@index([vacant_id], map: "vacant_id")
-}
-
-
 model year {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique(map: "name") @db.VarChar(20)
-  dateStart  DateTime? @db.DateTime(0)
-  dateEnd    DateTime? @db.DateTime(0)
-  created_at DateTime? @default(now()) @db.Timestamp(0)
-  updated_at DateTime? @default(now()) @db.Timestamp(0)
-  status     Boolean   @default(true)
-  vacant     vacant[]
+  id                Int                 @id @default(autoincrement())
+  name              String              @unique(map: "name") @db.VarChar(20)
+  dateStart         DateTime?           @db.DateTime(0)
+  dateEnd           DateTime?           @db.DateTime(0)
+  created_at        DateTime?           @default(now()) @db.Timestamp(0)
+  updated_at        DateTime?           @default(now()) @db.Timestamp(0)
+  status            Boolean             @default(true)
+  familiy_secretary familiy_secretary[]
+  vacant            vacant[]
 }
-
 
 enum person_gender {
   M

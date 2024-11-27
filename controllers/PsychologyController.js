@@ -4,7 +4,7 @@ import { body, matchedData } from "express-validator";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import PsychologyReportRepository from "../repositories/PsychologyReportRepository.js";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
-import PersonRepository from "../repositories/PersonRepository.js";
+
 import prisma from "../utils/prisma.js";
 import { verifyToken } from "../utils/handleJwt.js";
 const SummaryPsyEvaluation = async (req, res) => {

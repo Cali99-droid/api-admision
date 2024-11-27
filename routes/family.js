@@ -103,7 +103,7 @@ router.get("/", ensureAuthenticated(["secretaria-adm", "padre-adm"]), show);
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/:id", authMiddleware, validatorGetFamily, get);
+router.get("/:id", validatorGetFamily, get);
 
 /**
  * http://localhost:3001/api
@@ -153,7 +153,7 @@ router.post(
   "/home/:id",
   validatorGetFamily,
   upload.fields([{ name: "img" }]),
-  authMiddleware,
+
   validatorHome,
   saveHome
 );

@@ -115,9 +115,9 @@ import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 const store = async (req, res) => {
   try {
     const { user } = req;
-
     const { name } = matchedData(req);
 
+    /**Obtener secretarias y secretaria menos ocupada */
     const secretariesKey = await getUsersByRole("secretaria");
     const ids = secretariesKey.map((s) => s.id);
     const secretaries = await prisma.user.findMany({
@@ -128,38 +128,68 @@ const store = async (req, res) => {
       },
       select: {
         id: true,
-        person: {
-          select: {
-            name: true,
-          },
-        },
       },
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
-
-    // return res.status(201).json({
-    //   success: true,
-    //   data: secretaries,
-    // });
     const secretariaMenosOcupada = secretaries[0];
+
+    /**obtener usuario de la bds */
     const userSession = await prisma.user.findUnique({
       where: {
         sub: user.sub,
       },
     });
+    /**obtener año activo */
+    const year = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-    // const AnotherFamily = await prisma.family.findFirst({
-    //   where: {
-    //     mainParent: userSession,
-    //   },
-    // });
+    /**verificar si el usuario tiene otra familia */
+    const AnotherFamily = await prisma.family.findFirst({
+      where: {
+        parent_one: userSession.person_id,
+      },
+    });
 
+    /**crear familia */
     const family = await prisma.family.create({
       data: {
         parent_one: parseInt(userSession.person_id),
         name,
       },
     });
+
+    /**si ya tiene familia, se le asigna a la misma secretaria */
+    if (AnotherFamily) {
+      console.log("asignando como existente");
+      const existFamilySecretary = await prisma.familiy_secretary.findFirst({
+        where: {
+          family_id: AnotherFamily.id,
+        },
+      });
+
+      const familyAsig = await prisma.familiy_secretary.create({
+        data: {
+          user_id: existFamilySecretary.user_id,
+          family_id: family.id,
+          year_id: year.id,
+        },
+      });
+    } else {
+      console.log("asignando como nuevo");
+      const familyAsig = await prisma.familiy_secretary.create({
+        data: {
+          user_id: secretariaMenosOcupada.id,
+          family_id: family.id,
+          year_id: year.id,
+        },
+      });
+    }
 
     const data = {
       id: family.id,
