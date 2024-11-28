@@ -103,6 +103,12 @@ const store = async (req, res) => {
           const parent = await prisma.person.create({
             data: mother,
           });
+          await prisma.person.update({
+            data: father,
+            where: {
+              id: parseInt(userBD.person.id),
+            },
+          });
           console.log(parent);
           parentTwo = parent;
         } else {
@@ -123,6 +129,12 @@ const store = async (req, res) => {
           mother.role = "P";
           const parent = await prisma.person.create({
             data: father,
+          });
+          await prisma.person.update({
+            data: mother,
+            where: {
+              id: parseInt(userBD.person.id),
+            },
           });
           console.log(parent);
           parentTwo = parent;
