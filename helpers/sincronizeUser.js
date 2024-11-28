@@ -14,6 +14,7 @@ export async function saveUserIdIfNotExists(user) {
         name: user.name,
         lastname: user.family_name,
         mLastname: user.family_name,
+        email: user.email,
         doc_number: user.dni,
         role: user.parentesco === "Padre" ? "P" : "M",
       },

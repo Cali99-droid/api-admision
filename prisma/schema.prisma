@@ -119,11 +119,14 @@ model person {
   civil_status                     String?          @db.VarChar(45)
   gender                           person_gender?
   profession                       String?          @db.VarChar(255)
+  phone                            String?          @db.Char(9)
   type_doc                         person_type_doc?
   role                             person_role?
   create_time                      DateTime?        @default(now()) @db.Timestamp(0)
   update_time                      DateTime?        @db.Timestamp(0)
   validate                         Int?             @default(0)
+  phone_validate                   Int?             @db.TinyInt
+  email                            String?          @db.VarChar(255)
   children                         children[]
   doc                              doc[]
   family_family_parent_oneToperson family[]         @relation("family_parent_oneToperson")
