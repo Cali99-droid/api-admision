@@ -6,6 +6,7 @@ import { validatorGetFamily } from "../validators/family.js";
 import { validatorCreateChildren,validatorUpdateChildren } from "../validators/person.js";
 
 import { get, show, store, update } from "../controllers/ChildrenController.js";
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const router = express.Router();
 
@@ -80,13 +81,12 @@ const router = express.Router();
  *         description: No tiene permisos '403'
  */
 router.post(
-  "/family/:id",
+  "/family/:id",ensureAuthenticated(["secretaria-adm", "padre-adm"]),
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
   validatorCreateChildren,
   store
 );
-
 /**
  * @openapi
  * /children/family/{id}:
@@ -162,8 +162,7 @@ router.post(
  *         description: No tiene permisos '403'
  */
 router.put(
-  "/family/:id",
-
+  "/family/:id",ensureAuthenticated(["secretaria-adm", "padre-adm"]),
   upload.fields([{ name: "children_img1" }, { name: "children_img2" }]),
   validatorGetFamily,
   validatorUpdateChildren,
