@@ -395,7 +395,7 @@ const get = async (req, res) => {
     const id = parseInt(req.id);
     const spouse = await prisma.person.findUnique({
       where: {
-        id: user.personId,
+        id: id,
       },
       include: {
         doc: {
