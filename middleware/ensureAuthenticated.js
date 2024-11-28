@@ -52,8 +52,10 @@ export function ensureAuthenticated(requiredRoles = []) {
         }
 
         saveUserIdIfNotExists(decodedToken)
-          .then(() => {
+          .then((us) => {
             // Añadir el userId al request para acceder en rutas posteriores
+            decodedToken.userId = us.id;
+            decodedToken.personId = us.person_id;
             req.user = decodedToken;
             next();
           })

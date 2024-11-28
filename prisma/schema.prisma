@@ -233,13 +233,16 @@ model psy_evaluation {
   update_time       DateTime?           @db.Timestamp(0)
   family_id         Int
   user_id           Int
+  year_id           Int
   doc_interview_psy doc_interview_psy[]
   family            family              @relation(fields: [family_id], references: [id], onDelete: Cascade, map: "fk_psy_evaluation_family1")
   user              user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_psy_evaluation_user1")
+  year              year                @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_psy_evaluation_year1")
   quotes            quotes[]
 
   @@index([family_id], map: "fk_psy_evaluation_family1_idx")
   @@index([user_id], map: "fk_psy_evaluation_user1_idx")
+  @@index([year_id], map: "fk_psy_evaluation_year1_idx")
 }
 
 model report_psy {
@@ -304,6 +307,7 @@ model year {
   updated_at        DateTime?           @default(now()) @db.Timestamp(0)
   status            Boolean             @default(true)
   familiy_secretary familiy_secretary[]
+  psy_evaluation    psy_evaluation[]
   vacant            vacant[]
 }
 

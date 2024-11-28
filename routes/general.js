@@ -7,7 +7,7 @@ import {
 } from "../controllers/SchoolController.js";
 
 const router = express.Router();
-router.get("/schools", authMiddleware, show);
-router.get("/schools/:name", authMiddleware, showSchoolByName);
-router.get("/ubigean/:ubigean", authMiddleware, showSchoolByDistrict);
+router.get("/schools", show);
+router.get("/schools/:name", showSchoolByName);
+router.get("/ubigean/:ubigean", showSchoolByDistrict);
 export default router;

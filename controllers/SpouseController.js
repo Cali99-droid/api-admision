@@ -16,17 +16,6 @@ const store = async (req, res) => {
 
     const pers = await prisma.person.findFirst({
       where: {
-        doc_number: person.doc_number.toString(),
-      },
-    });
-
-    if (pers) {
-      handleHttpError(res, "NUMBER_DOC_EXIST");
-      return;
-    }
-
-    const us = await prisma.user.findFirst({
-      where: {
         OR: [
           {
             email: {
@@ -38,12 +27,15 @@ const store = async (req, res) => {
               equals: userData.phone,
             },
           },
+          {
+            doc_number: person.doc_number.toString(),
+          },
         ],
       },
     });
 
-    if (us) {
-      handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
+    if (pers) {
+      handleHttpError(res, "SOME_DATA_EXIST");
       return;
     }
 
@@ -52,8 +44,8 @@ const store = async (req, res) => {
       where: {
         id: parseInt(id),
         AND: {
-          mainParent: user.id,
-          parent: {
+          parent_one: user.personId,
+          parent_two: {
             equals: null,
           },
         },
@@ -72,7 +64,7 @@ const store = async (req, res) => {
 
     const pe = await prisma.person.findFirst({
       where: {
-        id: user.person_id,
+        id: user.personId,
       },
     });
     // console.log(pe);
@@ -91,17 +83,17 @@ const store = async (req, res) => {
       data: person,
     });
 
-    const userCreate = await prisma.user.create({
-      data: {
-        email: userData.email,
-        phone: userData.phone.toString(),
-        person_id: personCreate.id,
-      },
-    });
+    // const userCreate = await prisma.user.create({
+    //   data: {
+    //     email: userData.email,
+    //     phone: userData.phone.toString(),
+    //     person_id: personCreate.id,
+    //   },
+    // });
 
     const familyUpdateMarried = await prisma.family.update({
       data: {
-        parent: userCreate.id,
+        parent_two: personCreate.id,
       },
       where: {
         id: family.id,
@@ -159,7 +151,7 @@ const update = async (req, res) => {
           ],
         },
       });
-      console.log(imageReplace);
+
       const image2 = await uploadImage(img2[0]);
       const replaceImg = await prisma.doc.update({
         data: {
@@ -193,7 +185,7 @@ const update = async (req, res) => {
           ],
         },
       });
-      console.log(imageReplace);
+
       const image1 = await uploadImage(img1[0]);
       const replaceImg = await prisma.doc.update({
         data: {
@@ -209,11 +201,11 @@ const update = async (req, res) => {
     }
     const { person, userData, id } = req;
 
-    if (user.person_id != id) {
+    if (user.personId != id) {
       console.log("entro diferente id");
       const pe = await prisma.person.findFirst({
         where: {
-          id: user.person_id,
+          id: user.personId,
         },
       });
 
@@ -224,13 +216,13 @@ const update = async (req, res) => {
     } else {
       const spouse = await prisma.family.findFirst({
         where: {
-          mainParent: user.id,
+          parent_one: user.personId,
         },
       });
-      if (spouse?.parent) {
+      if (spouse?.parent_two) {
         const us = await prisma.user.findFirst({
           where: {
-            id: spouse.parent,
+            id: spouse.parent_two,
           },
           include: {
             person: true,
@@ -264,17 +256,6 @@ const update = async (req, res) => {
 
     const persDoc = await prisma.person.findFirst({
       where: {
-        doc_number: person.doc_number,
-      },
-    });
-
-    if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
-      handleHttpError(res, "DOC_NUMBER_EXIST");
-      return;
-    }
-
-    const us = await prisma.user.findFirst({
-      where: {
         OR: [
           {
             email: {
@@ -286,15 +267,40 @@ const update = async (req, res) => {
               equals: userData.phone,
             },
           },
+          {
+            doc_number: person.doc_number.toString(),
+          },
         ],
       },
     });
-    if (us) {
-      if (us.person_id != id) {
-        handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
-        return;
-      }
+
+    if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
+      handleHttpError(res, "DOC_NUMBER_EXIST");
+      return;
     }
+
+    // const us = await prisma.user.findFirst({
+    //   where: {
+    //     OR: [
+    //       {
+    //         email: {
+    //           equals: userData.email,
+    //         },
+    //       },
+    //       {
+    //         phone: {
+    //           equals: userData.phone,
+    //         },
+    //       },
+    //     ],
+    //   },
+    // });
+    // if (us) {
+    //   if (us.person_id != id) {
+    //     handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
+    //     return;
+    //   }
+    // }
 
     person.birthdate = new Date(person.birthdate).toISOString();
     if (person.issuance_doc) {
@@ -313,26 +319,21 @@ const update = async (req, res) => {
         id: parseInt(id),
       },
       include: {
-        user: {
-          select: {
-            email: true,
-            phone: true,
-          },
-        },
+        user: true,
       },
     });
 
-    const userUpdate = await prisma.user.updateMany({
-      data: {
-        email: userData.email,
-        phone: userData.phone.toString(),
-        person_id: personUpdate.id,
-        update_time: dateUpdate,
-      },
-      where: {
-        person_id: parseInt(id),
-      },
-    });
+    // const userUpdate = await prisma.user.updateMany({
+    //   data: {
+    //     email: userData.email,
+    //     phone: userData.phone.toString(),
+    //     person_id: personUpdate.id,
+    //     update_time: dateUpdate,
+    //   },
+    //   where: {
+    //     person_id: parseInt(id),
+    //   },
+    // });
 
     //** Si vienen imagenes actualizar */
 
@@ -390,24 +391,13 @@ const get = async (req, res) => {
   try {
     const { user } = req;
     req = matchedData(req);
-    const userSession = await prisma.user.findUnique({
-      where: {
-        sub: user.sub,
-      },
-    });
+
     const id = parseInt(req.id);
     const spouse = await prisma.person.findUnique({
       where: {
-        userSession,
+        id: user.personId,
       },
       include: {
-        user: {
-          select: {
-            email: true,
-            phone: true,
-            confirmed_phone: true,
-          },
-        },
         doc: {
           select: {
             name: true,
@@ -419,18 +409,18 @@ const get = async (req, res) => {
       handleHttpError(res, "SPOUSE_DOES_NOT_EXIST", 404);
       return;
     }
-    const email = spouse.user[0]?.email ?? null;
-    const phone = spouse.user[0]?.phone ?? null;
-    const confirmedPhone = spouse.user[0]?.confirmed_phone ?? null;
+    // const email = spouse.user[0]?.email ?? null;
+    // const phone = spouse.user[0]?.phone ?? null;
+    // const confirmedPhone = spouse.user[0]?.confirmed_phone ?? null;
     const img1 = spouse.doc[0]?.name ?? null;
     const img2 = spouse.doc[1]?.name ?? null;
     delete spouse.user;
     delete spouse.doc;
     const data = {
       ...spouse,
-      email,
-      phone,
-      confirmedPhone,
+      // email,
+      // phone,
+      // confirmedPhone,
       img1,
       img2,
     };
