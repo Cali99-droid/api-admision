@@ -40,6 +40,15 @@ const store = async (req, res) => {
         id: true,
       },
     });
+    /**Verificar si tiene o no asignacion en el año activo */
+    // const currentAssig = await prisma.familiy_secretary.findFirst({
+    //   where: {
+    //     year_id: year.id,
+    //     family: {
+    //       parent_one: user.userId,
+    //     },
+    //   },
+    // });
 
     /**verificar si el usuario tiene otra familia */
     const AnotherFamily = await prisma.family.findFirst({
