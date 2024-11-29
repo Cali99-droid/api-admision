@@ -355,11 +355,12 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-    // const verify = await existFamilyUser(id, user.id);
-    // if (!verify) {
-    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-    //   return;
-    // }
+    const verify = await existFamilyUser(id, user.personId);
+
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+      return;
+    }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
@@ -426,7 +427,7 @@ const updateHome = async (req, res) => {
       where: {
         id: id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personid,
         },
       },
     });
@@ -481,8 +482,18 @@ const updateHome = async (req, res) => {
 const getHome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
+  const userRoles = user.resource_access["test-client"]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
 
-  if (user.user_roles.length === 0) {
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
     const verify = await existFamilyUser(id, user.id);
     if (!verify) {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);

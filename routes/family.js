@@ -153,7 +153,6 @@ router.post(
   "/home/:id",
   validatorGetFamily,
   upload.fields([{ name: "img" }]),
-
   validatorHome,
   saveHome
 );
@@ -205,7 +204,6 @@ router.put(
   "/home/:id",
   validatorGetFamily,
   upload.fields([{ name: "img" }]),
-  authMiddleware,
   validatorHome,
   updateHome
 );
@@ -238,7 +236,7 @@ router.put(
  *          descripction: no existen los datos
 
  */
-router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
+router.get("/home/:id", validatorGetFamily, getHome);
 /**
  * http://localhost:3001/api
  *
