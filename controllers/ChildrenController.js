@@ -103,6 +103,12 @@ const store = async (req, res) => {
           const parent = await prisma.person.create({
             data: mother,
           });
+          await prisma.person.update({
+            data: father,
+            where: {
+              id: parseInt(userBD.person.id),
+            },
+          });
           console.log(parent);
           parentTwo = parent;
         } else {
@@ -123,6 +129,12 @@ const store = async (req, res) => {
           mother.role = "P";
           const parent = await prisma.person.create({
             data: father,
+          });
+          await prisma.person.update({
+            data: mother,
+            where: {
+              id: parseInt(userBD.person.id),
+            },
           });
           console.log(parent);
           parentTwo = parent;
@@ -433,6 +445,8 @@ const get = async (req, res) => {
     const mainParent = dnisParents?.person_family_parent_oneToperson;
     const parent = dnisParents.person_family_parent_twoToperson;
     console.log(mainParent);
+    console.log(parent);
+
     const childrenExist = await prisma.person.findUnique({
       where: {
         id,
@@ -465,18 +479,24 @@ const get = async (req, res) => {
 
     delete childrenExist.doc;
     delete childrenExist.children;
-    let docFather = mainParent?.role === "P" ? mainParent?.doc_number : null;
-    let docMother = mainParent?.role === "P" ? mainParent?.doc_number : null;
+    // let docFather = mainParent?.role === "P" ? mainParent?.doc_number : null;
+    // let docMother = mainParent?.role === "P" ? mainParent?.doc_number : null;
     let father;
     let mother;
+
     if (mainParent?.role === "P") {
       father = {
         father_id: mainParent.id,
-        father_name: mainParent.name,
-        father_lastname: mainParent.lastname,
-        father_mLastname: mainParent.mLastname,
+        father_name: mainParent?.name,
+        father_lastname: mainParent?.lastname,
+        father_mLastname: mainParent?.mLastname,
         father_type_doc: mainParent.type_doc ? mainParent?.type_doc : null,
-        father_doc_number: mainParent.doc_number,
+        father_doc_number: mainParent?.doc_number,
+        father_phone: mainParent?.phone,
+        father_birthdate: mainParent?.birthdate,
+        father_email: mainParent.email,
+        father_principal: true,
+  
       };
       mother = {
         mother_id: parent?.id || null,
@@ -485,6 +505,10 @@ const get = async (req, res) => {
         mother_mLastname: parent?.mLastname || null,
         mother_type_doc: parent?.type_doc ? parent?.type_doc : null,
         mother_doc_number: parent?.doc_number || null,
+        mother_phone: parent?.phone,
+        mother_birthdate: parent?.birthdate,
+        mother_email: parent?.email,
+        mother_principal: false,
       };
     }
     if (mainParent?.role === "M") {
@@ -494,6 +518,10 @@ const get = async (req, res) => {
         mother_mLastname: mainParent.mLastname,
         mother_type_doc: mainParent.type_doc ? mainParent?.type_doc : null,
         mother_doc_number: mainParent.doc_number,
+        mother_phone: mainParent?.phone,
+        mother_birthdate: mainParent?.birthdate,
+        mother_email: mainParent?.email,
+        mother_principal: true,
       };
       father = {
         father_id: parent?.id || null,
@@ -502,6 +530,10 @@ const get = async (req, res) => {
         father_mLastname: parent?.mLastname || null,
         father_type_doc: parent?.type_doc ? parent?.type_doc : null,
         father_doc_number: parent?.doc_number || null,
+        father_phone: parent?.phone,
+        father_birthdate: parent?.birthdate,
+        father_email: parent.email,
+        father_principal: false,
       };
     }
     const data = {
