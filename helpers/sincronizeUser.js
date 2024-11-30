@@ -14,6 +14,7 @@ export async function saveUserIdIfNotExists(user) {
         name: user.name,
         lastname: user.family_name,
         mLastname: user.family_name,
+        email: user.email,
         doc_number: user.dni,
         role: user.parentesco === "Padre" ? "P" : "M",
       },
@@ -25,9 +26,10 @@ export async function saveUserIdIfNotExists(user) {
         person_id: createdPerson.id,
       },
     });
-
     console.log("new user add succesfully");
+    return userCreated;
   } else {
     console.log("exist user, not sincronized");
+    return userDB;
   }
 }

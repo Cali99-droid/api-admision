@@ -1,14 +1,15 @@
 import prisma from "./prisma.js";
 
-export const existFamilyUser = async (id, userId) => {
+export const existFamilyUser = async (id, personId) => {
   const family = await prisma.family.findUnique({
     where: {
       id: id,
       AND: {
-        mainParent: userId,
+        parent_one: personId,
       },
     },
   });
+
   if (!family) {
     return false;
   }

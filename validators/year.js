@@ -1,8 +1,6 @@
 import { body, check } from "express-validator";
 import validateResults from "../utils/handleValidator.js";
-import {
-  yearIdExist,
-} from "../utils/db-validator.js";
+import { yearIdExist } from "../utils/db-validator.js";
 export const validatorCreateYear = [
   body("name").optional().trim(),
   body("dateStart")
@@ -15,6 +13,10 @@ export const validatorCreateYear = [
     .isDate()
     .withMessage("La fecha de fin debe ser una fecha válida")
     .bail(),
+  body("status")
+    .isNumeric()
+    .withMessage("El campo status debe ser un numero")
+    .isIn(["1", "0"]),
   body("dateEnd").custom((value, { req }) => {
     const { dateStart } = req.body;
     if (dateStart && new Date(dateStart) >= new Date(value)) {
@@ -40,6 +42,10 @@ export const validatorUpdateYear = [
     .isDate()
     .withMessage("La fecha de fin debe ser una fecha válida")
     .bail(),
+  body("status")
+    .isNumeric()
+    .withMessage("El campo status debe ser un numero")
+    .isIn(["1", "0"]),
   body("dateEnd").custom((value, { req }) => {
     const { dateStart } = req.body;
     if (dateStart && new Date(dateStart) >= new Date(value)) {

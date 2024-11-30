@@ -27,10 +27,21 @@ const store = async (req, res) => {
       handleHttpError(res, "NOT_EXIST_CHILDREN", 404);
       return;
     }
+    const year = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+      select: {
+        id: true,
+      },
+    });
     const child = children.children[0];
     const existVacant = await prisma.vacant.findFirst({
       where: {
         children_id: child.id,
+        AND: {
+          year_id: year.id,
+        },
       },
     });
 
@@ -53,6 +64,7 @@ const store = async (req, res) => {
       return;
     }
     body = { children_id: child.id, ...body };
+    body.year_id = year.id;
     const createVacant = await prisma.vacant.create({
       data: body,
     });
@@ -211,8 +223,12 @@ const createVacant = async (req, res) => {
         year_id: year.id,
       },
     });
-    if (existingVacant.length >0) {
-      handleHttpError(res,`Ya existe una solicitud de vacante vigente para el ${year.name}`,404);
+    if (existingVacant.length > 0) {
+      handleHttpError(
+        res,
+        `Ya existe una solicitud de vacante vigente para el ${year.name}`,
+        404
+      );
       return;
     }
     //BUSCAMOS  SECRETARIA CON MENOS RESPONSABILIDADES
@@ -225,7 +241,7 @@ const createVacant = async (req, res) => {
     });
     const secretaryIds = allSecretaries.map((sec) => sec.user_id);
     const secretaryAssignments = await prisma.vacant_secretary.groupBy({
-      by: ['user_id'],
+      by: ["user_id"],
       _count: { user_id: true },
       where: {
         user_id: { in: secretaryIds },
@@ -296,12 +312,12 @@ const createVacant = async (req, res) => {
       year_id: year.id,
     });
     //ASIGNAMODS VACANTE AL A SECRETARIA
-     await prisma.vacant_secretary.create({
-     data:{
-      vacant_id:data.id,
-      user_id:leastAssignedSecretaryId,
-     }
-    })
+    await prisma.vacant_secretary.create({
+      data: {
+        vacant_id: data.id,
+        user_id: leastAssignedSecretaryId,
+      },
+    });
     res.status(201).json({
       success: true,
       campus: req.campus,
@@ -309,7 +325,7 @@ const createVacant = async (req, res) => {
       grade: req.grade,
       children_id: req.children_id,
       year_id: year.id,
-      secretary:leastAssignedSecretaryId,
+      secretary: leastAssignedSecretaryId,
     });
   } catch (error) {
     console.log(error);

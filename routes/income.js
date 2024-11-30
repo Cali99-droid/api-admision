@@ -8,11 +8,11 @@ import { upload } from "../utils/handleUpload.js";
 
 const router = express.Router();
 
-router.delete("/delete-image", authMiddleware, deleteImg);
+router.delete("/delete-image", deleteImg);
 router.post(
   "/add-image/:id",
   upload.array("images", 5),
-  authMiddleware,
+
   addImg
 );
 

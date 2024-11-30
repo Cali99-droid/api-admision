@@ -1,11 +1,6 @@
 import express from "express";
 
 import {
-  allMiddleware,
-  antecedentMiddleware,
-  economicMiddleware,
-} from "../middleware/session.js";
-import {
   deleteChildren,
   getAllFamilies,
   getFamilies,

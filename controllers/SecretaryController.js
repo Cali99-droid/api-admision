@@ -8,24 +8,14 @@ import sendMessageFromSecretary from "../message/fromUser.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import PersonRepository from "../repositories/PersonRepository.js";
 import { verifyToken } from "../utils/handleJwt.js";
+import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 const getSummaryOfApplicantsBySecretary = async (req, res) => {
   try {
-    if (!req.headers.authorization) {
-      handleHttpError(res, "NEED_SESSION", 403);
-      return;
-    }
-
-    const token = req.headers.authorization.split(" ").pop();
-    const dataToken = await verifyToken(token);
-
-    if (!dataToken) {
-      handleHttpError(res, "NOT_PAYLOAD_DATA", 401);
-      return;
-    }
+    const { user } = req;
 
     const families = await prisma.familiy_secretary.findMany({
       where: {
-        user_id: dataToken["id"],
+        user_id: user.userId,
       },
       select: {
         status: true,
@@ -100,21 +90,11 @@ const getSummaryOfApplicantsBySecretary = async (req, res) => {
 };
 const getBackgroundSummary = async (req, res) => {
   try {
-    if (!req.headers.authorization) {
-      handleHttpError(res, "NEED_SESSION", 403);
-      return;
-    }
+    const { user } = req;
 
-    const token = req.headers.authorization.split(" ").pop();
-    const dataToken = await verifyToken(token);
-
-    if (!dataToken) {
-      handleHttpError(res, "NOT_PAYLOAD_DATA", 401);
-      return;
-    }
     const families = await prisma.familiy_secretary.findMany({
       where: {
-        user_id: dataToken["id"],
+        user_id: user.userId,
       },
       select: {
         status: true,
@@ -203,23 +183,12 @@ const getBackgroundSummary = async (req, res) => {
 };
 const getEconomicEvaluationSummary = async (req, res) => {
   try {
-    if (!req.headers.authorization) {
-      handleHttpError(res, "NEED_SESSION", 403);
-      return;
-    }
-
-    const token = req.headers.authorization.split(" ").pop();
-    const dataToken = await verifyToken(token);
-
-    if (!dataToken) {
-      handleHttpError(res, "NOT_PAYLOAD_DATA", 401);
-      return;
-    }
+    const { user } = req;
 
     const families = await prisma.familiy_secretary.findMany({
       where: {
         // user_id: 104,
-        user_id: dataToken["id"],
+        user_id: user.userId,
       },
       select: {
         status: true,
@@ -301,21 +270,19 @@ const getEconomicEvaluationSummary = async (req, res) => {
     handleHttpError(res, "ERROR_GET_BACKGROUND_SUMMARY");
   }
 };
-const getVacant = async (req,res) => {
-  try {
-    
-  } catch (error) {
-    console.log(error);
-    handleHttpError(res, "ERROR_GET_VACANT");
-  }
-}
+
 const getFamilies = async (req, res) => {
   try {
     const { user } = req;
-
+    /**obtener usuario de la bds */
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const families = await prisma.familiy_secretary.findMany({
       where: {
-        user_id: user.id,
+        user_id: userSession.id,
       },
       select: {
         status: true,
@@ -326,11 +293,7 @@ const getFamilies = async (req, res) => {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
           },
         },
       },
@@ -353,14 +316,14 @@ const getFamilies = async (req, res) => {
         id: f.family.id,
 
         name: f.family.name,
-        email: f.family.mainConyugue.email,
-        phone: f.family.mainConyugue.phone,
+        email: "f.family.mainConyugue.email",
+        phone: "f.family.person_family_parent_oneToperson.phone",
         nameParent:
-          f.family.mainConyugue.person.lastname +
+          f.family.person_family_parent_oneToperson.lastname +
           " " +
-          f.family.mainConyugue.person.mLastname +
+          f.family.person_family_parent_oneToperson.mLastname +
           " " +
-          f.family.mainConyugue.person.name,
+          f.family.person_family_parent_oneToperson.name,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,
@@ -399,38 +362,24 @@ const getFamily = async (req, res) => {
       select: {
         id: true,
         name: true,
-        mainConyugue: {
+        person_family_parent_oneToperson: {
           select: {
             id: true,
-            email: true,
-            phone: true,
-            person: {
-              select: {
-                id: true,
-                name: true,
-                lastname: true,
-                mLastname: true,
-                role: true,
-                validate: true,
-              },
-            },
+            name: true,
+            lastname: true,
+            mLastname: true,
+            role: true,
+            validate: true,
           },
         },
-        conyugue: {
+        person_family_parent_twoToperson: {
           select: {
             id: true,
-            email: true,
-            phone: true,
-            person: {
-              select: {
-                id: true,
-                name: true,
-                lastname: true,
-                mLastname: true,
-                role: true,
-                validate: true,
-              },
-            },
+            name: true,
+            lastname: true,
+            mLastname: true,
+            role: true,
+            validate: true,
           },
         },
         children: {
@@ -477,23 +426,43 @@ const getFamily = async (req, res) => {
     //formatear
     let mainSpouse = {};
 
-    if (family?.mainConyugue) {
-      mainSpouse = family.mainConyugue.person;
+    if (family?.person_family_parent_oneToperson) {
+      mainSpouse = family.person_family_parent_oneToperson.person;
       mainSpouse.validate = handleVerifyValidate(
-        family.mainConyugue.person.validate
+        family.person_family_parent_oneToperson.person.validate
       );
-      mainSpouse = { email: family.mainConyugue.email, ...mainSpouse };
-      mainSpouse = { phone: family.mainConyugue.phone, ...mainSpouse };
-      mainSpouse = { role: family.mainConyugue.person.role, ...mainSpouse };
+      mainSpouse = {
+        email: family.person_family_parent_oneToperson.email,
+        ...mainSpouse,
+      };
+      mainSpouse = {
+        phone: family.person_family_parent_oneToperson.phone,
+        ...mainSpouse,
+      };
+      mainSpouse = {
+        role: family.person_family_parent_oneToperson.person.role,
+        ...mainSpouse,
+      };
     }
 
     let spouse = {};
-    if (family?.conyugue) {
-      spouse = family.conyugue.person;
-      spouse.validate = handleVerifyValidate(family.conyugue.person.validate);
-      spouse = { email: family.conyugue.email, ...spouse };
-      spouse = { phone: family.conyugue.phone, ...spouse };
-      spouse = { role: family.conyugue.person.role, ...spouse };
+    if (family?.person_family_parent_twoToperson) {
+      spouse = family.person_family_parent_twoToperson.person;
+      spouse.validate = handleVerifyValidate(
+        family.person_family_parent_twoToperson.person.validate
+      );
+      spouse = {
+        email: family.person_family_parent_twoToperson.email,
+        ...spouse,
+      };
+      spouse = {
+        phone: family.person_family_parent_twoToperson.phone,
+        ...spouse,
+      };
+      spouse = {
+        role: family.person_family_parent_twoToperson.person.role,
+        ...spouse,
+      };
     }
     let home;
     const validate = (number) => {
@@ -827,28 +796,30 @@ const setServed = async (req, res) => {
       },
     },
   });
+
   if (!family) {
     handleHttpError(res, "FAMILY_NOT_EXIST", 404);
     return;
   }
-  /**Cambiar la asignacion de psicologas */
-  const psi = await prisma.psy_evaluation.findMany({
-    orderBy: {
-      create_time: "desc", // Ordenar de forma descendente para obtener el último elemento
-    },
-    take: 1, // Tomar solo el primer resultado
-  });
+  // /**Cambiar la asignacion de psicologas */
+  // const psi = await prisma.psy_evaluation.findMany({
+  //   orderBy: {
+  //     create_time: "desc", // Ordenar de forma descendente para obtener el último elemento
+  //   },
+  //   take: 1, // Tomar solo el primer resultado
+  // });
 
-  //asignar a la psicologa menos ocupada rol: 3
-  const psychology = await prisma.user.findMany({
+  //asignar a la psicologa menos ocupada
+  const psychologiesKey = await getUsersByRole("psicologia");
+  const ids = psychologiesKey.map((s) => s.id);
+
+  if (ids.length === 0) {
+    return handleHttpError(res, "NOT_AVAILABLE_PSICHOLOGIES");
+  }
+  const psychologies = await prisma.user.findMany({
     where: {
-      user_roles: {
-        some: {
-          roles_id: 3,
-          AND: {
-            status: 1,
-          },
-        },
+      sub: {
+        in: ids,
       },
     },
     select: {
@@ -856,15 +827,10 @@ const setServed = async (req, res) => {
     },
     orderBy: { psy_evaluation: { _count: "asc" } },
   });
-  console.log(psychology);
-  let idPsychology = 110;
-  if (psi[0].id % 2 === 0) {
-    idPsychology = psychology[0].id;
-  } else {
-    idPsychology = psychology[1].id;
+  if (psychologies.length === 0) {
+    return handleHttpError(res, "NOT_AVAILABLE_PSICHOLOGIES");
   }
-  const lessPsychology = psychology[0];
-
+  const psiMenosOcupada = psychologies[0];
   const updateStatusFamily = await prisma.familiy_secretary.update({
     where: {
       id: family.id,
@@ -891,10 +857,19 @@ const setServed = async (req, res) => {
     });
   }
 
+  const year = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+    select: {
+      id: true,
+    },
+  });
   const asigFamilyToPsy = await PsychologyRepository.assignFamily({
     // user_id: lessPsychology.id,
-    user_id: idPsychology,
+    user_id: psiMenosOcupada.id,
     family_id: id,
+    year_id: year.id,
   });
   res.status(201).json({
     success: true,
