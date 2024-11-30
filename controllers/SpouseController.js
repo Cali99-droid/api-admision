@@ -293,7 +293,7 @@ const update = async (req, res) => {
 
 
      if (us) {
-      if (us.person_id != id) {
+      if (us.id != id) {
         handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
         return;
       }
