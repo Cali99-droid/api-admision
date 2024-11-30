@@ -482,7 +482,8 @@ const updateHome = async (req, res) => {
 const getHome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
-  const userRoles = user.resource_access["test-client"]?.roles || [];
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
   const validateAccessRoles = [
     "psicologia-adm",
     "secretaria-adm",
@@ -558,11 +559,24 @@ const createIncome = async (req, res) => {
   const id = parseInt(req.params.id);
 
   //**Verificar que la familia exista y pertenezca al usuario  */
-  // const verify = await existFamilyUser(id, user.id);
-  // if (!verify) {
-  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-  //   return;
-  // }
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+      return;
+    }
+  }
 
   const existIncome = await prisma.income.findFirst({
     where: {
@@ -640,7 +654,7 @@ const createIncome = async (req, res) => {
   const incomeCreate = await prisma.income.create({
     data: {
       range_id,
-      family_id: id,
+      family_id: isd,
       validate,
     },
     include: {
@@ -749,18 +763,22 @@ const getIncome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
 
-  if (user.user_roles.length === 0) {
-    const family = await prisma.family.findUnique({
-      where: {
-        id: id,
-        AND: {
-          mainParent: user.id,
-        },
-      },
-    });
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
 
-    if (!family) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
       return;
     }
   }

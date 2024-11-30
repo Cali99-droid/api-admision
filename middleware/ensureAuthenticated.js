@@ -38,7 +38,8 @@ export function ensureAuthenticated(requiredRoles = []) {
 
         // Extrae los roles del token JWTs
         const userRoles =
-          decodedToken.resource_access["test-client"]?.roles || [];
+          decodedToken.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles ||
+          [];
 
         // Valida si el usuario tiene al menos uno de los roles requeridos
         const hasRequiredRole =

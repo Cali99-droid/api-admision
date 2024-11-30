@@ -283,7 +283,6 @@ router.post(
   validatorGetFamily,
   upload.array("images", 5),
   validatorIncome,
-  authMiddleware,
   createIncome
 );
 
@@ -339,7 +338,6 @@ router.put(
   validatorGetFamily,
   upload.array("images", 5),
   validatorIncome,
-  authMiddleware,
   updateIncome
 );
 
@@ -369,22 +367,22 @@ router.put(
  *          description: Error de validacion.
  
  */
-router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
+router.get("/income/:id", validatorGetFamily, getIncome);
 
-router.get("/spouse/:id", validatorGetFamily, authMiddleware, getSpouse);
+router.get("/spouse/:id", validatorGetFamily, getSpouse);
 
-router.get("/status/:id", validatorGetFamily, authMiddleware, getStatus);
+router.get("/status/:id", validatorGetFamily, getStatus);
 router.put(
   "/:idFamily/secretary/:idSecretary",
   validatorAssignament,
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   assignamentSecretary
 );
 /**actualizar assignacion */
 router.put(
   "/:idFamily/psychology/:idPsychology",
   validatorAssignament,
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   assignamentPsichology
 );
 export default router;
