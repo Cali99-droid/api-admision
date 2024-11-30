@@ -5,6 +5,6 @@ import { store } from "../controllers/AgreeController.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, store);
+router.post("/", store);
 
 export default router;

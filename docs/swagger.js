@@ -288,6 +288,7 @@ const swaggerDefinition = {
           "name",
           "lastname",
           "mLastname",
+          "role",
           "doc_number",
           "email",
           "phone",
@@ -302,6 +303,10 @@ const swaggerDefinition = {
           mLastname: {
             type: "string",
           },
+          role: {
+            type: "string",
+            example: "P O M",
+          },
           doc_number: {
             type: "string",
           },
@@ -310,6 +315,10 @@ const swaggerDefinition = {
           },
           phone: {
             type: "integer",
+          },
+          status_polit: {
+            type: "string",
+            example: true,
           },
         },
       },

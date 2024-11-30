@@ -9,7 +9,7 @@ import { validatorCode } from "../validators/code.js";
 
 const router = express.Router();
 
-router.post("/verify/:code", validatorCode, authMiddleware, store);
-router.post("/message/:id", validatorGetFamily, authMiddleware, send);
+router.post("/verify/:code", validatorCode, store);
+router.post("/message/:id", validatorGetFamily, send);
 
 export default router;

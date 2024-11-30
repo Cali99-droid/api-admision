@@ -208,6 +208,9 @@ const update = async (req, res) => {
       // console.log("llego imagen ", req.img2);
     }
     const { person, userData, id } = req;
+    console.log(person);
+    console.log(userData);
+    console.log(id);
 
     if (user.person_id != id) {
       console.log("entro diferente id");
@@ -273,24 +276,25 @@ const update = async (req, res) => {
       return;
     }
 
-    const us = await prisma.user.findFirst({
+    const us = await prisma.person.findFirst({
       where: {
         OR: [
           {
-            email: {
-              equals: userData.email,
-            },
+            email: userData.email,
           },
           {
-            phone: {
-              equals: userData.phone,
-            },
+            phone: userData.phone,
           },
         ],
       },
     });
+    console.log(userData.phone);
+    console.log(userData.email);
+    console.log(us);
     if (us) {
-      if (us.person_id != id) {
+      if (us.id != id) {
+        console.log(us.person_id);
+        console.log(us.id);
         handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
         return;
       }
@@ -306,33 +310,27 @@ const update = async (req, res) => {
     person.doc_number = person.doc_number.toString();
     const dateUpdate = new Date();
     person.update_time = dateUpdate;
-
+    person.phone = userData.phone;
+    person.email = userData.email;
+    console.log(person);
     const personUpdate = await prisma.person.update({
       data: person,
       where: {
         id: parseInt(id),
       },
-      include: {
-        user: {
-          select: {
-            email: true,
-            phone: true,
-          },
-        },
-      },
     });
 
-    const userUpdate = await prisma.user.updateMany({
-      data: {
-        email: userData.email,
-        phone: userData.phone.toString(),
-        person_id: personUpdate.id,
-        update_time: dateUpdate,
-      },
-      where: {
-        person_id: parseInt(id),
-      },
-    });
+    // const userUpdate = await prisma.user.updateMany({
+    //   data: {
+    //     email: userData.email,
+    //     phone: userData.phone.toString(),
+    //     person_id: personUpdate.id,
+    //     update_time: dateUpdate,
+    //   },
+    //   where: {
+    //     person_id: parseInt(id),
+    //   },
+    // });
 
     //** Si vienen imagenes actualizar */
 
@@ -388,12 +386,17 @@ const update = async (req, res) => {
 
 const get = async (req, res) => {
   try {
+    const { user } = req;
     req = matchedData(req);
-
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const id = parseInt(req.id);
     const spouse = await prisma.person.findUnique({
       where: {
-        id,
+        userSession,
       },
       include: {
         user: {

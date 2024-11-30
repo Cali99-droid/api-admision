@@ -10,11 +10,19 @@ import {
 import { validatorParamId } from "../validators/family.js";
 import { validatorVacant } from "../validators/vacant.js";
 import { getSummaryAntecedent } from "../controllers/SummaryController.js";
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const router = express.Router();
 
-
-router.get("/antecedent", adminMiddleware, getSummaryAntecedent);
-router.get("/economic", adminMiddleware, getSummaryAntecedent);
+router.get(
+  "/antecedent",
+  ensureAuthenticated(["administrador-adm"]),
+  getSummaryAntecedent
+);
+router.get(
+  "/economic",
+  ensureAuthenticated(["administrador-adm"]),
+  getSummaryAntecedent
+);
 
 export default router;

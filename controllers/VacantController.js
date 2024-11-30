@@ -130,7 +130,6 @@ const getVacantAvailable = async (req, res) => {
     const loginResponse = await axios.post(loginUrl, formData);
     const { data } = loginResponse;
     const token = data.result.token;
-
     const matriculaUrl = `${vacantUrl}?id_anio=8&id_suc=${
       id_suc || ""
     }&id_niv=${id_niv || ""}&id_gir=1&id_gra=${id_gra || ""}`;
@@ -140,7 +139,10 @@ const getVacantAvailable = async (req, res) => {
       },
     });
     const resp = matriculaResponse.data.result;
-
+    if (!resp) {
+      handleHttpError(res, "NOT_EXIST_VACANT", 404);
+      return;
+    }
     const resultData = resp.map((v) => {
       return {
         giro: v.giro,
@@ -184,4 +186,134 @@ const update = async (req, res) => {
     console.log(error);
   }
 };
-export { store, get, getVacantAvailable, update };
+const createVacant = async (req, res) => {
+  try {
+    req = matchedData(req);
+    const dateNow = new Date();
+    const year = await prisma.year.findFirst({
+      where: {
+        dateStart: {
+          lte: dateNow,
+        },
+        dateEnd: {
+          gte: dateNow,
+        },
+        status: true,
+      },
+    });
+    if (!year) {
+      handleHttpError(res, "No hay un proceso de admision para hoy", 404);
+      return;
+    }
+    const existingVacant = await prisma.vacant.findMany({
+      where: {
+        children_id: req.children_id,
+        year_id: year.id,
+      },
+    });
+    if (existingVacant.length >0) {
+      handleHttpError(res,`Ya existe una solicitud de vacante vigente para el ${year.name}`,404);
+      return;
+    }
+    //BUSCAMOS  SECRETARIA CON MENOS RESPONSABILIDADES
+    let idRolSecretaria = 2;
+    const allSecretaries = await prisma.user_roles.findMany({
+      where: {
+        roles_id: idRolSecretaria,
+      },
+      select: { user_id: true },
+    });
+    const secretaryIds = allSecretaries.map((sec) => sec.user_id);
+    const secretaryAssignments = await prisma.vacant_secretary.groupBy({
+      by: ['user_id'],
+      _count: { user_id: true },
+      where: {
+        user_id: { in: secretaryIds },
+        vacant: { year_id: year.id },
+      },
+    });
+    // Mapeamos el conteo de asignaciones a los IDs de secretarias
+    const assignmentMap = new Map(
+      secretaryAssignments.map((assignment) => [
+        assignment.user_id,
+        assignment._count.user_id,
+      ])
+    );
+
+    // Encontramos la secretaria con el menor número de asignaciones
+    let leastAssignedSecretaryId = null;
+    let minAssignments = Infinity;
+
+    for (const secretaryId of secretaryIds) {
+      const count = assignmentMap.get(secretaryId) || 0;
+      if (count < minAssignments) {
+        minAssignments = count;
+        leastAssignedSecretaryId = secretaryId;
+      }
+    }
+
+    if (!leastAssignedSecretaryId) {
+      handleHttpError(
+        res,
+        "No hay secretarias disponibles para asignar esta vacante.",
+        404
+      );
+      return;
+    }
+    // let minAssignments = Infinity;
+    // let leastAssignedSecretaryId = null;
+    // let secretaryWithNoAssignments = null;
+    // for (const secretary of allSecretaries) {
+    //   const count = await prisma.vacant_secretary.count({
+    //     where: {
+    //       userid: secretary.id,
+    //       vacant: {
+    //         year_id: year.id,
+    //       },
+    //     },
+    //   });
+    //   if (count === 0 && !secretaryWithNoAssignments) {
+    //     secretaryWithNoAssignments = secretary.user_id;
+    //   }
+    //   if (count < minAssignments) {
+    //     minAssignments = count;
+    //     leastAssignedSecretaryId = secretary.user_id;
+    //   }
+    // }
+    // if (secretaryWithNoAssignments) {
+    //   leastAssignedSecretaryId = secretaryWithNoAssignments;
+    // }
+    // if (!leastAssignedSecretaryId) {
+    //   handleHttpError(res, "No hay secretarias disponibles para asignar esta vacante.", 404);
+    //   return;
+    // }
+    //CREAMOS VACANTE
+    const data = await VacantRepository.createVacant({
+      campus: req.campus,
+      level: req.level,
+      grade: req.grade,
+      children_id: req.children_id,
+      year_id: year.id,
+    });
+    //ASIGNAMODS VACANTE AL A SECRETARIA
+     await prisma.vacant_secretary.create({
+     data:{
+      vacant_id:data.id,
+      user_id:leastAssignedSecretaryId,
+     }
+    })
+    res.status(201).json({
+      success: true,
+      campus: req.campus,
+      level: req.level,
+      grade: req.grade,
+      children_id: req.children_id,
+      year_id: year.id,
+      secretary:leastAssignedSecretaryId,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_CREATE_VACANT");
+  }
+};
+export { store, get, getVacantAvailable, update, createVacant };

@@ -27,6 +27,7 @@ import {
   validatorIncome,
 } from "../validators/family.js";
 import { upload } from "../utils/handleUpload.js";
+import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const router = express.Router();
 
@@ -57,7 +58,7 @@ const router = express.Router();
  *                      description: No tiene permisos '403'
  *
  */
-router.post("/", authMiddleware, validatorFamily, store);
+router.post("/", validatorFamily, store);
 /**
  * @openapi
  * /family:
@@ -79,7 +80,7 @@ router.post("/", authMiddleware, validatorFamily, store);
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/", authMiddleware, show);
+router.get("/", ensureAuthenticated(["secretaria-adm", "padre-adm"]), show);
 /**
  * @openapi
  * /family/{id}:

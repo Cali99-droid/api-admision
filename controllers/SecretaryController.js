@@ -301,6 +301,14 @@ const getEconomicEvaluationSummary = async (req, res) => {
     handleHttpError(res, "ERROR_GET_BACKGROUND_SUMMARY");
   }
 };
+const getVacant = async (req,res) => {
+  try {
+    
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_VACANT");
+  }
+}
 const getFamilies = async (req, res) => {
   try {
     const { user } = req;
