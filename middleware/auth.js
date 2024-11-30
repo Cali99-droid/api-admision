@@ -3,9 +3,10 @@ import { Issuer, Strategy } from "openid-client";
 
 // Función para configurar `passport`
 export async function setupPassport() {
+  const realm = process.env.KEYCLOAK_REALM;
   try {
     const keycloakIssuer = await Issuer.discover(
-      "https://login.colegioae.edu.pe/realms/test-login/.well-known/openid-configuration"
+      `https://login.colegioae.edu.pe/realms/${realm}/.well-known/openid-configuration`
     );
 
     const client = new keycloakIssuer.Client({
