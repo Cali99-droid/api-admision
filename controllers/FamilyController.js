@@ -861,22 +861,12 @@ const getStatus = async (req, res) => {
       where: {
         id: id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personId,
         },
       },
       select: {
-        mainParent: true,
-        mainConyugue: {
-          select: {
-            person: true,
-          },
-        },
-        conyugue: {
-          select: {
-            person: true,
-          },
-        },
-        parent: true,
+        person_family_parent_oneToperson: true,
+        person_family_parent_twoToperson: true,
         income: true,
         home: true,
         children: {
@@ -886,6 +876,8 @@ const getStatus = async (req, res) => {
         },
       },
     });
+
+    console.log(family);
 
     if (!family) {
       handleHttpError(res, "NOT_EXIST_FAMILY", 404);
@@ -928,14 +920,16 @@ const getStatus = async (req, res) => {
         name: "mainParent",
         formStatus: family.mainParent !== null,
         validateStatus: handleVerifyValidate(
-          family.mainConyugue.person.validate
+          family.person_family_parent_oneToperson.validate
         ),
       },
       {
         name: "parent",
         formStatus: family.parent !== null,
-        validateStatus: family.conyugue?.person?.validate
-          ? handleVerifyValidate(family.conyugue.person?.validate)
+        validateStatus: family.person_family_parent_twoToperson?.validate
+          ? handleVerifyValidate(
+              family.person_family_parent_twoToperson?.validate
+            )
           : false,
       },
       {
