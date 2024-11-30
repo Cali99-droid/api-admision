@@ -200,6 +200,9 @@ const update = async (req, res) => {
       // console.log("llego imagen ", req.img2);
     }
     const { person, userData, id } = req;
+    console.log(person);
+    console.log(userData);
+    console.log(id);
 
     if (user.personId != id) {
       console.log("entro diferente id");
@@ -256,21 +259,8 @@ const update = async (req, res) => {
 
     const persDoc = await prisma.person.findFirst({
       where: {
-        OR: [
-          {
-            email: {
-              equals: userData.email,
-            },
-          },
-          {
-            phone: {
-              equals: userData.phone,
-            },
-          },
-          {
-            doc_number: person.doc_number.toString(),
-          },
-        ],
+
+        doc_number: person.doc_number,
       },
     });
 
@@ -279,28 +269,35 @@ const update = async (req, res) => {
       return;
     }
 
-    // const us = await prisma.user.findFirst({
-    //   where: {
-    //     OR: [
-    //       {
-    //         email: {
-    //           equals: userData.email,
-    //         },
-    //       },
-    //       {
-    //         phone: {
-    //           equals: userData.phone,
-    //         },
-    //       },
-    //     ],
-    //   },
-    // });
-    // if (us) {
-    //   if (us.person_id != id) {
-    //     handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
-    //     return;
-    //   }
-    // }
+    const us = await prisma.person.findFirst({
+      where: {
+        OR: [
+          {
+            email: userData.email,
+          },
+          {
+            phone: userData.phone,
+          },
+          {
+            doc_number: person.doc_number.toString(),
+          },
+        ],
+      },
+    });
+
+
+    if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
+      handleHttpError(res, "DOC_NUMBER_EXIST");
+      return;
+    }
+
+
+     if (us) {
+      if (us.person_id != id) {
+        handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
+        return;
+      }
+     }
 
     person.birthdate = new Date(person.birthdate).toISOString();
     if (person.issuance_doc) {
@@ -312,14 +309,13 @@ const update = async (req, res) => {
     person.doc_number = person.doc_number.toString();
     const dateUpdate = new Date();
     person.update_time = dateUpdate;
-
+    person.phone = userData.phone;
+    person.email = userData.email;
+    console.log(person);
     const personUpdate = await prisma.person.update({
       data: person,
       where: {
         id: parseInt(id),
-      },
-      include: {
-        user: true,
       },
     });
 
