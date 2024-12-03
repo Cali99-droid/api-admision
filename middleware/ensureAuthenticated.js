@@ -63,6 +63,7 @@ export function ensureAuthenticated(requiredRoles = []) {
           })
           .catch((error) => {
             console.error("Error guardando el usuario en la BD:", error);
+
             res.status(500).json({ message: "Error guardando usuario" });
           });
 

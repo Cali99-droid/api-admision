@@ -303,11 +303,11 @@ const get = async (req, res) => {
     let spouse = {};
     let mainSpouse = family.person_family_parent_oneToperson;
     mainSpouse = {
-      img1: family.person_family_parent_oneToperson.doc[0].name || null,
+      img1: family.person_family_parent_oneToperson.doc[0]?.name || null,
       ...mainSpouse,
     };
     mainSpouse = {
-      img2: family.person_family_parent_oneToperson.doc[1].name || null,
+      img2: family.person_family_parent_oneToperson.doc[1]?.name || null,
       ...mainSpouse,
     };
     delete mainSpouse.doc;
