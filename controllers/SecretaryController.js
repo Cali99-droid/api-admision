@@ -316,8 +316,8 @@ const getFamilies = async (req, res) => {
         id: f.family.id,
 
         name: f.family.name,
-        email: "f.family.mainConyugue.email",
-        phone: "f.family.person_family_parent_oneToperson.phone",
+        email: f.family.person_family_parent_oneToperson.email,
+        phone: f.family.person_family_parent_oneToperson.phone,
         nameParent:
           f.family.person_family_parent_oneToperson.lastname +
           " " +
