@@ -200,9 +200,9 @@ const update = async (req, res) => {
       // console.log("llego imagen ", req.img2);
     }
     const { person, userData, id } = req;
-    console.log(person);
-    console.log(userData);
-    console.log(id);
+    // console.log(person);
+    // console.log(userData);
+    // console.log(id);
 
     if (user.personId != id) {
       console.log("entro diferente id");
@@ -228,8 +228,8 @@ const update = async (req, res) => {
             id: spouse.parent_two,
           },
         });
-        console.log(spouse)
-        console.log(us)
+        // console.log(spouse)
+        // console.log(us)
 
         if (us.role === person.role) {
           handleHttpError(res, "REPEAT_ROLE");
@@ -258,7 +258,6 @@ const update = async (req, res) => {
 
     const persDoc = await prisma.person.findFirst({
       where: {
-
         doc_number: person.doc_number,
       },
     });
@@ -289,13 +288,13 @@ const update = async (req, res) => {
           handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
           return;
         }
-       }
-       if(userData.phone){
+      }
+      if (userData.phone) {
         person.phone = userData.phone;
-       }
-       if(userData.email){
+      }
+      if (userData.email) {
         person.email = userData.email;
-       }
+      }
     }
 
     if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
@@ -314,7 +313,7 @@ const update = async (req, res) => {
     const dateUpdate = new Date();
     person.update_time = dateUpdate;
 
-    console.log(person);
+    // console.log(person);
     const personUpdate = await prisma.person.update({
       data: person,
       where: {
