@@ -255,7 +255,16 @@ const get = async (req, res) => {
       select: {
         id: true,
         name: true,
-        person_family_parent_twoToperson: true,
+        person_family_parent_oneToperson: {
+          include: {
+            doc: true,
+          },
+        },
+        person_family_parent_twoToperson: {
+          include: {
+            doc: true,
+          },
+        },
         children: {
           select: {
             person: {
@@ -287,16 +296,36 @@ const get = async (req, res) => {
       },
     });
     if (!family) {
-      handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
+      return handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
-    console.log(family?.person_family_parent_twoToperson);
+
     //formatear
     let spouse = {};
+    let mainSpouse = family.person_family_parent_oneToperson;
+    mainSpouse = {
+      img1: family.person_family_parent_oneToperson.doc[0].name || null,
+      ...mainSpouse,
+    };
+    mainSpouse = {
+      img2: family.person_family_parent_oneToperson.doc[1].name || null,
+      ...mainSpouse,
+    };
+    delete mainSpouse.doc;
     if (family?.person_family_parent_twoToperson) {
       spouse = family.person_family_parent_twoToperson;
+
+      spouse = {
+        img1: family.person_family_parent_twoToperson.doc[0]?.name || null,
+        ...spouse,
+      };
+      spouse = {
+        img2: family.person_family_parent_twoToperson.doc[1]?.name || null,
+        ...spouse,
+      };
+      delete spouse.doc;
     }
     let home;
-    if (family?.home !== null) {
+    if (family.home) {
       home = { id: family.home[0]?.id, address: family.home[0]?.address };
     }
     let income;
@@ -316,6 +345,7 @@ const get = async (req, res) => {
     const data = {
       id: family.id,
       family: family.name,
+      mainSpouse,
       spouse,
       children,
       home,
