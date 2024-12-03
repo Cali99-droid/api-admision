@@ -12,10 +12,50 @@ import ContactRepository from "../repositories/ContactRepository.js";
 import UserRoleRepository from "../repositories/UserRoleRepository.js";
 const prisma = new PrismaClient();
 //commit
+
+const isNewUser = async (req, res) => {
+  const { user } = req;
+  const userNew = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (userNew.read_instructions === 0) {
+    const update = await prisma.user.update({
+      where: {
+        id: userNew.id,
+      },
+      data: {
+        read_instructions: 1,
+      },
+    });
+
+    const data = { read_instructions: false };
+    return res.status(201).json({
+      success: true,
+      data: data,
+    });
+  }
+  const data = { read_instructions: true };
+  return res.status(201).json({
+    success: true,
+    data: data,
+  });
+};
 const registerUser = async (req, res) => {
   try {
     req = matchedData(req);
-    const { name, lastname, mLastname,role, doc_number, email, phone,status_polit } = req;
+    const {
+      name,
+      lastname,
+      mLastname,
+      role,
+      doc_number,
+      email,
+      phone,
+      status_polit,
+    } = req;
 
     //verificar emails, phone y número de documento duplicados
     const existsDoc = await PersonRepository.getPersonByNumberDoc(doc_number);
@@ -157,8 +197,8 @@ const login = async (req, res) => {
 
     // user.set("password", undefined, { strict: false });
     const person = await PersonRepository.getPersonById(user.person_id);
-    user.doc_number =person.doc_number ;
-    user.role_parent =person.role ;
+    user.doc_number = person.doc_number;
+    user.role_parent = person.role;
     const data = {
       token: await tokenSign(user),
       id: user.id,
@@ -169,7 +209,7 @@ const login = async (req, res) => {
       lastname: person.lastname,
       mLastname: person.mLastname,
       agree: user.agree,
-      role_parent:person.role,
+      role_parent: person.role,
     };
     res.status(201).json({
       success: true,
@@ -272,4 +312,5 @@ export {
   getRoles,
   validateSession,
   getPermissions,
+  isNewUser,
 };

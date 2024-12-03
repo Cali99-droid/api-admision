@@ -1,125 +1,23 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
-
 import prisma from "../utils/prisma.js";
-
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 import { existFamilyUser } from "../utils/handleVerifyFamily.js";
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import FamilyRepository from "../repositories/FamilyRepository.js";
-import sendMessageFromSecretary from "../message/fromUser.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 
-// const store = async (req, res) => {
-//   try {
-//     const { user } = req;
-
-//     const { name } = matchedData(req);
-//     console.time("Consulta Secretaries");
-//     const secretaries = await prisma.user.findMany({
-//       where: {
-//         user_roles: {
-//           some: {
-//             roles_id: 2,
-//             AND: {
-//               status: 1,
-//             },
-//           },
-//         },
-//       },
-//       select: {
-//         id: true,
-//       },
-//       orderBy: { familiy_secretary: { _count: "asc" } },
-//     });
-//     console.timeEnd("Consulta Secretaries");
-//     console.log(secretaries);
-//     const secretariaMenosOcupada = secretaries[0];
-//     console.time("Consulta AnotherFamily");
-//     const AnotherFamily = await prisma.family.findFirst({
-//       where: {
-//         mainParent: user.id,
-//       },
-//     });
-//     console.timeEnd("Consulta AnotherFamily");
-
-//     const family = await prisma.family.create({
-//       data: {
-//         mainParent: user.id,
-//         name,
-//       },
-//     });
-//     console.time("Creación if");
-//     if (AnotherFamily) {
-//       console.log("asignando como existente");
-
-//       const existFamilySecretary = await prisma.familiy_secretary.findFirst({
-//         where: {
-//           family_id: AnotherFamily.id,
-//         },
-//         include: {
-//           user: true,
-//         },
-//       });
-
-//       const familyAsig = await prisma.familiy_secretary.create({
-//         data: {
-//           user_id: existFamilySecretary.user_id,
-//           family_id: family.id,
-//         },
-//       });
-//       const phone = existFamilySecretary.user.phone;
-//       const token = process.env.TOKEN;
-//       const body = `Hola ${existFamilySecretary.user.email}, se te ha asignado una nueva familia: ${family.name}, ingresa a la plataforma para darle seguimiento 😉 `;
-//       // const sendNotification = await sendMessageFromSecretary(
-//       //   phone,
-//       //   body,
-//       //   token
-//       // );
-//     } else {
-//       console.log("asignando como nuevo");
-//       const familyAsig = await prisma.familiy_secretary.create({
-//         data: {
-//           user_id: secretariaMenosOcupada.id,
-//           family_id: family.id,
-//         },
-//         include: {
-//           user: true,
-//         },
-//       });
-//       const phone = familyAsig.user.phone;
-//       const token = process.env.TOKEN;
-//       const body = `Hola ${familyAsig.user.email}, se te ha asignado una nueva familia: *${family.name}*, ingresa a la plataforma para darle seguimiento 😉 `;
-//       // const sendNotification = await sendMessageFromSecretary(
-//       //   phone,
-//       //   body,
-//       //   token
-//       // );
-//     }
-//     console.timeEnd("Creación if");
-//     // console.log(secretariaMenosOcupada);
-//     // console.log(familyAsig);
-//     const data = {
-//       id: family.id,
-//       name: family.name,
-//     };
-//     res.status(201).json({
-//       success: true,
-//       data: data,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     handleHttpError(res, "ERROR_CREATE_FAMILY");
-//   }
-// };
 const store = async (req, res) => {
   try {
     const { user } = req;
-
     const { name } = matchedData(req);
 
+    /**Obtener secretarias y secretaria menos ocupada */
     const secretariesKey = await getUsersByRole("secretaria");
     const ids = secretariesKey.map((s) => s.id);
+    if (ids.length === 0) {
+      return handleHttpError(res, "NOT_AVAILABLE_SECRETARIES");
+    }
     const secretaries = await prisma.user.findMany({
       where: {
         sub: {
@@ -128,38 +26,71 @@ const store = async (req, res) => {
       },
       select: {
         id: true,
-        person: {
-          select: {
-            name: true,
-          },
-        },
       },
       orderBy: { familiy_secretary: { _count: "asc" } },
     });
-
-    // return res.status(201).json({
-    //   success: true,
-    //   data: secretaries,
-    // });
     const secretariaMenosOcupada = secretaries[0];
-    const userSession = await prisma.user.findUnique({
+
+    /**obtener año activo */
+    const year = await prisma.year.findFirst({
       where: {
-        sub: user.sub,
+        status: true,
+      },
+      select: {
+        id: true,
       },
     });
-
-    // const AnotherFamily = await prisma.family.findFirst({
+    /**Verificar si tiene o no asignacion en el año activo */
+    // const currentAssig = await prisma.familiy_secretary.findFirst({
     //   where: {
-    //     mainParent: userSession,
+    //     year_id: year.id,
+    //     family: {
+    //       parent_one: user.userId,
+    //     },
     //   },
     // });
 
+    /**verificar si el usuario tiene otra familia */
+    const AnotherFamily = await prisma.family.findFirst({
+      where: {
+        parent_one: user.personId,
+      },
+    });
+
+    /**crear familia */
     const family = await prisma.family.create({
       data: {
-        parent_one: parseInt(userSession.person_id),
+        parent_one: parseInt(user.personId),
         name,
       },
     });
+
+    /**si ya tiene familia, se le asigna a la misma secretaria */
+    if (AnotherFamily) {
+      console.log("asignando como existente");
+      const existFamilySecretary = await prisma.familiy_secretary.findFirst({
+        where: {
+          family_id: AnotherFamily.id,
+        },
+      });
+
+      const familyAsig = await prisma.familiy_secretary.create({
+        data: {
+          user_id: existFamilySecretary.user_id,
+          family_id: family.id,
+          year_id: year.id,
+        },
+      });
+    } else {
+      console.log("asignando como nuevo");
+      const familyAsig = await prisma.familiy_secretary.create({
+        data: {
+          user_id: secretariaMenosOcupada.id,
+          family_id: family.id,
+          year_id: year.id,
+        },
+      });
+    }
 
     const data = {
       id: family.id,
@@ -181,14 +112,10 @@ const show = async (req, res) => {
     if (!user) {
       handleHttpError(res, "NOT_EXIST_USER");
     }
-    const userSession = await prisma.user.findUnique({
-      where: {
-        sub: user.sub,
-      },
-    });
+
     const families = await prisma.family.findMany({
       where: {
-        parent_one: userSession.person_id,
+        parent_one: user.personId,
       },
       select: {
         id: true,
@@ -243,8 +170,6 @@ const show = async (req, res) => {
 };
 const update = async (req, res) => {
   try {
-    const { user } = req;
-
     const { name, id } = matchedData(req);
     const family = await FamilyRepository.getFamilyById(+id);
     if (!family) {
@@ -324,25 +249,20 @@ const get = async (req, res) => {
       where: {
         id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personId,
         },
       },
       select: {
         id: true,
         name: true,
-        conyugue: {
-          select: {
-            id: true,
-            email: true,
-            phone: true,
-            person: {
-              select: {
-                id: true,
-                name: true,
-                lastname: true,
-                mLastname: true,
-              },
-            },
+        person_family_parent_oneToperson: {
+          include: {
+            doc: true,
+          },
+        },
+        person_family_parent_twoToperson: {
+          include: {
+            doc: true,
           },
         },
         children: {
@@ -376,15 +296,33 @@ const get = async (req, res) => {
       },
     });
     if (!family) {
-      handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
+      return handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
+
     //formatear
     let spouse = {};
-    if (family?.conyugue) {
-      spouse = family.conyugue.person;
-      spouse = { email: family.conyugue.email, ...spouse };
-      spouse = { phone: family.conyugue.phone, ...spouse };
-      spouse = { role: family.conyugue.role, ...spouse };
+    let mainSpouse = family.person_family_parent_oneToperson;
+    mainSpouse = {
+      img1: family.person_family_parent_oneToperson.doc[0]?.name || null,
+      ...mainSpouse,
+    };
+    mainSpouse = {
+      img2: family.person_family_parent_oneToperson.doc[1]?.name || null,
+      ...mainSpouse,
+    };
+    delete mainSpouse.doc;
+    if (family?.person_family_parent_twoToperson) {
+      spouse = family.person_family_parent_twoToperson;
+
+      spouse = {
+        img1: family.person_family_parent_twoToperson.doc[0]?.name || null,
+        ...spouse,
+      };
+      spouse = {
+        img2: family.person_family_parent_twoToperson.doc[1]?.name || null,
+        ...spouse,
+      };
+      delete spouse.doc;
     }
     let home;
     if (family.home) {
@@ -407,6 +345,7 @@ const get = async (req, res) => {
     const data = {
       id: family.id,
       family: family.name,
+      mainSpouse,
       spouse,
       children,
       home,
@@ -430,11 +369,12 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-    // const verify = await existFamilyUser(id, user.id);
-    // if (!verify) {
-    //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-    //   return;
-    // }
+    const verify = await existFamilyUser(id, user.personId);
+
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+      return;
+    }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
@@ -501,7 +441,7 @@ const updateHome = async (req, res) => {
       where: {
         id: id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personid,
         },
       },
     });
@@ -556,8 +496,19 @@ const updateHome = async (req, res) => {
 const getHome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
 
-  if (user.user_roles.length === 0) {
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
     const verify = await existFamilyUser(id, user.id);
     if (!verify) {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
@@ -622,11 +573,24 @@ const createIncome = async (req, res) => {
   const id = parseInt(req.params.id);
 
   //**Verificar que la familia exista y pertenezca al usuario  */
-  // const verify = await existFamilyUser(id, user.id);
-  // if (!verify) {
-  //   handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-  //   return;
-  // }
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+      return;
+    }
+  }
 
   const existIncome = await prisma.income.findFirst({
     where: {
@@ -813,18 +777,22 @@ const getIncome = async (req, res) => {
   const id = parseInt(req.params.id);
   const { user } = req;
 
-  if (user.user_roles.length === 0) {
-    const family = await prisma.family.findUnique({
-      where: {
-        id: id,
-        AND: {
-          mainParent: user.id,
-        },
-      },
-    });
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
 
-    if (!family) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE");
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
+    const verify = await existFamilyUser(id, user.id);
+    if (!verify) {
+      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
       return;
     }
   }
@@ -907,22 +875,12 @@ const getStatus = async (req, res) => {
       where: {
         id: id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personId,
         },
       },
       select: {
-        mainParent: true,
-        mainConyugue: {
-          select: {
-            person: true,
-          },
-        },
-        conyugue: {
-          select: {
-            person: true,
-          },
-        },
-        parent: true,
+        person_family_parent_oneToperson: true,
+        person_family_parent_twoToperson: true,
         income: true,
         home: true,
         children: {
@@ -932,6 +890,8 @@ const getStatus = async (req, res) => {
         },
       },
     });
+
+    console.log(family);
 
     if (!family) {
       handleHttpError(res, "NOT_EXIST_FAMILY", 404);
@@ -974,14 +934,16 @@ const getStatus = async (req, res) => {
         name: "mainParent",
         formStatus: family.mainParent !== null,
         validateStatus: handleVerifyValidate(
-          family.mainConyugue.person.validate
+          family.person_family_parent_oneToperson.validate
         ),
       },
       {
         name: "parent",
         formStatus: family.parent !== null,
-        validateStatus: family.conyugue?.person?.validate
-          ? handleVerifyValidate(family.conyugue.person?.validate)
+        validateStatus: family.person_family_parent_twoToperson?.validate
+          ? handleVerifyValidate(
+              family.person_family_parent_twoToperson?.validate
+            )
           : false,
       },
       {

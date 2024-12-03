@@ -14,11 +14,7 @@ import {
   updateHome,
   updateIncome,
 } from "../controllers/FamilyController.js";
-import {
-  authMiddleware,
-  sessionPsychologyMiddleware,
-  sessionSecretaryMiddleware,
-} from "../middleware/session.js";
+
 import {
   validatorAssignament,
   validatorFamily,
@@ -103,7 +99,7 @@ router.get("/", ensureAuthenticated(["secretaria-adm", "padre-adm"]), show);
  *        '422':
  *          description: Error de validacion.
  */
-router.get("/:id", authMiddleware, validatorGetFamily, get);
+router.get("/:id", validatorGetFamily, get);
 
 /**
  * http://localhost:3001/api
@@ -153,7 +149,6 @@ router.post(
   "/home/:id",
   validatorGetFamily,
   upload.fields([{ name: "img" }]),
-  authMiddleware,
   validatorHome,
   saveHome
 );
@@ -205,7 +200,6 @@ router.put(
   "/home/:id",
   validatorGetFamily,
   upload.fields([{ name: "img" }]),
-  authMiddleware,
   validatorHome,
   updateHome
 );
@@ -238,7 +232,7 @@ router.put(
  *          descripction: no existen los datos
 
  */
-router.get("/home/:id", validatorGetFamily, authMiddleware, getHome);
+router.get("/home/:id", validatorGetFamily, getHome);
 /**
  * http://localhost:3001/api
  *
@@ -285,7 +279,6 @@ router.post(
   validatorGetFamily,
   upload.array("images", 5),
   validatorIncome,
-  authMiddleware,
   createIncome
 );
 
@@ -341,7 +334,6 @@ router.put(
   validatorGetFamily,
   upload.array("images", 5),
   validatorIncome,
-  authMiddleware,
   updateIncome
 );
 
@@ -371,22 +363,22 @@ router.put(
  *          description: Error de validacion.
  
  */
-router.get("/income/:id", validatorGetFamily, authMiddleware, getIncome);
+router.get("/income/:id", validatorGetFamily, getIncome);
 
-router.get("/spouse/:id", validatorGetFamily, authMiddleware, getSpouse);
+router.get("/spouse/:id", validatorGetFamily, getSpouse);
 
-router.get("/status/:id", validatorGetFamily, authMiddleware, getStatus);
+router.get("/status/:id", validatorGetFamily, getStatus);
 router.put(
   "/:idFamily/secretary/:idSecretary",
   validatorAssignament,
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   assignamentSecretary
 );
 /**actualizar assignacion */
 router.put(
   "/:idFamily/psychology/:idPsychology",
   validatorAssignament,
-  sessionSecretaryMiddleware,
+  ensureAuthenticated(["secretaria-adm"]),
   assignamentPsichology
 );
 export default router;

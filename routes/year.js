@@ -1,20 +1,19 @@
 import express from "express";
 
-import { adminMiddleware, authMiddleware } from "../middleware/session.js";
-import { 
-    getAllYears, 
-    getYearById,
-    createYear,
-    updateYear,
-    deleteYear,
+import {
+  getAllYears,
+  getYearById,
+  createYear,
+  updateYear,
+  deleteYear,
 } from "../controllers/YearController.js";
 import {
-    validatorCreateYear,
-    validatorUpdateYear,
-    validatorDeleteYear
+  validatorCreateYear,
+  validatorUpdateYear,
+  validatorDeleteYear,
 } from "../validators/year.js";
-  const router = express.Router();
- /**
+const router = express.Router();
+/**
  * @swagger
  * /year:
  *   get:
@@ -166,7 +165,7 @@ router.get("/:id", getYearById);
  *       500:
  *         description: Error en el servidor al intentar crear el año
  */
-router.post("/", validatorCreateYear,createYear);
+router.post("/", validatorCreateYear, createYear);
 /**
  * @swagger
  * /year/{id}:
@@ -229,7 +228,7 @@ router.post("/", validatorCreateYear,createYear);
  *       404:
  *         description: Año no encontrado
  */
-router.put("/:id", validatorUpdateYear,updateYear);
+router.put("/:id", validatorUpdateYear, updateYear);
 /**
  * @swagger
  * /year/{id}:
@@ -286,5 +285,5 @@ router.put("/:id", validatorUpdateYear,updateYear);
  *                   type: string
  *                   example: "Error al eliminar el año."
  */
-router.delete("/:id", validatorDeleteYear,deleteYear);
+router.delete("/:id", validatorDeleteYear, deleteYear);
 export default router;
