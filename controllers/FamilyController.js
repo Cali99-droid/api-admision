@@ -668,7 +668,7 @@ const createIncome = async (req, res) => {
   const incomeCreate = await prisma.income.create({
     data: {
       range_id,
-      family_id: isd,
+      family_id: id,
       validate,
     },
     include: {
