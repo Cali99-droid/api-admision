@@ -43,10 +43,12 @@ export const personValidationRules = [
 
 export const userValidationRules = [
   body("userData[email]")
+    .optional({ checkFalsy: true })
     .trim()
     .isEmail()
     .withMessage("el email es incorrecto"),
   body("userData.phone")
+    .optional({ checkFalsy: true })
     .isMobilePhone("es-PE")
     .withMessage("el telefono no tiene el formato PE"), // Ajusta la región según corresponda
   (req, res, next) => {
