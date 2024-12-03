@@ -249,27 +249,13 @@ const get = async (req, res) => {
       where: {
         id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personId,
         },
       },
       select: {
         id: true,
         name: true,
-        conyugue: {
-          select: {
-            id: true,
-            email: true,
-            phone: true,
-            person: {
-              select: {
-                id: true,
-                name: true,
-                lastname: true,
-                mLastname: true,
-              },
-            },
-          },
-        },
+        person_family_parent_twoToperson: true,
         children: {
           select: {
             person: {
@@ -303,16 +289,14 @@ const get = async (req, res) => {
     if (!family) {
       handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
+    console.log(family?.person_family_parent_twoToperson);
     //formatear
     let spouse = {};
-    if (family?.conyugue) {
-      spouse = family.conyugue.person;
-      spouse = { email: family.conyugue.email, ...spouse };
-      spouse = { phone: family.conyugue.phone, ...spouse };
-      spouse = { role: family.conyugue.role, ...spouse };
+    if (family?.person_family_parent_twoToperson) {
+      spouse = family.person_family_parent_twoToperson;
     }
     let home;
-    if (family.home) {
+    if (family?.home !== null) {
       home = { id: family.home[0]?.id, address: family.home[0]?.address };
     }
     let income;
