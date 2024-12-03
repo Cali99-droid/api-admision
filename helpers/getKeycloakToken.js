@@ -1,6 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 export async function getKeycloakToken() {
+  const realm = process.env.KEYCLOAK_REALM;
   const data = qs.stringify({
     username: process.env.KY_USERNAME,
     password: process.env.KY_PASSWORD,
@@ -10,7 +11,7 @@ export async function getKeycloakToken() {
   });
   try {
     const response = await axios.post(
-      "https://login.colegioae.edu.pe/realms/test-login/protocol/openid-connect/token",
+      `https://login.colegioae.edu.pe/realms/${realm}/protocol/openid-connect/token`,
       data,
       {
         headers: {

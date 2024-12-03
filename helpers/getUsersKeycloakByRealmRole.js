@@ -4,11 +4,12 @@ import { getKeycloakToken } from "./getKeycloakToken.js";
 // Función para obtener usuarios por rol
 export async function getUsersByRole(roleName) {
   const token = await getKeycloakToken();
+  const realm = process.env.KEYCLOAK_REALM;
   if (!token) return;
 
   try {
     const response = await axios.get(
-      `https://login.colegioae.edu.pe/admin/realms/test-login/roles/${roleName}/users`,
+      `https://login.colegioae.edu.pe/admin/realms/${realm}/roles/${roleName}/users`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

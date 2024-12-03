@@ -14,11 +14,7 @@ import {
   updateHome,
   updateIncome,
 } from "../controllers/FamilyController.js";
-import {
-  authMiddleware,
-  sessionPsychologyMiddleware,
-  sessionSecretaryMiddleware,
-} from "../middleware/session.js";
+
 import {
   validatorAssignament,
   validatorFamily,

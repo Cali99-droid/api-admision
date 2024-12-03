@@ -249,25 +249,20 @@ const get = async (req, res) => {
       where: {
         id,
         AND: {
-          mainParent: user.id,
+          parent_one: user.personId,
         },
       },
       select: {
         id: true,
         name: true,
-        conyugue: {
-          select: {
-            id: true,
-            email: true,
-            phone: true,
-            person: {
-              select: {
-                id: true,
-                name: true,
-                lastname: true,
-                mLastname: true,
-              },
-            },
+        person_family_parent_oneToperson: {
+          include: {
+            doc: true,
+          },
+        },
+        person_family_parent_twoToperson: {
+          include: {
+            doc: true,
           },
         },
         children: {
@@ -301,15 +296,33 @@ const get = async (req, res) => {
       },
     });
     if (!family) {
-      handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
+      return handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
+
     //formatear
     let spouse = {};
-    if (family?.conyugue) {
-      spouse = family.conyugue.person;
-      spouse = { email: family.conyugue.email, ...spouse };
-      spouse = { phone: family.conyugue.phone, ...spouse };
-      spouse = { role: family.conyugue.role, ...spouse };
+    let mainSpouse = family.person_family_parent_oneToperson;
+    mainSpouse = {
+      img1: family.person_family_parent_oneToperson.doc[0].name || null,
+      ...mainSpouse,
+    };
+    mainSpouse = {
+      img2: family.person_family_parent_oneToperson.doc[1].name || null,
+      ...mainSpouse,
+    };
+    delete mainSpouse.doc;
+    if (family?.person_family_parent_twoToperson) {
+      spouse = family.person_family_parent_twoToperson;
+
+      spouse = {
+        img1: family.person_family_parent_twoToperson.doc[0]?.name || null,
+        ...spouse,
+      };
+      spouse = {
+        img2: family.person_family_parent_twoToperson.doc[1]?.name || null,
+        ...spouse,
+      };
+      delete spouse.doc;
     }
     let home;
     if (family.home) {
@@ -332,6 +345,7 @@ const get = async (req, res) => {
     const data = {
       id: family.id,
       family: family.name,
+      mainSpouse,
       spouse,
       children,
       home,

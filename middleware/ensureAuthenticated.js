@@ -3,9 +3,10 @@ import jwksClient from "jwks-rsa";
 import { saveUserIdIfNotExists } from "../helpers/sincronizeUser.js";
 
 // Configuración del cliente JWKS para obtener la clave pública de Keycloak
+const realm = process.env.KEYCLOAK_REALM;
+
 const client = jwksClient({
-  jwksUri:
-    "https://login.colegioae.edu.pe/realms/test-login/protocol/openid-connect/certs", // Cambia esto por la URL correcta
+  jwksUri: `https://login.colegioae.edu.pe/realms/${realm}/protocol/openid-connect/certs`, // Cambia esto por la URL correcta
 });
 
 // Función para obtener la clave pública adecuada
