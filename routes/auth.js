@@ -10,6 +10,7 @@ import {
   forgotPassword,
   getPermissions,
   getRoles,
+  isNewUser,
   login,
   registerUser,
   validateSession,
@@ -120,6 +121,8 @@ router.post("/forgot-password", validatorResetPass, forgotPassword);
 router.get("/roles", getRoles);
 router.get("/validate-session", authMiddleware, validateSession);
 router.get("/permissions", authMiddleware, getPermissions);
+
+router.get("/user", isNewUser);
 
 /**Scripts */
 // router.post("/change", changeNameFamily);

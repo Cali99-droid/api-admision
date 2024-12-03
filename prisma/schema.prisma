@@ -162,6 +162,7 @@ model user {
   create_time       DateTime?           @default(now()) @db.Timestamp(0)
   update_time       DateTime?           @db.Timestamp(0)
   person_id         Int
+  read_instructions Int?                @default(0) @db.TinyInt
   familiy_secretary familiy_secretary[]
   psy_evaluation    psy_evaluation[]
   person            person              @relation(fields: [person_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_USER_PERSON")
