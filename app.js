@@ -15,18 +15,18 @@ import session from "express-session";
 const app = express();
 
 // Configuración de la sesión (ajústala según tus necesidades)
-app.use(
-  session({
-    secret: "your-session-secret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+// app.use(
+//   session({
+//     secret: "your-session-secret",
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
 
-// Inicializa `passport`
-setupPassport();
-app.use(passport.initialize());
-app.use(passport.session());
+// // Inicializa `passport`
+// setupPassport();
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.use(express.json());
 

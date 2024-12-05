@@ -26,10 +26,10 @@ export async function saveUserIdIfNotExists(user) {
         person_id: createdPerson.id,
       },
     });
-    console.log("New user add succesfully");
+    console.log("New user add succesfully", userCreated.id);
     return userCreated;
   } else {
-    console.log("Exist user, not sincronized");
+    console.log("Exist user, not sincronized", userDB.id);
     return userDB;
   }
 }
