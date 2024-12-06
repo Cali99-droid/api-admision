@@ -13,7 +13,7 @@ export async function saveUserIdIfNotExists(user) {
       data: {
         name: user.given_name,
         lastname: user.family_name,
-        mLastname: user.family_name.split(" ")[1],
+        mLastname: user.family_name.split(" ")[1] || user.family_name,
         email: user.email,
         doc_number: user.dni,
         role: user.parentesco === "Padre" ? "P" : "M",
