@@ -329,10 +329,16 @@ const update = async (req, res) => {
         lastName: personUpdate.lastname + " " + personUpdate.mLastname,
       };
       const resp = await updateUserCRM(personCRM);
+
       if (!resp) {
-        console.log("Serepite cel");
-      } else {
-        console.log("todo bien cel");
+        const updateMatch = await prisma.person.update({
+          data: {
+            matchCRM: false,
+          },
+          where: {
+            id: parseInt(id),
+          },
+        });
       }
     }
 

@@ -18,7 +18,6 @@ export async function createUserCRM(person) {
       data
     );
     console.log(response.data);
-    console.log(response.status);
     return response.data.id;
   } catch (error) {
     console.error("Error al crear usuario en CRM:", error);
