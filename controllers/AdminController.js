@@ -218,6 +218,7 @@ const getSecretaries = async (req, res) => {
         },
       },
       select: {
+        id: true,
         person: true,
       },
     });
