@@ -137,7 +137,7 @@ const store = async (req, res) => {
           parentTwo = exist;
         }
 
-        await FamilyRepository.update(+family.id, { parentTwo: parentTwo.id });
+        await FamilyRepository.update(+family.id, { parent_two: parentTwo.id });
       }
     }
 
