@@ -1,11 +1,11 @@
 export function getLevel(nivel) {
   switch (nivel) {
     case 1:
-      return "Inicial";
+      return "INICIAL";
     case 2:
-      return "Primaria";
+      return "PRIMARIA";
     case 3:
-      return "Secundaria";
+      return "SECUNDARIA";
     default:
       return "Nivel no válido";
   }
