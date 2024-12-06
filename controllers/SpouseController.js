@@ -432,4 +432,26 @@ const get = async (req, res) => {
     handleHttpError(res, "ERR_GET_FAMILY");
   }
 };
-export { store, update, get };
+
+const addGHLIdInPerson = async (req, res) => {
+  try {
+    req = matchedData(req);
+    const {...data} = req;
+    console.log(data);
+    const person = await prisma.person.update({
+      where: { id: parseInt(data.personId) },
+      data: { crmGHLId: data.crmGHLId },
+    });
+    res.status(201).json({
+      success: true,
+      data: {
+        email:person.email,
+        crmGHLId:person.crmGHLId,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_ADD_CRMID_PERSON");
+  }
+};
+export { store, update, get, addGHLIdInPerson};
