@@ -67,7 +67,18 @@ export const idValidationRules = [
     return validateResults(req, res, next);
   },
 ];
-
+export const validatorCRM = [
+  body("personId")
+    .exists()
+    .notEmpty()
+    .withMessage("personId no valido")
+    .isNumeric()
+    .withMessage("el father_id no es un numero"),
+  body("crmGHLId").trim().notEmpty().withMessage("el crmGHLId es incorrecto"),
+  (req, res, next) => {
+    return validateResults(req, res, next);
+  },
+];
 export const validatorCreateChildren = [
   body("children_name")
     .trim()

@@ -127,6 +127,8 @@ model person {
   validate                         Int?             @default(0)
   phone_validate                   Int?             @db.TinyInt
   email                            String?          @db.VarChar(255)
+  crmGHLId                         String?          @db.VarChar(255)
+  matchCRM                         Int?             @default(1) @db.TinyInt
   children                         children[]
   doc                              doc[]
   family_family_parent_oneToperson family[]         @relation("family_parent_oneToperson")

@@ -1,10 +1,11 @@
 import express from "express";
-import { get, store, update } from "../controllers/SpouseController.js";
+import { addGHLIdInPerson, get, store, update } from "../controllers/SpouseController.js";
 import { authMiddleware } from "../middleware/session.js";
 import {
   idValidationRules,
   personValidationRules,
   userValidationRules,
+  validatorCRM,
 } from "../validators/person.js";
 import { upload } from "../utils/handleUpload.js";
 
@@ -206,5 +207,36 @@ router.put(
  *          description: Error de validacion.
  */
 router.get("/:id", idValidationRules, get);
-
+/**
+ * @openapi
+ * /spouse/person:
+ *   post:
+ *     tags:
+ *       - CRM 
+ *     summary: "Agregar Id del CRM en Persona"
+ *     description: Esta ruta actualizaremos la Persona(Padres) donde se agregara el Id que le corresponde en el CRM"
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *
+ *               personId:
+ *                 type: number
+ *               crmGHLId:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Respuesta exitosa
+ *       '401':
+ *         description: Error por validación de datos
+ *       '403':
+ *         description: No tiene permisos '403'
+ */
+router.post(
+  "/person",
+  validatorCRM,
+  addGHLIdInPerson
+);
 export default router;

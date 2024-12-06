@@ -68,11 +68,6 @@ const store = async (req, res) => {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE");
       return;
     }
-    console.log(family);
-    console.log(userBD);
-    console.log(userBD.person.role);
-    console.log(userBD.person.doc_number);
-    console.log(father.doc_number);
 
     if (
       userBD.person.role === "P" &&
@@ -109,7 +104,7 @@ const store = async (req, res) => {
               id: parseInt(userBD.person.id),
             },
           });
-          console.log(parent);
+
           parentTwo = parent;
         } else {
           parentTwo = exist;
@@ -136,7 +131,7 @@ const store = async (req, res) => {
               id: parseInt(userBD.person.id),
             },
           });
-          console.log(parent);
+
           parentTwo = parent;
         } else {
           parentTwo = exist;
@@ -178,8 +173,8 @@ const store = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        person_id : personCreate.id,
-        children_id : childrenCreate.id,
+        person_id: personCreate.id,
+        children_id: childrenCreate.id,
       },
     });
   } catch (error) {
@@ -237,7 +232,7 @@ const update = async (req, res) => {
           ],
         },
       });
-      console.log(imageReplace);
+
       const image2 = await uploadImage(children_img2[0]);
       const replaceImg = await prisma.doc.update({
         data: {
@@ -271,7 +266,7 @@ const update = async (req, res) => {
           ],
         },
       });
-      console.log(imageReplace);
+
       const image1 = await uploadImage(children_img1[0]);
       const replaceImg = await prisma.doc.update({
         data: {
@@ -305,7 +300,10 @@ const update = async (req, res) => {
     //     return;
     //   }
     // }
-    if (existChildren.doc_number == children.doc_number && existChildren.id != id) {
+    if (
+      existChildren.doc_number == children.doc_number &&
+      existChildren.id != id
+    ) {
       handleHttpError(res, "DOC_NUMBER_EXIST");
       return;
     }
@@ -364,10 +362,8 @@ const update = async (req, res) => {
         id: parseInt(id),
       },
     });
-    console.log(father);
-    console.log(mother);
+
     if (data.father_id || data.father_id !== null) {
-      console.log(data.father_id);
       await prisma.person.update({
         data: father,
         where: {
@@ -444,8 +440,6 @@ const get = async (req, res) => {
 
     const mainParent = dnisParents?.person_family_parent_oneToperson;
     const parent = dnisParents.person_family_parent_twoToperson;
-    console.log(mainParent);
-    console.log(parent);
 
     const childrenExist = await prisma.person.findUnique({
       where: {
@@ -496,7 +490,6 @@ const get = async (req, res) => {
         father_birthdate: mainParent?.birthdate,
         father_email: mainParent.email,
         father_principal: true,
-  
       };
       mother = {
         mother_id: parent?.id || null,

@@ -891,8 +891,6 @@ const getStatus = async (req, res) => {
       },
     });
 
-    console.log(family);
-
     if (!family) {
       handleHttpError(res, "NOT_EXIST_FAMILY", 404);
       return;
@@ -1040,7 +1038,7 @@ const getStatus = async (req, res) => {
 const assignamentSecretary = async (req, res) => {
   try {
     const { idFamily, idSecretary } = req.params;
-    console.log(idFamily, idSecretary);
+
     const updatedAssignament = await FamilyRepository.setFamilyToSecretary(
       +idFamily,
       +idSecretary
@@ -1062,7 +1060,7 @@ const assignamentSecretary = async (req, res) => {
 const assignamentPsichology = async (req, res) => {
   try {
     const { idFamily, idPsychology } = req.params;
-    console.log(idFamily, idPsychology);
+
     const updatedAssignament = await FamilyRepository.setFamilyToPsychology(
       +idFamily,
       +idPsychology
