@@ -49,6 +49,7 @@ router.use((req, res, next) => {
     "/cities/province",
     "/cities/region",
     "/check/available",
+    "/spouse/person",
   ];
   if (openRoutes.includes(req.path)) {
     return next(); // No aplicar autenticación a rutas abiertas
