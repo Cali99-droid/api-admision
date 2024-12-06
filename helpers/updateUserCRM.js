@@ -12,9 +12,9 @@ export async function updateUserCRM(person) {
       "https://hook.eu2.make.com/lpdphbi6oyx9swtpnw4r45j4hr5btznq",
       data
     );
-    console.log(response.data);
-    return response.data;
+    return true;
   } catch (error) {
     console.error("Error al crear usuario en CRM:", error);
+    return false;
   }
 }
