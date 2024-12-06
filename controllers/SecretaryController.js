@@ -426,9 +426,9 @@ const getFamily = async (req, res) => {
     let mainSpouse = {};
 
     if (family?.person_family_parent_oneToperson) {
-      mainSpouse = family.person_family_parent_oneToperson.person;
+      mainSpouse = family.person_family_parent_oneToperson;
       mainSpouse.validate = handleVerifyValidate(
-        family.person_family_parent_oneToperson.person.validate
+        family.person_family_parent_oneToperson.validate
       );
       mainSpouse = {
         email: family.person_family_parent_oneToperson.email,
@@ -439,16 +439,16 @@ const getFamily = async (req, res) => {
         ...mainSpouse,
       };
       mainSpouse = {
-        role: family.person_family_parent_oneToperson.person.role,
+        role: family.person_family_parent_oneToperson.role,
         ...mainSpouse,
       };
     }
 
     let spouse = {};
     if (family?.person_family_parent_twoToperson) {
-      spouse = family.person_family_parent_twoToperson.person;
+      spouse = family.person_family_parent_twoToperson;
       spouse.validate = handleVerifyValidate(
-        family.person_family_parent_twoToperson.person.validate
+        family.person_family_parent_twoToperson.validate
       );
       spouse = {
         email: family.person_family_parent_twoToperson.email,
@@ -459,7 +459,7 @@ const getFamily = async (req, res) => {
         ...spouse,
       };
       spouse = {
-        role: family.person_family_parent_twoToperson.person.role,
+        role: family.person_family_parent_twoToperson.role,
         ...spouse,
       };
     }
