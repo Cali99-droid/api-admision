@@ -182,14 +182,14 @@ const getPsychologyAssignments = async (req, res) => {
       return {
         id: a.family.id,
         name: a.family.name,
-        email: a.family.mainConyugue.email,
-        phone: a.family.mainConyugue.phone,
+        email: a.family.person_family_parent_oneToperson.email,
+        phone: a.family.person_family_parent_oneToperson.phone,
         nameParent:
-          a.family.mainConyugue.person.lastname +
+          a.family.person_family_parent_oneToperson.lastname +
           " " +
-          a.family.mainConyugue.person.mLastname +
+          a.family.person_family_parent_oneToperson.mLastname +
           " " +
-          a.family.mainConyugue.person.name,
+          a.family.person_family_parent_oneToperson.name,
         count_children: a.family.children.length,
         vacants: a.family.children.map((vacant) => vacant.vacant[0]),
         applied: a.applied,
@@ -243,14 +243,28 @@ const getSecretaries = async (req, res) => {
 };
 const getPsychologists = async (req, res) => {
   try {
-    const secretaries = await UserRepository.getUsersByRole(3);
-    const data = secretaries.map(({ user }) => {
+    const psyKey = await getUsersByRole("psicologia");
+    const ids = psyKey.map((s) => s.id);
+    const psy = await prisma.user.findMany({
+      where: {
+        sub: {
+          in: ids,
+        },
+      },
+      select: {
+        id: true,
+        person: true,
+      },
+    });
+
+    const data = psy.map((user) => {
       return {
         id: user.id,
         name: user.person.name,
         lastname: user.person.lastname,
       };
     });
+
     res.status(201).json({
       success: true,
       data,
@@ -436,87 +450,87 @@ const getStatistics = async (req, res) => {
 
 const getStatusFamilyAndChildren = async (req, res) => {
   try {
-    const [dataSIGE, families] = await Promise.all([
-      getVacantSIGE(),
-      FamilyRepository.getVacant(),
-    ]);
+    // const [dataSIGE, families] = await Promise.all([
+    //   getVacantSIGE(),
+    //   FamilyRepository.getVacant(),
+    // ]);
 
-    const dat = families.filter(
-      (f) => f.family.familiy_secretary[0].status === 1
-    );
-    const format = await Promise.all(
-      dat.map(async (f) => {
-        // Destructure with default values
-        const {
-          vacant: [{ id, campus, level, grade } = {}] = [],
-          schoolId,
-          family,
-          person,
-        } = f;
+    // const dat = families.filter(
+    //   (f) => f.family.familiy_secretary[0].status === 1
+    // );
+    // const format = await Promise.all(
+    //   dat.map(async (f) => {
+    //     // Destructure with default values
+    //     const {
+    //       vacant: [{ id, campus, level, grade } = {}] = [],
+    //       schoolId,
+    //       family,
+    //       person,
+    //     } = f;
 
-        // Use filter directly in the function argument
-        const getdataSIGE = dataSIGE.filter(
-          (x) =>
-            x.sucursal === parseInt(campus) &&
-            x.nivel === parseInt(level) &&
-            x.id_gra === parseInt(grade)
-        );
+    //     // Use filter directly in the function argument
+    //     const getdataSIGE = dataSIGE.filter(
+    //       (x) =>
+    //         x.sucursal === parseInt(campus) &&
+    //         x.nivel === parseInt(level) &&
+    //         x.id_gra === parseInt(grade)
+    //     );
 
-        // Use conditional operator for schools assignment
-        const school = schoolId
-          ? await client.schools.findFirst({
-              where: { id: schoolId },
-              select: { cod_modular: true, name: true },
-            })
-          : null;
+    //     // Use conditional operator for schools assignment
+    //     const school = schoolId
+    //       ? await client.schools.findFirst({
+    //           where: { id: schoolId },
+    //           select: { cod_modular: true, name: true },
+    //         })
+    //       : null;
 
-        return {
-          id: f.id,
-          idFamily: family.id,
-          name: person.name,
-          lastname: person.lastname,
-          mLastname: person.mLastname,
-          gender: person.gender,
-          dni: person.doc_number,
+    //     return {
+    //       id: f.id,
+    //       idFamily: family.id,
+    //       name: person.name,
+    //       lastname: person.lastname,
+    //       mLastname: person.mLastname,
+    //       gender: person.gender,
+    //       dni: person.doc_number,
 
-          birthdate: person.birthdate,
-          family: family.name,
-          inscription: family.create_time,
-          phone: family.mainConyugue.phone,
-          email: family.mainConyugue.email,
-          vacantId: id,
-          campus: parseInt(campus),
-          level: parseInt(level),
-          grade: parseInt(grade),
-          vacants: campus === undefined ? 0 : getdataSIGE[0]?.vacantes || 0,
-          secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
-          economic:
-            family.economic_evaluation[0]?.conclusion === "apto"
-              ? 1
-              : family.economic_evaluation.length > 0
-              ? 2
-              : 3,
-          antecedent:
-            family.background_assessment[0]?.conclusion === "apto"
-              ? 1
-              : family.background_assessment.length > 0
-              ? 2
-              : 3,
-          psychology:
-            family.psy_evaluation[0]?.applied === 0
-              ? 3
-              : family.psy_evaluation[0]?.approved || 0,
-          status: f.vacant[0]?.status,
+    //       birthdate: person.birthdate,
+    //       family: family.name,
+    //       inscription: family.create_time,
+    //       phone: family.mainConyugue.phone,
+    //       email: family.mainConyugue.email,
+    //       vacantId: id,
+    //       campus: parseInt(campus),
+    //       level: parseInt(level),
+    //       grade: parseInt(grade),
+    //       vacants: campus === undefined ? 0 : getdataSIGE[0]?.vacantes || 0,
+    //       secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
+    //       economic:
+    //         family.economic_evaluation[0]?.conclusion === "apto"
+    //           ? 1
+    //           : family.economic_evaluation.length > 0
+    //           ? 2
+    //           : 3,
+    //       antecedent:
+    //         family.background_assessment[0]?.conclusion === "apto"
+    //           ? 1
+    //           : family.background_assessment.length > 0
+    //           ? 2
+    //           : 3,
+    //       psychology:
+    //         family.psy_evaluation[0]?.applied === 0
+    //           ? 3
+    //           : family.psy_evaluation[0]?.approved || 0,
+    //       status: f.vacant[0]?.status,
 
-          dataParent: family.mainConyugue.person,
-          school,
-        };
-      })
-    );
+    //       dataParent: family.mainConyugue.person,
+    //       school,
+    //     };
+    //   })
+    // );
 
     res.status(201).json({
       success: true,
-      data: format,
+      data: [],
     });
   } catch (error) {
     console.log(error);
