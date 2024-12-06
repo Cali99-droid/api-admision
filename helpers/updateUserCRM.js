@@ -2,7 +2,8 @@ export async function updateUserCRM(person) {
   const data = {
     crmGHLId: person.crmGHLId,
     phone: person.phone,
-    names: person.names,
+    name: person.name,
+    lastName: person.lastName,
   };
   try {
     const response = await axios.post(

@@ -324,7 +324,8 @@ const update = async (req, res) => {
       let personCRM = {
         crmGHLId: personUpdate.crmGHLId,
         phone: personUpdate.phone,
-        names: person.name + " " + person.lastname + " " + person.mLastname,
+        name: personUpdate.name,
+        lastName: personUpdate.lastname + " " + personUpdate.mLastname,
       };
       const resp = await updateUserCRM(personCRM);
     }
