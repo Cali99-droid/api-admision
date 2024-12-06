@@ -121,7 +121,7 @@ const store = async (req, res) => {
         });
 
         if (!exist) {
-          mother.role = "P";
+          father.role = "P";
           const parent = await prisma.person.create({
             data: father,
           });
