@@ -17,6 +17,7 @@ import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
+import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -208,7 +209,18 @@ const getPsychologyAssignments = async (req, res) => {
 
 const getSecretaries = async (req, res) => {
   try {
-    const secretaries = await UserRepository.getUsersByRole(2);
+    const secretariesKey = await getUsersByRole("secretaria");
+    const ids = secretariesKey.map((s) => s.id);
+    const secretaries = await prisma.user.findMany({
+      where: {
+        sub: {
+          in: ids,
+        },
+      },
+      select: {
+        person: true,
+      },
+    });
     const data = secretaries.map(({ user }) => {
       return {
         id: user.id,
@@ -216,6 +228,7 @@ const getSecretaries = async (req, res) => {
         lastname: user.person.lastname,
       };
     });
+
     res.status(201).json({
       success: true,
       data,
