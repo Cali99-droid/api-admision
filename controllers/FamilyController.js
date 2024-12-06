@@ -295,6 +295,7 @@ const get = async (req, res) => {
         },
       },
     });
+    console.log(object);
     if (!family) {
       return handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
