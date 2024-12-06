@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
+import { updateUserCRM } from "../helpers/updateUserCRM.js";
 
 const prisma = new PrismaClient();
 
