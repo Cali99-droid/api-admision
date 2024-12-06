@@ -41,7 +41,7 @@ class PsychologyRepository {
         id: true,
         family: {
           include: {
-            mainConyugue: true,
+            person_family_parent_oneToperson: true,
             children: true,
           },
         },
