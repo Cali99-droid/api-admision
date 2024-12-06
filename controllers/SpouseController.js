@@ -333,7 +333,7 @@ const update = async (req, res) => {
       if (!resp) {
         const updateMatch = await prisma.person.update({
           data: {
-            matchCRM: false,
+            matchCRM: 0,
           },
           where: {
             id: parseInt(id),
