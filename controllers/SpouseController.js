@@ -313,7 +313,7 @@ const update = async (req, res) => {
     person.doc_number = person.doc_number.toString();
     const dateUpdate = new Date();
     person.update_time = dateUpdate;
-
+    person.matchCRM = 1;
     // console.log(person);
     const personUpdate = await prisma.person.update({
       data: person,
