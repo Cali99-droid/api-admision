@@ -320,6 +320,14 @@ const update = async (req, res) => {
         id: parseInt(id),
       },
     });
+    if (personUpdate.id === user.personId) {
+      let personCRM = {
+        crmGHLId: personUpdate.crmGHLId,
+        phone: personUpdate.phone,
+        names: person.name + " " + person.lastname + " " + person.mLastname,
+      };
+      const resp = await updateUserCRM(personCRM);
+    }
 
     // const userUpdate = await prisma.user.updateMany({
     //   data: {
@@ -436,7 +444,7 @@ const get = async (req, res) => {
 const addGHLIdInPerson = async (req, res) => {
   try {
     req = matchedData(req);
-    const {...data} = req;
+    const { ...data } = req;
     console.log(data);
     const person = await prisma.person.update({
       where: { id: parseInt(data.personId) },
@@ -445,8 +453,8 @@ const addGHLIdInPerson = async (req, res) => {
     res.status(201).json({
       success: true,
       data: {
-        email:person.email,
-        crmGHLId:person.crmGHLId,
+        email: person.email,
+        crmGHLId: person.crmGHLId,
       },
     });
   } catch (error) {
@@ -454,4 +462,4 @@ const addGHLIdInPerson = async (req, res) => {
     handleHttpError(res, "ERROR_ADD_CRMID_PERSON");
   }
 };
-export { store, update, get, addGHLIdInPerson};
+export { store, update, get, addGHLIdInPerson };
