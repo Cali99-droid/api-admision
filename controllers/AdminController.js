@@ -222,7 +222,8 @@ const getSecretaries = async (req, res) => {
         person: true,
       },
     });
-    const data = secretaries.map(({ user }) => {
+
+    const data = secretaries.map((user) => {
       return {
         id: user.id,
         name: user.person.name,
@@ -236,7 +237,7 @@ const getSecretaries = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_UPDATE_AGREE");
+    handleHttpError(res, "ERR_GET_SECRETARY");
   }
 };
 const getPsychologists = async (req, res) => {
