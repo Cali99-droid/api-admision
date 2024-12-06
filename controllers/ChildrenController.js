@@ -203,6 +203,7 @@ const update = async (req, res) => {
       mLastname: data.father_mLastname,
       type_doc: data.father_type_doc,
       doc_number: data.father_doc_number.toString(),
+      role: "P",
     };
 
     const mother = {
@@ -211,6 +212,7 @@ const update = async (req, res) => {
       mLastname: data.mother_mLastname,
       type_doc: data.mother_type_doc,
       doc_number: data.mother_doc_number.toString(),
+      role: "M",
     };
     if (data.children_img1 && children_img2) {
       console.log("se reemplaza imagen 2");
@@ -507,6 +509,7 @@ const get = async (req, res) => {
     if (mainParent?.role === "M") {
       mother = {
         mother_id: mainParent.id,
+        mother_name: parent?.name || null,
         mother_lastname: mainParent.lastname,
         mother_mLastname: mainParent.mLastname,
         mother_type_doc: mainParent.type_doc ? mainParent?.type_doc : null,
