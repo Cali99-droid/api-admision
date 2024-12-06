@@ -16,6 +16,11 @@ class SecretaryRepository {
             person_family_parent_oneToperson: true,
           },
         },
+        user: {
+          select: {
+            person: true,
+          },
+        },
       },
     });
 

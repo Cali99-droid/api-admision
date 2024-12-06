@@ -143,18 +143,19 @@ const deleteUserRole = async (req, res) => {
 const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments();
+    console.log(asignaments[0]);
     const data = asignaments.map((a) => {
       return {
         id: a.family.id,
         name: a.family.name,
-        email: a.family.mainConyugue.email,
-        phone: a.family.mainConyugue.phone,
+        email: a.family.person_family_parent_oneToperson.email,
+        phone: a.family.person_family_parent_oneToperson.phone,
         nameParent:
-          a.family.mainConyugue.person.lastname +
+          a.family.person_family_parent_oneToperson.lastname +
           " " +
-          a.family.mainConyugue.person.mLastname +
+          a.family.person_family_parent_oneToperson.mLastname +
           " " +
-          a.family.mainConyugue.person.name,
+          a.family.person_family_parent_oneToperson.name,
         count_children: a.family.children.length,
         vacants: a.family.children.map((v) => {
           return v.vacant[0];
