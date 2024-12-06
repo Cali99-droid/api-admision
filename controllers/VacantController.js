@@ -79,7 +79,7 @@ const store = async (req, res) => {
         },
       });
 
-      personCRM.level = getLevel(updateVacant.level);
+      personCRM.level = getLevel(parseInt(updateVacant.level));
       personCRM.grade = getGradeEd(updateVacant.grade);
 
       const resp = await createUserCRM(personCRM);
@@ -97,7 +97,7 @@ const store = async (req, res) => {
     const createVacant = await prisma.vacant.create({
       data: body,
     });
-    personCRM.level = getLevel(createVacant.level);
+    personCRM.level = getLevel(parseInt(createVacant.level));
     personCRM.grade = getGradeEd(createVacant.grade);
     const resp = await createUserCRM(personCRM);
 
