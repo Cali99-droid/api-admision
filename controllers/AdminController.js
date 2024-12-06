@@ -17,6 +17,7 @@ import { verifyFamilySIGE } from "../utils/handleVerifyFamilySige.js";
 import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
+import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -142,18 +143,19 @@ const deleteUserRole = async (req, res) => {
 const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments();
+    console.log(asignaments[0]);
     const data = asignaments.map((a) => {
       return {
         id: a.family.id,
         name: a.family.name,
-        email: a.family.mainConyugue.email,
-        phone: a.family.mainConyugue.phone,
+        email: a.family.person_family_parent_oneToperson.email,
+        phone: a.family.person_family_parent_oneToperson.phone,
         nameParent:
-          a.family.mainConyugue.person.lastname +
+          a.family.person_family_parent_oneToperson.lastname +
           " " +
-          a.family.mainConyugue.person.mLastname +
+          a.family.person_family_parent_oneToperson.mLastname +
           " " +
-          a.family.mainConyugue.person.name,
+          a.family.person_family_parent_oneToperson.name,
         count_children: a.family.children.length,
         vacants: a.family.children.map((v) => {
           return v.vacant[0];
@@ -208,21 +210,35 @@ const getPsychologyAssignments = async (req, res) => {
 
 const getSecretaries = async (req, res) => {
   try {
-    const secretaries = await UserRepository.getUsersByRole(2);
-    const data = secretaries.map(({ user }) => {
+    const secretariesKey = await getUsersByRole("secretaria");
+    const ids = secretariesKey.map((s) => s.id);
+    const secretaries = await prisma.user.findMany({
+      where: {
+        sub: {
+          in: ids,
+        },
+      },
+      select: {
+        id: true,
+        person: true,
+      },
+    });
+
+    const data = secretaries.map((user) => {
       return {
         id: user.id,
         name: user.person.name,
         lastname: user.person.lastname,
       };
     });
+
     res.status(201).json({
       success: true,
       data,
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_UPDATE_AGREE");
+    handleHttpError(res, "ERR_GET_SECRETARY");
   }
 };
 const getPsychologists = async (req, res) => {

@@ -13,11 +13,7 @@ class SecretaryRepository {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
           },
         },
         user: {
