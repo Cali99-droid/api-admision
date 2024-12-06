@@ -82,12 +82,12 @@ const store = async (req, res) => {
       personCRM.level = getLevel(updateVacant.level);
       personCRM.grade = getGradeEd(updateVacant.grade);
 
-      const res = await createUserCRM(personCRM);
+      const resp = await createUserCRM(personCRM);
       res.status(201).json({
         success: true,
         data: {
           id: updateVacant.id,
-          res,
+          resp,
         },
       });
       return;
@@ -99,7 +99,7 @@ const store = async (req, res) => {
     });
     personCRM.level = getLevel(createVacant.level);
     personCRM.grade = getGradeEd(createVacant.grade);
-    const res = await createUserCRM(personCRM);
+    const resp = await createUserCRM(personCRM);
 
     res.status(201).json({
       success: true,
