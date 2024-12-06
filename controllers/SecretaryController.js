@@ -1,13 +1,12 @@
 import { matchedData } from "express-validator";
 import prisma from "../utils/prisma.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
-import sendMessage from "../message/api.js";
+
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import client from "../utils/client.js";
 import sendMessageFromSecretary from "../message/fromUser.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import PersonRepository from "../repositories/PersonRepository.js";
-import { verifyToken } from "../utils/handleJwt.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 const getSummaryOfApplicantsBySecretary = async (req, res) => {
   try {
