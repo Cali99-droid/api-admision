@@ -530,7 +530,7 @@ const get = async (req, res) => {
         father_doc_number: parent?.doc_number || null,
         father_phone: parent?.phone,
         father_birthdate: parent?.birthdate,
-        father_email: parent.email,
+        father_email: parent?.email,
         father_principal: false,
       };
     }
