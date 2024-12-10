@@ -97,6 +97,15 @@ class PsychologyRepository {
   }
 
   async assignFamily(data) {
+    const exist = await prisma.psy_evaluation.findFirst({
+      where: {
+        year_id: data.year_id,
+        family_id: data.family_id,
+      },
+    });
+    if (exist) {
+      return exist;
+    }
     return prisma.psy_evaluation.create({
       data,
     });
