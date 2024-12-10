@@ -196,6 +196,7 @@ const update = async (req, res) => {
       doc_number: data.children_doc_number.toString(),
       gender: data.children_gender,
       birthdate: new Date(data.children_birthdate).toISOString(),
+      validate: parseInt(data.children_validate) || 0,
     };
     const father = {
       name: data.father_name,
@@ -383,7 +384,9 @@ const update = async (req, res) => {
     }
     const actChild = await prisma.children.updateMany({
       data: {
-        validate: children.validate ? parseInt(children.validate) : 0,
+        validate: children.children_validate
+          ? parseInt(children.children_validate)
+          : 0,
       },
       where: {
         person_id: childrenUpdate.id,
