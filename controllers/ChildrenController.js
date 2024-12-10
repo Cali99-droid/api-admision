@@ -509,7 +509,7 @@ const get = async (req, res) => {
     if (mainParent?.role === "M") {
       mother = {
         mother_id: mainParent.id,
-        mother_name: parent?.name || null,
+        mother_name: mainParent?.name || null,
         mother_lastname: mainParent.lastname,
         mother_mLastname: mainParent.mLastname,
         mother_type_doc: mainParent.type_doc ? mainParent?.type_doc : null,
