@@ -1,10 +1,6 @@
 import express from "express";
 
-import {
-  validateDate,
-  validatorGetFamily,
-  validatorQuote,
-} from "../validators/family.js";
+import { validateDate, validatorGetFamily } from "../validators/family.js";
 
 import {
   cancelCitation,
@@ -20,7 +16,6 @@ import {
 } from "../controllers/PsychologyController.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
-import { assignamentPsichology } from "../controllers/FamilyController.js";
 import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
 const router = express.Router();
