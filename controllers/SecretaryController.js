@@ -502,7 +502,7 @@ const getFamily = async (req, res) => {
           id,
         },
       });
-      console.log(school);
+
       return school.name;
     };
 
