@@ -181,8 +181,7 @@ export const validatorUpdateChildren = [
     .isIn(["DNI", "CE"])
     .withMessage("el children_type_doc de documento debe ser DNI o CE"),
   body("children_validate")
-    .exists()
-    .notEmpty()
+    .optional()
     .withMessage("el children_validate es necesario"),
   body("children_doc_number")
     .isNumeric()
