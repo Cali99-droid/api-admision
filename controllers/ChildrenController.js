@@ -188,6 +188,7 @@ const update = async (req, res) => {
     const { children_img1, children_img2 } = req.files;
     const data = matchedData(req);
     const { id } = req.params;
+    console.log(data.children_validate);
     const children = {
       name: data.children_name,
       lastname: data.children_lastname,
@@ -384,9 +385,7 @@ const update = async (req, res) => {
     }
     const actChild = await prisma.children.updateMany({
       data: {
-        validate: children.children_validate
-          ? parseInt(children.children_validate)
-          : 0,
+        validate: parseInt(children.validate) ? parseInt(children.validate) : 0,
       },
       where: {
         person_id: childrenUpdate.id,
