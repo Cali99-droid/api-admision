@@ -80,7 +80,7 @@ const getFamilies = async (req, res) => {
         name: f.family.name,
         applied: f.applied,
         approved: f.applied === 0 ? 3 : f.approved,
-        phone: f.family.mainConyugue.phone,
+        phone: f.family.person_family_parent_oneToperson.phone,
         date: f.quotes[0]?.date === undefined ? "" : f.quotes[0]?.date,
         status:
           f.quotes[0]?.status === undefined ? "pending" : f.quotes[0]?.status,
