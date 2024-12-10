@@ -63,11 +63,7 @@ class PsychologyRepository {
       select: {
         id: true,
         name: true,
-        mainConyugue: {
-          select: {
-            phone: true,
-          },
-        },
+        person_family_parent_oneToperson: true,
         children: {
           select: {
             id: true,
