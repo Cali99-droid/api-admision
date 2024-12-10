@@ -105,7 +105,7 @@ const getFamily = async (req, res) => {
   try {
     const family = await PsychologyRepository.getFamilyById(id);
     //formatear
-    const phone = family.mainConyugue.phone;
+    const phone = family.person_family_parent_oneToperson.phone;
     let status = true;
     const children = family.children.map((c) => {
       return {
