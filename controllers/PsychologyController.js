@@ -353,7 +353,7 @@ const getCitations = async (req, res) => {
   const { user } = req;
 
   try {
-    const s = await PsychologyRepository.getFamiliesByUser(user.id);
+    const s = await PsychologyRepository.getFamiliesByUser(user.userId);
 
     const da = s.filter((p) => p.quotes[0]?.id);
     const quotes = da.map((p) => {
