@@ -14,8 +14,7 @@ export async function createUserCRM(person) {
   };
   try {
     const response = await axios.post(
-      "https://services.leadconnectorhq.com/hooks/wp3Dzm0Ktsmq3kEgTA7A/webhook-trigger/15632cfb-76e5-4819-b192-a91eb9c9bc69",
-      data
+      process.env.URL_WEBHOOK_GHL,
     );
     console.log(response.data);
     return response.data.id;
