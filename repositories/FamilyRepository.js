@@ -110,11 +110,7 @@ class FamilyRepository {
             economic_evaluation: true,
             background_assessment: true,
             familiy_secretary: true,
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
           },
         },
         vacant: true,
