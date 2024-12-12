@@ -15,6 +15,7 @@ export async function createUserCRM(person) {
   try {
     const response = await axios.post(
       process.env.URL_WEBHOOK_GHL,
+      data
     );
     console.log(response.data);
     return response.data.id;

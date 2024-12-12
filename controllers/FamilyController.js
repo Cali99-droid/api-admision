@@ -370,12 +370,25 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-    const verify = await existFamilyUser(id, user.personId);
-
+     //**Verificar que la familia exista y pertenezca al usuario  */
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
+    const verify = await existFamilyUser(id, user.id);
     if (!verify) {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
       return;
     }
+  }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
