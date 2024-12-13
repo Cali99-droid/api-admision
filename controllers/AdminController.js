@@ -18,6 +18,7 @@ import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
+import axios from "axios";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -451,7 +452,7 @@ const getStatistics = async (req, res) => {
 const getStatusFamilyAndChildren = async (req, res) => {
   try {
     const families = await FamilyRepository.getVacant();
-    console.log(families);
+
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0].status === 1
     );
@@ -464,7 +465,8 @@ const getStatusFamilyAndChildren = async (req, res) => {
           family,
           person,
         } = f;
-
+        const vacantMat = await hasVacant(grade);
+        console.log(vacantMat);
         // Use filter directly in the function argument
         // const getdataSIGE = dataSIGE.filter(
         //   (x) =>
@@ -499,7 +501,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
           campus: parseInt(campus),
           level: parseInt(level),
           grade: parseInt(grade),
-          vacants: campus === undefined ? 0 : 0 || 0,
+          vacants: vacantMat.vacants,
           secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
           economic:
             family.economic_evaluation[0]?.conclusion === "apto"
@@ -533,6 +535,12 @@ const getStatusFamilyAndChildren = async (req, res) => {
     console.log(error);
     handleHttpError(res, "ERROR_GET_STATUS");
   }
+};
+
+const hasVacant = async (gradeId) => {
+  const matriculaUrl = `https://apissl-matricula.dev-solware.com/api/v1/enrollment/vacants/16/grade/${gradeId}`;
+  const matriculaResponse = await axios.get(matriculaUrl);
+  return matriculaResponse.data;
 };
 
 const assignVacant = async (req, res) => {
