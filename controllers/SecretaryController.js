@@ -104,11 +104,7 @@ const getBackgroundSummary = async (req, res) => {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
             economic_evaluation: true,
             background_assessment: true,
           },
@@ -932,11 +928,7 @@ const getAllFamilies = async (req, res) => {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
             economic_evaluation: true,
             background_assessment: true,
           },
@@ -961,12 +953,12 @@ const getAllFamilies = async (req, res) => {
         id: f.family.id,
 
         name: f.family.name,
-        email: f.family.mainConyugue.email,
-        phone: f.family.mainConyugue.phone,
+        email: f.family.person_family_parent_oneToperson.email,
+        phone: f.family.person_family_parent_oneToperson.phone,
         nameParent:
-          f.family.mainConyugue.person.name +
+          f.family.person_family_parent_oneToperson.name +
           " " +
-          f.family.mainConyugue.person.lastname,
+          f.family.person_family_parent_oneToperson.lastname,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,

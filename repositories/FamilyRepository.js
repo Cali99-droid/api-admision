@@ -130,16 +130,8 @@ class FamilyRepository {
         vacant: true,
         family: {
           include: {
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
-            conyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
+            person_family_parent_twoToperson: true,
           },
         },
       },
