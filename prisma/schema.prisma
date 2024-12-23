@@ -112,7 +112,7 @@ model person {
   name                             String           @db.VarChar(120)
   lastname                         String           @db.VarChar(45)
   mLastname                        String           @db.VarChar(45)
-  doc_number                       String           @unique(map: "doc_number_UNIQUE") @db.Char(9)
+  doc_number                       String           @db.Char(9)
   birthdate                        DateTime?        @db.Date
   ubigeo                           String?          @db.VarChar(45)
   issuance_doc                     DateTime?        @db.Date
