@@ -20,7 +20,7 @@ export const deliverEmail = (toAddresses, name, childName, status) => {
     transporter.sendMail(
       {
         // it should be verified email from AWS SES
-        from: '"Admisión Colegio AE "' + process.env.AWS_SES_FROM,
+        from: `"Admisión Colegio AE" <${process.env.AWS_SES_FROM}>`,
         to: toAddresses,
         subject: "ESTADO DE VACANTE",
         html: generateBody(status, name, childName),
@@ -96,10 +96,29 @@ const generateBody = (status, name, childName) => {
             <h1>¡Felicitaciones!</h1>
         </div>
         <p>Estimado/a ${name},</p>
-        <p>Nos complace informarle que su hijo/a <strong>${childName}</strong> ha obtenido una vacante en nuestro colegio. Nos sentimos honrados de poder contar con ustedes en nuestra comunidad educativa.</p>
+        <p>
+            El Colegio ALBERT EINSTEIN Huaraz, extiende a Ud. y familia su saludo cordial.
+        </p>
 
-        <p>Si tiene alguna duda o consulta, no dude en contactarnos.</p>
+         <p>
+         En este día especial estamos contentos por haber concluido exitosamente el proceso de admisión, le damos la bienvenida a Ud. y su familia a ser parte desde ya, de nuestra comunidad einstina, no dude en contactarnos ante cualquier inquietud, estamos para ayudarlo.
+        </p>
+
+         <strong> Alumno: ${childName} </strong> 
+        <p>
+            Es importante que usted se acerque a secretaria a efectuar la <strong>RESERVA DE VACANTE</strong> dentro de las 48 horas.
+        </p>
+        
+         <p>
+            La reserva de vacante tiene un costo de <strong>S/ 80.00</strong>, monto que será descontado de la matrícula.
+         </p>
+           <p>
+            Adjuntando la <strong>RESERVA DE VACANTE</strong>, debe iniciar el tramite de traslado formal en el colegio actual de su menor hijo.
+        </p>
+
+        <p>Puede acercarse a nuestras secretarías en horario de oficina 8:00 a 1:00pm y 3:00 - 6:00pm</p>
         <p>Atentamente,</p>
+        <p><strong>Comisión de Admisión</strong></p>
         <p><strong>Colegio Albert Einstein</strong></p>
         <div class="footer">
             &copy; 2025 Colegio Albert Einstein. Todos los derechos reservados.
