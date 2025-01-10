@@ -18,6 +18,7 @@ import {
   updateUserRole,
   deleteUserRole,
   denyVacant,
+  getStudentByDocNumber,
 } from "../controllers/AdminController.js";
 
 import {
@@ -25,7 +26,7 @@ import {
   validatorUpdateUserRole,
   validatorDeleteUserRole,
 } from "../validators/userRole.js";
-
+import { validatorConsult } from "../validators/consult.js";
 import { destroy, update } from "../controllers/FamilyController.js";
 import { validatorFamily, validatorGetFamily } from "../validators/family.js";
 
@@ -59,7 +60,6 @@ const router = express.Router();
 
 router.get("/users", ensureAuthenticated(["administrador-adm"]), getAllUsers);
 router.post("/user-role", validatorCreateUserRole, createUserRole);
-
 
 /**
  * Route put user-role
@@ -194,6 +194,14 @@ router.post(
   "/deny/vacant/:idChildren",
   ensureAuthenticated(["administrador-adm"]),
   denyVacant
+);
+
+/**comunicacion con colegio */
+router.post(
+  "/search-new",
+  // ensureAuthenticated(["administrador-adm"]),
+  validatorConsult,
+  getStudentByDocNumber
 );
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;

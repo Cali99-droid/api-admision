@@ -137,6 +137,7 @@ class FamilyRepository {
       },
     });
   }
+
   async setFamilyToSecretary(idFamily, idSecretary) {
     return prisma.familiy_secretary.updateMany({
       where: { family_id: idFamily },
