@@ -466,7 +466,12 @@ const getStatusFamilyAndChildren = async (req, res) => {
           family,
           person,
         } = f;
-        const vacantMat = await hasVacant(grade);
+        let vacants = 0;
+        if (grade) {
+          const vacantMat = await hasVacant(grade);
+          vacants = vacantMat.vacants;
+        }
+
         /***TODO AGREGAR año a consulta */
         const vacantsAss = await prisma.vacant.findMany({
           where: {
@@ -510,7 +515,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
           campus: parseInt(campus),
           level: parseInt(level),
           grade: parseInt(grade),
-          vacants: vacantMat.vacants,
+          vacants: vacants,
           awarded: vacantsAss.length,
           secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
           economic:
