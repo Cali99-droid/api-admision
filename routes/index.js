@@ -50,6 +50,7 @@ router.use((req, res, next) => {
     "/cities/region",
     "/check/available",
     "/spouse/person",
+    "/admin/search-new",
   ];
   if (openRoutes.includes(req.path)) {
     return next(); // No aplicar autenticación a rutas abiertas

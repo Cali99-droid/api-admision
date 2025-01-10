@@ -19,6 +19,7 @@ import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 import axios from "axios";
+import { deliverEmail } from "../helpers/sendEmailSES.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -466,7 +467,16 @@ const getStatusFamilyAndChildren = async (req, res) => {
           person,
         } = f;
         const vacantMat = await hasVacant(grade);
-        console.log(vacantMat);
+        /***TODO AGREGAR año a consulta */
+        const vacantsAss = await prisma.vacant.findMany({
+          where: {
+            status: "accepted",
+            AND: {
+              grade: grade,
+            },
+          },
+        });
+
         // Use filter directly in the function argument
         // const getdataSIGE = dataSIGE.filter(
         //   (x) =>
@@ -491,7 +501,6 @@ const getStatusFamilyAndChildren = async (req, res) => {
           mLastname: person.mLastname,
           gender: person.gender,
           dni: person.doc_number,
-
           birthdate: person.birthdate,
           family: family.name,
           inscription: family.create_time,
@@ -502,6 +511,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
           level: parseInt(level),
           grade: parseInt(grade),
           vacants: vacantMat.vacants,
+          awarded: vacantsAss.length,
           secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
           economic:
             family.economic_evaluation[0]?.conclusion === "apto"
@@ -544,6 +554,181 @@ const hasVacant = async (gradeId) => {
 };
 
 const assignVacant = async (req, res) => {
+  const { idChildren } = req.params;
+  const data = await FamilyRepository.getFamilyMembers(+idChildren);
+  const updateVacantStatus = await VacantRepository.updateVacant(
+    data.vacant[0].id,
+    { status: "accepted" }
+  );
+
+  let parent = null;
+  if (data.family.person_family_parent_oneToperson.email) {
+    parent = data.family.person_family_parent_oneToperson;
+  } else {
+    if (data.family.person_family_parent_twoToperson) {
+      parent = data.family.person_family_parent_twoToperson;
+    } else {
+      console.log("no hay email de contacto");
+    }
+  }
+
+  if (parent) {
+    const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
+    const childName =
+      data.person.name +
+      " " +
+      data.person.lastname +
+      " " +
+      data.person.mLastname;
+    const ress = deliverEmail(parent.email, name, childName, true);
+  }
+
+  return res.status(201).json({
+    success: true,
+    data: updateVacantStatus,
+  });
+};
+
+const denyVacant = async (req, res) => {
+  const { idChildren } = req.params;
+  const data = await FamilyRepository.getFamilyMembers(+idChildren);
+  const updateVacantStatus = await VacantRepository.updateVacant(
+    data.vacant[0].id,
+    { status: "denied" }
+  );
+
+  let parent = null;
+  if (data.family.person_family_parent_oneToperson.email) {
+    parent = data.family.person_family_parent_oneToperson;
+  } else {
+    if (data.family.person_family_parent_twoToperson) {
+      parent = data.family.person_family_parent_twoToperson;
+    } else {
+      console.log("no hay email de contacto");
+    }
+  }
+
+  if (parent) {
+    const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
+    const childName =
+      data.person.name +
+      " " +
+      data.person.lastname +
+      " " +
+      data.person.mLastname;
+    const ress = deliverEmail(parent.email, name, childName, false);
+  }
+
+  return res.status(201).json({
+    success: true,
+    data: updateVacantStatus,
+  });
+};
+
+const getStudentByDocNumber = async (req, res) => {
+  req = matchedData(req);
+  const { docNumber } = req;
+
+  /**TODO Agregar condicional año */
+  const person = await prisma.person.findFirst({
+    where: {
+      doc_number: docNumber,
+    },
+  });
+
+  if (!person) {
+    handleHttpError(res, "No existe esta persona", 404);
+  }
+  /**TODO agregar consulta por año */
+  const children = await prisma.children.findFirst({
+    where: {
+      person_id: person.id,
+    },
+    include: {
+      vacant: {
+        where: {
+          status: "accepted",
+        },
+      },
+    },
+  });
+  if (!children) {
+    handleHttpError(res, "No existe postulante", 404);
+  }
+  if (children.vacant.length === 0) {
+    handleHttpError(res, "Psotulante no apto a vacante", 403);
+  }
+
+  const family = await FamilyRepository.getFamilyMembers(+children.id);
+
+  return res.status(201).json({
+    success: true,
+    data: formatFamilyData(family),
+  });
+};
+const formatFamilyData = (data) => {
+  if (!data) return null;
+
+  // Extraer la información principal del niño (child)
+  const child = {
+    id: data.id,
+    name: data.person.name,
+    lastname: data.person.lastname,
+    mLastname: data.person.mLastname,
+    doc_number: data.person.doc_number,
+    birthdate: data.person.birthdate,
+    gender: data.person.gender,
+    type_doc: data.person.type_doc,
+    grade: data.grade,
+    level: data.level,
+    schoolId: data.schoolId,
+    district_id: data.district_id,
+    doc: data.doc,
+    validate: data.validate,
+    validateSchool: data.validateSchool,
+    vacant: data.vacant[0],
+  };
+
+  // Extraer la información de los padres (parents)
+  const parents = [];
+  if (data.family.person_family_parent_oneToperson) {
+    parents.push({
+      id: data.family.person_family_parent_oneToperson.id,
+      name: data.family.person_family_parent_oneToperson.name,
+      lastname: data.family.person_family_parent_oneToperson.lastname,
+      mLastname: data.family.person_family_parent_oneToperson.mLastname,
+      doc_number: data.family.person_family_parent_oneToperson.doc_number,
+      birthdate: data.family.person_family_parent_oneToperson.birthdate,
+      civil_status: data.family.person_family_parent_oneToperson.civil_status,
+      profession: data.family.person_family_parent_oneToperson.profession,
+      phone: data.family.person_family_parent_oneToperson.phone,
+      type_doc: data.family.person_family_parent_oneToperson.type_doc,
+      role: data.family.person_family_parent_oneToperson.role,
+      email: data.family.person_family_parent_oneToperson.email,
+    });
+  }
+
+  if (data.family.person_family_parent_twoToperson) {
+    parents.push({
+      id: data.family.person_family_parent_twoToperson.id,
+      name: data.family.person_family_parent_twoToperson.name,
+      lastname: data.family.person_family_parent_twoToperson.lastname,
+      mLastname: data.family.person_family_parent_twoToperson.mLastname,
+      doc_number: data.family.person_family_parent_twoToperson.doc_number,
+      birthdate: data.family.person_family_parent_twoToperson.birthdate,
+      civil_status: data.family.person_family_parent_twoToperson.civil_status,
+      profession: data.family.person_family_parent_twoToperson.profession,
+      phone: data.family.person_family_parent_twoToperson.phone,
+      type_doc: data.family.person_family_parent_twoToperson.type_doc,
+      role: data.family.person_family_parent_twoToperson.role,
+      email: data.family.person_family_parent_twoToperson.email,
+    });
+  }
+
+  return { child, parents };
+};
+
+const assignDELVacant = async (req, res) => {
   const sucursalMapping = {
     1: "Local 1 - Jr. Huaylas 220",
     2: "Local 2 - Einstinitos 2", //Local 2 - Jr. Augusto B. Leguia Nro 264
@@ -673,7 +858,7 @@ const assignVacant = async (req, res) => {
   }
 };
 
-const denyVacant = async (req, res) => {
+const denyDELVacant = async (req, res) => {
   const NODE_ENV = process.env.NODE_ENV;
   const emailId = process.env.MAUTIC_ID_EMAIL_DENY_VACANT;
   try {
@@ -777,7 +962,7 @@ export {
   getStatusFamilyAndChildren,
   assignVacant,
   denyVacant,
-
+  getStudentByDocNumber,
   //sctipots
   changeNameFamily,
 };
