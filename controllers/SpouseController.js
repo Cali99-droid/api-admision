@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
+import { updateUserCRM } from "../helpers/updateUserCRM.js";
 
 const prisma = new PrismaClient();
 
@@ -312,7 +313,7 @@ const update = async (req, res) => {
     person.doc_number = person.doc_number.toString();
     const dateUpdate = new Date();
     person.update_time = dateUpdate;
-
+    person.matchCRM = 1;
     // console.log(person);
     const personUpdate = await prisma.person.update({
       data: person,
@@ -320,6 +321,26 @@ const update = async (req, res) => {
         id: parseInt(id),
       },
     });
+    if (personUpdate.id === user.personId) {
+      let personCRM = {
+        crmGHLId: personUpdate.crmGHLId,
+        phone: personUpdate.phone,
+        name: personUpdate.name,
+        lastName: personUpdate.lastname + " " + personUpdate.mLastname,
+      };
+      const resp = await updateUserCRM(personCRM);
+
+      if (!resp) {
+        const updateMatch = await prisma.person.update({
+          data: {
+            matchCRM: 0,
+          },
+          where: {
+            id: parseInt(id),
+          },
+        });
+      }
+    }
 
     // const userUpdate = await prisma.user.updateMany({
     //   data: {
@@ -436,7 +457,7 @@ const get = async (req, res) => {
 const addGHLIdInPerson = async (req, res) => {
   try {
     req = matchedData(req);
-    const {...data} = req;
+    const { ...data } = req;
     console.log(data);
     const person = await prisma.person.update({
       where: { id: parseInt(data.personId) },
@@ -445,8 +466,8 @@ const addGHLIdInPerson = async (req, res) => {
     res.status(201).json({
       success: true,
       data: {
-        email:person.email,
-        crmGHLId:person.crmGHLId,
+        email: person.email,
+        crmGHLId: person.crmGHLId,
       },
     });
   } catch (error) {
@@ -454,4 +475,4 @@ const addGHLIdInPerson = async (req, res) => {
     handleHttpError(res, "ERROR_ADD_CRMID_PERSON");
   }
 };
-export { store, update, get, addGHLIdInPerson};
+export { store, update, get, addGHLIdInPerson };

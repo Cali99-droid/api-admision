@@ -11,9 +11,9 @@ export async function saveUserIdIfNotExists(user) {
     // const userCRM = await createCRMuser(user);
     const createdPerson = await prisma.person.create({
       data: {
-        name: user.name,
+        name: user.given_name,
         lastname: user.family_name,
-        mLastname: user.family_name,
+        mLastname: user.family_name.split(" ")[1] || user.family_name,
         email: user.email,
         doc_number: user.dni,
         role: user.parentesco === "Padre" ? "P" : "M",

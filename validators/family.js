@@ -114,6 +114,7 @@ export const validatorQuote = [
 ];
 
 export const validateDate = async (req, res, next) => {
+  const { user } = req;
   const { psy_evaluation_id, date } = req.body;
 
   // Verificar que la fecha no sea pasada
@@ -147,6 +148,11 @@ export const validateDate = async (req, res, next) => {
       date: {
         gte: fechaMediaHoraAntes,
         lt: fechaMediaHoraDespues,
+      },
+      AND: {
+        psy_evaluation: {
+          user_id: user.userId,
+        },
       },
     },
   });

@@ -13,11 +13,7 @@ class SecretaryRepository {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
           },
         },
         user: {
@@ -39,7 +35,7 @@ class SecretaryRepository {
       select: {
         family: {
           include: {
-            mainConyugue: true,
+            person_family_parent_oneToperson: true,
           },
         },
         applied: true,
@@ -60,7 +56,7 @@ class SecretaryRepository {
       select: {
         id: true,
         name: true,
-        mainConyugue: {
+        person_family_parent_oneToperson: {
           select: {
             phone: true,
           },

@@ -295,6 +295,7 @@ const get = async (req, res) => {
         },
       },
     });
+
     if (!family) {
       return handleHttpError(res, "FAMILY_DOES_NOT_EXIST", 404);
     }
@@ -369,12 +370,25 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-    const verify = await existFamilyUser(id, user.personId);
-
+     //**Verificar que la familia exista y pertenezca al usuario  */
+  const userRoles =
+    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+  const validateAccessRoles = [
+    "psicologia-adm",
+    "secretaria-adm",
+    "administrador-adm",
+  ];
+  const hasRequiredRole = validateAccessRoles.some((role) =>
+    userRoles.includes(role)
+  );
+  if (!hasRequiredRole) {
+    //   console.log("validar que sea la familia del usuario");
+    const verify = await existFamilyUser(id, user.id);
     if (!verify) {
       handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
       return;
     }
+  }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
@@ -891,8 +905,6 @@ const getStatus = async (req, res) => {
       },
     });
 
-    console.log(family);
-
     if (!family) {
       handleHttpError(res, "NOT_EXIST_FAMILY", 404);
       return;
@@ -1040,7 +1052,7 @@ const getStatus = async (req, res) => {
 const assignamentSecretary = async (req, res) => {
   try {
     const { idFamily, idSecretary } = req.params;
-    console.log(idFamily, idSecretary);
+
     const updatedAssignament = await FamilyRepository.setFamilyToSecretary(
       +idFamily,
       +idSecretary
@@ -1062,7 +1074,7 @@ const assignamentSecretary = async (req, res) => {
 const assignamentPsichology = async (req, res) => {
   try {
     const { idFamily, idPsychology } = req.params;
-    console.log(idFamily, idPsychology);
+
     const updatedAssignament = await FamilyRepository.setFamilyToPsychology(
       +idFamily,
       +idPsychology

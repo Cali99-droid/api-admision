@@ -1,13 +1,12 @@
 import { matchedData } from "express-validator";
 import prisma from "../utils/prisma.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
-import sendMessage from "../message/api.js";
+
 import { handleVerifyValidate } from "../utils/handleVerifyValidate.js";
 import client from "../utils/client.js";
 import sendMessageFromSecretary from "../message/fromUser.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import PersonRepository from "../repositories/PersonRepository.js";
-import { verifyToken } from "../utils/handleJwt.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 const getSummaryOfApplicantsBySecretary = async (req, res) => {
   try {
@@ -105,11 +104,7 @@ const getBackgroundSummary = async (req, res) => {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
             economic_evaluation: true,
             background_assessment: true,
           },
@@ -427,9 +422,9 @@ const getFamily = async (req, res) => {
     let mainSpouse = {};
 
     if (family?.person_family_parent_oneToperson) {
-      mainSpouse = family.person_family_parent_oneToperson.person;
+      mainSpouse = family.person_family_parent_oneToperson;
       mainSpouse.validate = handleVerifyValidate(
-        family.person_family_parent_oneToperson.person.validate
+        family.person_family_parent_oneToperson.validate
       );
       mainSpouse = {
         email: family.person_family_parent_oneToperson.email,
@@ -440,16 +435,16 @@ const getFamily = async (req, res) => {
         ...mainSpouse,
       };
       mainSpouse = {
-        role: family.person_family_parent_oneToperson.person.role,
+        role: family.person_family_parent_oneToperson.role,
         ...mainSpouse,
       };
     }
 
     let spouse = {};
     if (family?.person_family_parent_twoToperson) {
-      spouse = family.person_family_parent_twoToperson.person;
+      spouse = family.person_family_parent_twoToperson;
       spouse.validate = handleVerifyValidate(
-        family.person_family_parent_twoToperson.person.validate
+        family.person_family_parent_twoToperson.validate
       );
       spouse = {
         email: family.person_family_parent_twoToperson.email,
@@ -460,7 +455,7 @@ const getFamily = async (req, res) => {
         ...spouse,
       };
       spouse = {
-        role: family.person_family_parent_twoToperson.person.role,
+        role: family.person_family_parent_twoToperson.role,
         ...spouse,
       };
     }
@@ -503,7 +498,7 @@ const getFamily = async (req, res) => {
           id,
         },
       });
-      console.log(school);
+
       return school.name;
     };
 
@@ -933,11 +928,7 @@ const getAllFamilies = async (req, res) => {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
             economic_evaluation: true,
             background_assessment: true,
           },
@@ -962,12 +953,12 @@ const getAllFamilies = async (req, res) => {
         id: f.family.id,
 
         name: f.family.name,
-        email: f.family.mainConyugue.email,
-        phone: f.family.mainConyugue.phone,
+        email: f.family.person_family_parent_oneToperson.email,
+        phone: f.family.person_family_parent_oneToperson.phone,
         nameParent:
-          f.family.mainConyugue.person.name +
+          f.family.person_family_parent_oneToperson.name +
           " " +
-          f.family.mainConyugue.person.lastname,
+          f.family.person_family_parent_oneToperson.lastname,
         vacant: f.family.children.map((child) => {
           const vacant = {
             level: child.vacant[0]?.level || null,

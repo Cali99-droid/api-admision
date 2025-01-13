@@ -6,21 +6,9 @@ import PsychologyReportRepository from "../repositories/PsychologyReportReposito
 import { deleteImage, uploadImage } from "../utils/handleImg.js";
 
 import prisma from "../utils/prisma.js";
-import { verifyToken } from "../utils/handleJwt.js";
 const SummaryPsyEvaluation = async (req, res) => {
   try {
-    if (!req.headers.authorization) {
-      handleHttpError(res, "NEED_SESSION", 403);
-      return;
-    }
-
-    const token = req.headers.authorization.split(" ").pop();
-    const dataToken = await verifyToken(token);
-
-    if (!dataToken) {
-      handleHttpError(res, "NOT_PAYLOAD_DATA", 401);
-      return;
-    }
+    const { user } = req;
     const data = await prisma.$queryRaw`
     SELECT
       v.campus,
@@ -38,7 +26,7 @@ const SummaryPsyEvaluation = async (req, res) => {
     WHERE
       p.applied IN (0,1,3) and 
       p.approved IN (0,1) and
-      p.user_id = ${dataToken["id"]}    
+      p.user_id = ${user.userId}    
     GROUP BY
       v.campus,v.level,v.grade
     ORDER BY
@@ -65,7 +53,7 @@ const getFamilies = async (req, res) => {
   const { user } = req;
   try {
     //commit
-    const s = await PsychologyRepository.getFamiliesByUser(user.id);
+    const s = await PsychologyRepository.getFamiliesByUser(user.userId);
     const filterFamilies = s.filter((f) => {
       if (f.applied === 3 && f.family.children.length === 1) {
         return false;
@@ -78,9 +66,13 @@ const getFamilies = async (req, res) => {
       return {
         id: f.family.id,
         name: f.family.name,
+        parent:
+          f.family.person_family_parent_oneToperson.name +
+          " " +
+          f.family.person_family_parent_oneToperson.lastname,
         applied: f.applied,
         approved: f.applied === 0 ? 3 : f.approved,
-        phone: f.family.mainConyugue.phone,
+        phone: f.family.person_family_parent_oneToperson.phone,
         date: f.quotes[0]?.date === undefined ? "" : f.quotes[0]?.date,
         status:
           f.quotes[0]?.status === undefined ? "pending" : f.quotes[0]?.status,
@@ -105,7 +97,7 @@ const getFamily = async (req, res) => {
   try {
     const family = await PsychologyRepository.getFamilyById(id);
     //formatear
-    const phone = family.mainConyugue.phone;
+    const phone = family.person_family_parent_oneToperson.phone;
     let status = true;
     const children = family.children.map((c) => {
       return {
@@ -361,7 +353,7 @@ const getCitations = async (req, res) => {
   const { user } = req;
 
   try {
-    const s = await PsychologyRepository.getFamiliesByUser(user.id);
+    const s = await PsychologyRepository.getFamiliesByUser(user.userId);
 
     const da = s.filter((p) => p.quotes[0]?.id);
     const quotes = da.map((p) => {

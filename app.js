@@ -6,11 +6,6 @@ import openApiConfigration from "./docs/swagger.js";
 import swaggerUI from "swagger-ui-express";
 import cron from "node-cron";
 import prisma from "./utils/prisma.js";
-import morganBody from "morgan-body";
-
-import loggerStream from "./utils/handleLogger.js";
-import passport, { setupPassport } from "./middleware/auth.js";
-import session from "express-session";
 
 const app = express();
 
@@ -92,13 +87,13 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-morganBody(app, {
-  noColors: true,
-  stream: loggerStream,
-  skip: function (req, res) {
-    return res.statusCode < 400;
-  },
-});
+// morganBody(app, {
+//   noColors: true,
+//   stream: loggerStream,
+//   skip: function (req, res) {
+//     return res.statusCode < 400;
+//   },
+// });
 
 /**
  * Definir ruta de documentación

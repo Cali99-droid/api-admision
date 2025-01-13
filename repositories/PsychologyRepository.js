@@ -13,11 +13,7 @@ class PsychologyRepository {
                 vacant: true,
               },
             },
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
           },
         },
         user: {
@@ -45,7 +41,7 @@ class PsychologyRepository {
         id: true,
         family: {
           include: {
-            mainConyugue: true,
+            person_family_parent_oneToperson: true,
             children: true,
           },
         },
@@ -67,11 +63,7 @@ class PsychologyRepository {
       select: {
         id: true,
         name: true,
-        mainConyugue: {
-          select: {
-            phone: true,
-          },
-        },
+        person_family_parent_oneToperson: true,
         children: {
           select: {
             id: true,
@@ -101,6 +93,15 @@ class PsychologyRepository {
   }
 
   async assignFamily(data) {
+    const exist = await prisma.psy_evaluation.findFirst({
+      where: {
+        year_id: data.year_id,
+        family_id: data.family_id,
+      },
+    });
+    if (exist) {
+      return exist;
+    }
     return prisma.psy_evaluation.create({
       data,
     });
