@@ -23,7 +23,7 @@ class PdfRepository {
 
     return prisma.year.create({
       data,
-    });
+    })
   }
   async updateYear(idYear, data) {
     const { status } = data;
