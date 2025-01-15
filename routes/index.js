@@ -51,6 +51,7 @@ router.use((req, res, next) => {
     "/check/available",
     "/spouse/person",
     "/admin/search-new",
+    "/pdf",
     "/admin/migrate-col",
   ];
   if (openRoutes.includes(req.path)) {
