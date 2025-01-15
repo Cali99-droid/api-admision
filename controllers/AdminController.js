@@ -468,7 +468,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
         } = f;
         let vacants = 0;
         if (grade) {
-          const vacantMat = await hasVacant(grade);
+          const vacantMat = await hasVacant(grade, campus);
           vacants = vacantMat.vacants;
         }
 
@@ -552,8 +552,8 @@ const getStatusFamilyAndChildren = async (req, res) => {
   }
 };
 
-const hasVacant = async (gradeId) => {
-  const matriculaUrl = `https://api.colegioae.edu.pe/api/v1/enrollment/vacants/16/grade/${gradeId}`;
+const hasVacant = async (gradeId, campus) => {
+  const matriculaUrl = `https://apissl-matricula.dev-solware.com/api/v1/enrollment/vacants/16/grade/${gradeId}/campus/${campus}`;
   const matriculaResponse = await axios.get(matriculaUrl);
   return matriculaResponse.data;
 };
