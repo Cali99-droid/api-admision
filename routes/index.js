@@ -51,6 +51,7 @@ router.use((req, res, next) => {
     "/check/available",
     "/spouse/person",
     "/admin/search-new",
+    "/admin/migrate-col",
   ];
   if (openRoutes.includes(req.path)) {
     return next(); // No aplicar autenticación a rutas abiertas
