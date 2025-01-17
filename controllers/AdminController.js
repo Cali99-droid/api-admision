@@ -478,6 +478,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
             status: "accepted",
             AND: {
               grade: grade,
+              campus: campus,
             },
           },
         });
@@ -594,8 +595,16 @@ const assignVacant = async (req, res) => {
     );
     console.log("succesfully migrate, child", family.person.doc_number);
     if (process.env.NODE_ENV !== "development") {
-      console.log("enviando email");
+      console.log("enviando email prod");
       const ress = await deliverEmail(parent.email, name, childName, true);
+    } else {
+      console.log("enviando email desarrollo");
+      const ress = await deliverEmail(
+        "carlosjhardel4@gmail.com",
+        name,
+        childName,
+        true
+      );
     }
   }
 

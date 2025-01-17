@@ -173,11 +173,14 @@ const generateBody = (status, name, childName) => {
             <h1>Información sobre la Vacante</h1>
         </div>
         <p>Estimado/a ${name},</p>
-        <p>Lamentamos informarle que su hijo/a <strong>${childName}</strong> no ha obtenido una vacante en nuestro colegio para este periodo académico.</p>
-        <p>Agradecemos sinceramente su interés en formar parte de nuestra comunidad educativa. Le invitamos a estar atento a futuras oportunidades y procesos de admisión.</p>
-        <p>Si tiene alguna duda o consulta, no dude en contactarnos.</p>
+        <p>Reciba un cordial saludo. Me dirijo a ustedes en mi calidad de Coordinador del Proceso de Admisión, con el propósito de comunicarles una actualización importante respecto al proceso de solicitud de vacantes en Colegio ALBERT EINSTEIN.</p>
+        <p>Luego de un exhaustivo proceso de revisión y evaluación de todas las solicitudes recibidas, lamentamos informarles que en esta ocasión no hemos podido asignar una vacante para: ${childName} </p>
+        <p>Somos conscientes de que esta noticia puede ser decepcionante, y queremos asegurarles que esta decisión no refleja de ninguna manera una valoración negativa hacia su familia. La selección fue respetando estrictamente los criterios de admisión.</p>
+        <p>Agradecemos sinceramente el tiempo y esfuerzo que han dedicado a este proceso y valoramos su interés en ser parte de nuestra institución. Les animamos a considerar la posibilidad de volver a aplicar en el futuro, si así lo desean.</p> 
+        <p>Agradeciendo su comprensión y deseándoles lo mejor, me despido cordialmente.</p>
         <p>Atentamente,</p>
         <p><strong>Colegio Albert Einstein</strong></p>
+        <p><strong>Comite Evaluador</strong></p>
         <div class="footer">
             &copy; 2025 Colegio Albert Einstein. Todos los derechos reservados.
         </div>
