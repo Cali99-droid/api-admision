@@ -47,11 +47,11 @@ const store = async (req, res) => {
       type_doc: data.mother_type_doc,
       doc_number: data.mother_doc_number.toString(),
     };
-    const pers = await prisma.person.findFirst({
-      where: {
-        doc_number: children.doc_number.toString(),
-      },
-    });
+    // const pers = await prisma.person.findFirst({
+    //   where: {
+    //     doc_number: children.doc_number.toString(),
+    //   },
+    // });
     if (pers) {
       handleHttpError(res, "NUMBER_DOC_EXIST");
       return;
@@ -304,13 +304,13 @@ const update = async (req, res) => {
     //     return;
     //   }
     // }
-    if (
-      existChildren.doc_number == children.doc_number &&
-      existChildren.id != id
-    ) {
-      handleHttpError(res, "DOC_NUMBER_EXIST");
-      return;
-    }
+    // if (
+    //   existChildren.doc_number == children.doc_number &&
+    //   existChildren.id != id
+    // ) {
+    //   handleHttpError(res, "DOC_NUMBER_EXIST");
+    //   return;
+    // }
     if (children_img1 && children_img2) {
       const docs = await prisma.doc.findMany({
         where: {
