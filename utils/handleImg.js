@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import s3Client from "./aws.js";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { handleHttpError } from "./handleHttpError.js";
 
 export const uploadImage = async (img) => {
   try {
