@@ -19,6 +19,7 @@ import {
   deleteUserRole,
   denyVacant,
   getStudentByDocNumber,
+  migrateAptToApp,
 } from "../controllers/AdminController.js";
 
 import {
@@ -202,6 +203,12 @@ router.post(
   // ensureAuthenticated(["administrador-adm"]),
   validatorConsult,
   getStudentByDocNumber
+);
+
+router.get(
+  "/migrate-col",
+  // ensureAuthenticated(["administrador-adm"]),
+  migrateAptToApp
 );
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;

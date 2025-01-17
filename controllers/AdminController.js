@@ -468,7 +468,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
         } = f;
         let vacants = 0;
         if (grade) {
-          const vacantMat = await hasVacant(grade);
+          const vacantMat = await hasVacant(grade, campus);
           vacants = vacantMat.vacants;
         }
 
@@ -478,6 +478,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
             status: "accepted",
             AND: {
               grade: grade,
+              campus: campus,
             },
           },
         });
@@ -552,8 +553,8 @@ const getStatusFamilyAndChildren = async (req, res) => {
   }
 };
 
-const hasVacant = async (gradeId) => {
-  const matriculaUrl = `https://api.colegioae.edu.pe/api/v1/enrollment/vacants/16/grade/${gradeId}`;
+const hasVacant = async (gradeId, campus) => {
+  const matriculaUrl = `${process.env.APP_AE_URL}/enrollment/vacants/16/grade/${gradeId}/campus/${campus}`;
   const matriculaResponse = await axios.get(matriculaUrl);
   return matriculaResponse.data;
 };
@@ -585,12 +586,32 @@ const assignVacant = async (req, res) => {
       data.person.lastname +
       " " +
       data.person.mLastname;
-    const ress = deliverEmail(parent.email, name, childName, true);
+    const body = {
+      docNumber: family.person.doc_number,
+    };
+    const response = await axios.post(
+      `${process.env.APP_AE_URL}/enrollment/new`,
+      body
+    );
+    console.log("succesfully migrate, child", family.person.doc_number);
+    if (process.env.NODE_ENV !== "development") {
+      console.log("enviando email prod");
+      const ress = await deliverEmail(parent.email, name, childName, true);
+    } else {
+      console.log("enviando email desarrollo");
+      const ress = await deliverEmail(
+        "carlosjhardel4@gmail.com",
+        name,
+        childName,
+        true
+      );
+    }
   }
 
   return res.status(201).json({
     success: true,
     data: updateVacantStatus,
+    msg: `succesfully migrate, child: ${family.person.doc_number}`,
   });
 };
 
@@ -621,7 +642,18 @@ const denyVacant = async (req, res) => {
       data.person.lastname +
       " " +
       data.person.mLastname;
-    const ress = deliverEmail(parent.email, name, childName, false);
+    if (process.env.NODE_ENV !== "development") {
+      console.log("enviando email prod deny");
+      const ress = deliverEmail(parent.email, name, childName, false);
+    } else {
+      console.log("enviando email desarrollo deny");
+      const ress = deliverEmail(
+        "carlosjhardel4@gmail.com",
+        name,
+        childName,
+        false
+      );
+    }
   }
 
   return res.status(201).json({
@@ -640,10 +672,11 @@ const getStudentByDocNumber = async (req, res) => {
       doc_number: docNumber,
     },
   });
-
-  if (!person) {
+  console.log("doc", docNumber);
+  if (!person || person === null) {
     handleHttpError(res, "No existe esta persona", 404);
   }
+  console.log(person);
   /**TODO agregar consulta por año */
   const children = await prisma.children.findFirst({
     where: {
@@ -671,9 +704,10 @@ const getStudentByDocNumber = async (req, res) => {
     data: formatFamilyData(family),
   });
 };
+
 const formatFamilyData = (data) => {
   if (!data) return null;
-
+  /**TODO cambiar */
   // Extraer la información principal del niño (child)
   const child = {
     id: data.id,
@@ -684,7 +718,8 @@ const formatFamilyData = (data) => {
     birthdate: data.person.birthdate,
     gender: data.person.gender,
     type_doc: data.person.type_doc,
-    grade: data.grade,
+    grade: data.vacant[0].grade,
+    campus: data.vacant[0].campus,
     level: data.level,
     schoolId: data.schoolId,
     district_id: data.district_id,
@@ -731,6 +766,40 @@ const formatFamilyData = (data) => {
   }
 
   return { child, parents };
+};
+
+const migrateAptToApp = async (req, res) => {
+  const children = await prisma.children.findMany({
+    where: {
+      vacant: {
+        some: {
+          status: "accepted",
+        },
+      },
+    },
+  });
+
+  try {
+    for (const child of children) {
+      const family = await FamilyRepository.getFamilyMembers(+child.id);
+      const body = {
+        docNumber: family.person.doc_number,
+      };
+      const response = await axios.post(
+        `${process.env.APP_AE_URL}/enrollment/new`,
+        body
+      );
+      console.log("succesfully migrate, child", family.person.doc_number);
+    }
+    return res.status(201).json({
+      success: true,
+      data: [],
+    });
+  } catch (error) {
+    console.log(error.response?.data?.errors || error.message);
+    console.log(error.response?.data);
+    handleHttpError(res, "error al migrar", 402);
+  }
 };
 
 const assignDELVacant = async (req, res) => {
@@ -970,4 +1039,5 @@ export {
   getStudentByDocNumber,
   //sctipots
   changeNameFamily,
+  migrateAptToApp,
 };

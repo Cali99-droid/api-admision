@@ -28,9 +28,6 @@ const store = async (req, res) => {
               equals: userData.phone,
             },
           },
-          {
-            doc_number: person.doc_number.toString(),
-          },
         ],
       },
     });
@@ -257,16 +254,16 @@ const update = async (req, res) => {
       return;
     }
 
-    const persDoc = await prisma.person.findFirst({
-      where: {
-        doc_number: person.doc_number,
-      },
-    });
+    // const persDoc = await prisma.person.findFirst({
+    //   where: {
+    //     doc_number: person.doc_number,
+    //   },
+    // });
 
-    if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
-      handleHttpError(res, "DOC_NUMBER_EXIST");
-      return;
-    }
+    // if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
+    //   handleHttpError(res, "DOC_NUMBER_EXIST");
+    //   return;
+    // }
 
     if (userData) {
       const us = await prisma.person.findFirst({
@@ -298,10 +295,10 @@ const update = async (req, res) => {
       }
     }
 
-    if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
-      handleHttpError(res, "DOC_NUMBER_EXIST");
-      return;
-    }
+    // if (persDoc?.doc_number == person.doc_number && persDoc?.id != id) {
+    //   handleHttpError(res, "DOC_NUMBER_EXIST");
+    //   return;
+    // }
 
     person.birthdate = new Date(person.birthdate).toISOString();
     if (person.issuance_doc) {
