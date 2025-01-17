@@ -40,6 +40,7 @@
     "openid-client": "^5.7.0",
     "passport": "^0.7.0",
     "passport-openidconnect": "^0.1.2",
+    "pdfkit": "^0.16.0",
     "sharp": "^0.32.6",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
