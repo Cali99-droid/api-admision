@@ -611,7 +611,7 @@ const assignVacant = async (req, res) => {
   return res.status(201).json({
     success: true,
     data: updateVacantStatus,
-    msg: `succesfully migrate, child: ${family.person.doc_number}`,
+    msg: `succesfully migrate, child: ${data.person.doc_number}`,
   });
 };
 
