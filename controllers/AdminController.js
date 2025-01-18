@@ -577,7 +577,7 @@ const assignVacant = async (req, res) => {
       console.log("no hay email de contacto");
     }
   }
-
+  console.log(data);
   if (parent) {
     const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
     const childName =
@@ -587,13 +587,13 @@ const assignVacant = async (req, res) => {
       " " +
       data.person.mLastname;
     const body = {
-      docNumber: family.person.doc_number,
+      docNumber: data.person.doc_number,
     };
     const response = await axios.post(
       `${process.env.APP_AE_URL}/enrollment/new`,
       body
     );
-    console.log("succesfully migrate, child", family.person.doc_number);
+    console.log("succesfully migrate, child", data.person.doc_number);
     if (process.env.NODE_ENV !== "development") {
       console.log("enviando email prod");
       const ress = await deliverEmail(parent.email, name, childName, true);
@@ -611,7 +611,7 @@ const assignVacant = async (req, res) => {
   return res.status(201).json({
     success: true,
     data: updateVacantStatus,
-    msg: `succesfully migrate, child: ${family.person.doc_number}`,
+    msg: `succesfully migrate, child: ${data.person.doc_number}`,
   });
 };
 
@@ -642,7 +642,7 @@ const denyVacant = async (req, res) => {
       data.person.lastname +
       " " +
       data.person.mLastname;
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV === "production") {
       console.log("enviando email prod deny");
       const ress = deliverEmail(parent.email, name, childName, false);
     } else {
