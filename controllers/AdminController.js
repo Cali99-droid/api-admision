@@ -642,9 +642,9 @@ const denyVacant = async (req, res) => {
       data.person.lastname +
       " " +
       data.person.mLastname;
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV === "production") {
       console.log("enviando email prod deny");
-      // const ress = deliverEmail(parent.email, name, childName, false);
+      const ress = deliverEmail(parent.email, name, childName, false);
     } else {
       console.log("enviando email desarrollo deny");
       const ress = deliverEmail(
