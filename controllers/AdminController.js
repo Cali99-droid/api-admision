@@ -782,6 +782,7 @@ const migrateAptToApp = async (req, res) => {
   try {
     for (const child of children) {
       const family = await FamilyRepository.getFamilyMembers(+child.id);
+      console.log("init migrate, child", family.person.doc_number);
       const body = {
         docNumber: family.person.doc_number,
       };
@@ -798,7 +799,7 @@ const migrateAptToApp = async (req, res) => {
   } catch (error) {
     console.log(error.response?.data?.errors || error.message);
     console.log(error.response?.data);
-    handleHttpError(res, `error al migrar ${family.person.doc_number}`, 402);
+    handleHttpError(res, `error al migrar `, 500);
   }
 };
 
