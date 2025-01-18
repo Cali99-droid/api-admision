@@ -798,7 +798,7 @@ const migrateAptToApp = async (req, res) => {
   } catch (error) {
     console.log(error.response?.data?.errors || error.message);
     console.log(error.response?.data);
-    handleHttpError(res, "error al migrar", 402);
+    handleHttpError(res, `error al migrar ${family.person.doc_number}`, 402);
   }
 };
 
