@@ -593,7 +593,7 @@ const assignVacant = async (req, res) => {
       `${process.env.APP_AE_URL}/enrollment/new`,
       body
     );
-    console.log("succesfully migrate, child", family.person.doc_number);
+    console.log("succesfully migrate, child", data.person.doc_number);
     if (process.env.NODE_ENV !== "development") {
       console.log("enviando email prod");
       const ress = await deliverEmail(parent.email, name, childName, true);
