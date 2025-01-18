@@ -587,7 +587,7 @@ const assignVacant = async (req, res) => {
       " " +
       data.person.mLastname;
     const body = {
-      docNumber: family.person.doc_number,
+      docNumber: data.family.person.doc_number,
     };
     const response = await axios.post(
       `${process.env.APP_AE_URL}/enrollment/new`,
