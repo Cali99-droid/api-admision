@@ -694,7 +694,7 @@ const getStudentByDocNumber = async (req, res) => {
     handleHttpError(res, "No existe postulante", 404);
   }
   if (children.vacant.length === 0) {
-    handleHttpError(res, "Psotulante no apto a vacante", 403);
+    handleHttpError(res, "Psotulante no apto a vacante", 403, children.id);
   }
 
   const family = await FamilyRepository.getFamilyMembers(+children.id);
