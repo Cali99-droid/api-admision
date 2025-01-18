@@ -577,7 +577,7 @@ const assignVacant = async (req, res) => {
       console.log("no hay email de contacto");
     }
   }
-
+  console.log(data);
   if (parent) {
     const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
     const childName =
@@ -587,7 +587,7 @@ const assignVacant = async (req, res) => {
       " " +
       data.person.mLastname;
     const body = {
-      docNumber: data.family.person.doc_number,
+      docNumber: data.person.doc_number,
     };
     const response = await axios.post(
       `${process.env.APP_AE_URL}/enrollment/new`,
