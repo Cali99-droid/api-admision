@@ -110,11 +110,7 @@ class FamilyRepository {
             economic_evaluation: true,
             background_assessment: true,
             familiy_secretary: true,
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
           },
         },
         vacant: true,
@@ -134,21 +130,14 @@ class FamilyRepository {
         vacant: true,
         family: {
           include: {
-            mainConyugue: {
-              include: {
-                person: true,
-              },
-            },
-            conyugue: {
-              include: {
-                person: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
+            person_family_parent_twoToperson: true,
           },
         },
       },
     });
   }
+
   async setFamilyToSecretary(idFamily, idSecretary) {
     return prisma.familiy_secretary.updateMany({
       where: { family_id: idFamily },

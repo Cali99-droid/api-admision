@@ -18,6 +18,8 @@ import prisma from "../utils/prisma.js";
 import sendEmail from "../mautic/sendEmail.js";
 import client from "../utils/client.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
+import axios from "axios";
+import { deliverEmail } from "../helpers/sendEmailSES.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -450,87 +452,100 @@ const getStatistics = async (req, res) => {
 
 const getStatusFamilyAndChildren = async (req, res) => {
   try {
-    // const [dataSIGE, families] = await Promise.all([
-    //   getVacantSIGE(),
-    //   FamilyRepository.getVacant(),
-    // ]);
+    const families = await FamilyRepository.getVacant();
 
-    // const dat = families.filter(
-    //   (f) => f.family.familiy_secretary[0].status === 1
-    // );
-    // const format = await Promise.all(
-    //   dat.map(async (f) => {
-    //     // Destructure with default values
-    //     const {
-    //       vacant: [{ id, campus, level, grade } = {}] = [],
-    //       schoolId,
-    //       family,
-    //       person,
-    //     } = f;
+    const dat = families.filter(
+      (f) => f.family.familiy_secretary[0].status === 1
+    );
+    const format = await Promise.all(
+      dat.map(async (f) => {
+        // Destructure with default values
+        const {
+          vacant: [{ id, campus, level, grade } = {}] = [],
+          schoolId,
+          family,
+          person,
+        } = f;
+        let vacants = 0;
+        if (grade) {
+          const vacantMat = await hasVacant(grade, campus);
+          vacants = vacantMat.vacants;
+        }
 
-    //     // Use filter directly in the function argument
-    //     const getdataSIGE = dataSIGE.filter(
-    //       (x) =>
-    //         x.sucursal === parseInt(campus) &&
-    //         x.nivel === parseInt(level) &&
-    //         x.id_gra === parseInt(grade)
-    //     );
+        /***TODO AGREGAR año a consulta */
+        const vacantsAss = await prisma.vacant.findMany({
+          where: {
+            status: "accepted",
+            AND: {
+              grade: grade,
+              campus: campus,
+            },
+          },
+        });
 
-    //     // Use conditional operator for schools assignment
-    //     const school = schoolId
-    //       ? await client.schools.findFirst({
-    //           where: { id: schoolId },
-    //           select: { cod_modular: true, name: true },
-    //         })
-    //       : null;
+        // Use filter directly in the function argument
+        // const getdataSIGE = dataSIGE.filter(
+        //   (x) =>
+        //     x.sucursal === parseInt(campus) &&
+        //     x.nivel === parseInt(level) &&
+        //     x.id_gra === parseInt(grade)
+        // );
 
-    //     return {
-    //       id: f.id,
-    //       idFamily: family.id,
-    //       name: person.name,
-    //       lastname: person.lastname,
-    //       mLastname: person.mLastname,
-    //       gender: person.gender,
-    //       dni: person.doc_number,
+        // Use conditional operator for schools assignment
+        const school = schoolId
+          ? await client.schools.findFirst({
+              where: { id: schoolId },
+              select: { cod_modular: true, name: true },
+            })
+          : null;
 
-    //       birthdate: person.birthdate,
-    //       family: family.name,
-    //       inscription: family.create_time,
-    //       phone: family.mainConyugue.phone,
-    //       email: family.mainConyugue.email,
-    //       vacantId: id,
-    //       campus: parseInt(campus),
-    //       level: parseInt(level),
-    //       grade: parseInt(grade),
-    //       vacants: campus === undefined ? 0 : getdataSIGE[0]?.vacantes || 0,
-    //       secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
-    //       economic:
-    //         family.economic_evaluation[0]?.conclusion === "apto"
-    //           ? 1
-    //           : family.economic_evaluation.length > 0
-    //           ? 2
-    //           : 3,
-    //       antecedent:
-    //         family.background_assessment[0]?.conclusion === "apto"
-    //           ? 1
-    //           : family.background_assessment.length > 0
-    //           ? 2
-    //           : 3,
-    //       psychology:
-    //         family.psy_evaluation[0]?.applied === 0
-    //           ? 3
-    //           : family.psy_evaluation[0]?.approved || 0,
-    //       status: f.vacant[0]?.status,
+        return {
+          id: f.id,
+          idFamily: family.id,
+          name: person.name,
+          lastname: person.lastname,
+          mLastname: person.mLastname,
+          gender: person.gender,
+          dni: person.doc_number,
+          birthdate: person.birthdate,
+          family: family.name,
+          inscription: family.create_time,
+          phone: family.person_family_parent_oneToperson.phone,
+          email: family.person_family_parent_oneToperson.email,
+          vacantId: id,
+          campus: parseInt(campus),
+          level: parseInt(level),
+          grade: parseInt(grade),
+          vacants: vacants,
+          awarded: vacantsAss.length,
+          secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
+          economic:
+            family.economic_evaluation[0]?.conclusion === "apto"
+              ? 1
+              : family.economic_evaluation.length > 0
+              ? 2
+              : 3,
+          antecedent:
+            family.background_assessment[0]?.conclusion === "apto"
+              ? 1
+              : family.background_assessment.length > 0
+              ? 2
+              : 3,
+          psychology:
+            family.psy_evaluation[0]?.applied === 0
+              ? 3
+              : family.psy_evaluation[0]?.approved || 0,
+          status: f.vacant[0]?.status,
 
-    //       dataParent: family.mainConyugue.person,
-    //       school,
-    //     };
-    //   })
-    // );
+          dataParent: family.person_family_parent_oneToperson,
+          school,
+        };
+      })
+    );
 
     res.status(201).json({
       success: true,
-      data: [],
+      data: format,
     });
   } catch (error) {
     console.log(error);
@@ -538,7 +553,257 @@ const getStatusFamilyAndChildren = async (req, res) => {
   }
 };
 
+const hasVacant = async (gradeId, campus) => {
+  const matriculaUrl = `${process.env.APP_AE_URL}/enrollment/vacants/16/grade/${gradeId}/campus/${campus}`;
+  const matriculaResponse = await axios.get(matriculaUrl);
+  return matriculaResponse.data;
+};
+
 const assignVacant = async (req, res) => {
+  const { idChildren } = req.params;
+  const data = await FamilyRepository.getFamilyMembers(+idChildren);
+  const updateVacantStatus = await VacantRepository.updateVacant(
+    data.vacant[0].id,
+    { status: "accepted" }
+  );
+
+  let parent = null;
+  if (data.family.person_family_parent_oneToperson.email) {
+    parent = data.family.person_family_parent_oneToperson;
+  } else {
+    if (data.family.person_family_parent_twoToperson) {
+      parent = data.family.person_family_parent_twoToperson;
+    } else {
+      console.log("no hay email de contacto");
+    }
+  }
+  console.log(data);
+  if (parent) {
+    const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
+    const childName =
+      data.person.name +
+      " " +
+      data.person.lastname +
+      " " +
+      data.person.mLastname;
+    const body = {
+      docNumber: data.person.doc_number,
+    };
+    const response = await axios.post(
+      `${process.env.APP_AE_URL}/enrollment/new`,
+      body
+    );
+    console.log("succesfully migrate, child", data.person.doc_number);
+    if (process.env.NODE_ENV !== "development") {
+      console.log("enviando email prod");
+      const ress = await deliverEmail(parent.email, name, childName, true);
+    } else {
+      console.log("enviando email desarrollo");
+      const ress = await deliverEmail(
+        "carlosjhardel4@gmail.com",
+        name,
+        childName,
+        true
+      );
+    }
+  }
+
+  return res.status(201).json({
+    success: true,
+    data: updateVacantStatus,
+    msg: `succesfully migrate, child: ${data.person.doc_number}`,
+  });
+};
+
+const denyVacant = async (req, res) => {
+  const { idChildren } = req.params;
+  const data = await FamilyRepository.getFamilyMembers(+idChildren);
+  const updateVacantStatus = await VacantRepository.updateVacant(
+    data.vacant[0].id,
+    { status: "denied" }
+  );
+
+  let parent = null;
+  if (data.family.person_family_parent_oneToperson.email) {
+    parent = data.family.person_family_parent_oneToperson;
+  } else {
+    if (data.family.person_family_parent_twoToperson) {
+      parent = data.family.person_family_parent_twoToperson;
+    } else {
+      console.log("no hay email de contacto");
+    }
+  }
+
+  if (parent) {
+    const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
+    const childName =
+      data.person.name +
+      " " +
+      data.person.lastname +
+      " " +
+      data.person.mLastname;
+    if (process.env.NODE_ENV === "production") {
+      console.log("enviando email prod deny");
+      const ress = deliverEmail(parent.email, name, childName, false);
+    } else {
+      console.log("enviando email desarrollo deny");
+      const ress = deliverEmail(
+        "carlosjhardel4@gmail.com",
+        name,
+        childName,
+        false
+      );
+    }
+  }
+
+  return res.status(201).json({
+    success: true,
+    data: updateVacantStatus,
+  });
+};
+
+const getStudentByDocNumber = async (req, res) => {
+  req = matchedData(req);
+  const { docNumber } = req;
+
+  /**TODO Agregar condicional año */
+  const person = await prisma.person.findFirst({
+    where: {
+      doc_number: docNumber,
+    },
+  });
+  console.log("doc", docNumber);
+  if (!person || person === null) {
+    handleHttpError(res, "No existe esta persona", 404);
+  }
+  console.log(person);
+  /**TODO agregar consulta por año */
+  const children = await prisma.children.findFirst({
+    where: {
+      person_id: person.id,
+    },
+    include: {
+      vacant: {
+        where: {
+          status: "accepted",
+        },
+      },
+    },
+  });
+  if (!children) {
+    handleHttpError(res, "No existe postulante", 404);
+  }
+  if (children.vacant.length === 0) {
+    handleHttpError(res, "Psotulante no apto a vacante", 403, children.id);
+  }
+
+  const family = await FamilyRepository.getFamilyMembers(+children.id);
+
+  return res.status(201).json({
+    success: true,
+    data: formatFamilyData(family),
+  });
+};
+
+const formatFamilyData = (data) => {
+  if (!data) return null;
+  /**TODO cambiar */
+  // Extraer la información principal del niño (child)
+  const child = {
+    id: data.id,
+    name: data.person.name,
+    lastname: data.person.lastname,
+    mLastname: data.person.mLastname,
+    doc_number: data.person.doc_number,
+    birthdate: data.person.birthdate,
+    gender: data.person.gender,
+    type_doc: data.person.type_doc,
+    grade: data.vacant[0].grade,
+    campus: data.vacant[0].campus,
+    level: data.level,
+    schoolId: data.schoolId,
+    district_id: data.district_id,
+    doc: data.doc,
+    validate: data.validate,
+    validateSchool: data.validateSchool,
+    vacant: data.vacant[0],
+  };
+
+  // Extraer la información de los padres (parents)
+  const parents = [];
+  if (data.family.person_family_parent_oneToperson) {
+    parents.push({
+      id: data.family.person_family_parent_oneToperson.id,
+      name: data.family.person_family_parent_oneToperson.name,
+      lastname: data.family.person_family_parent_oneToperson.lastname,
+      mLastname: data.family.person_family_parent_oneToperson.mLastname,
+      doc_number: data.family.person_family_parent_oneToperson.doc_number,
+      birthdate: data.family.person_family_parent_oneToperson.birthdate,
+      civil_status: data.family.person_family_parent_oneToperson.civil_status,
+      profession: data.family.person_family_parent_oneToperson.profession,
+      phone: data.family.person_family_parent_oneToperson.phone,
+      type_doc: data.family.person_family_parent_oneToperson.type_doc,
+      role: data.family.person_family_parent_oneToperson.role,
+      email: data.family.person_family_parent_oneToperson.email,
+    });
+  }
+
+  if (data.family.person_family_parent_twoToperson) {
+    parents.push({
+      id: data.family.person_family_parent_twoToperson.id,
+      name: data.family.person_family_parent_twoToperson.name,
+      lastname: data.family.person_family_parent_twoToperson.lastname,
+      mLastname: data.family.person_family_parent_twoToperson.mLastname,
+      doc_number: data.family.person_family_parent_twoToperson.doc_number,
+      birthdate: data.family.person_family_parent_twoToperson.birthdate,
+      civil_status: data.family.person_family_parent_twoToperson.civil_status,
+      profession: data.family.person_family_parent_twoToperson.profession,
+      phone: data.family.person_family_parent_twoToperson.phone,
+      type_doc: data.family.person_family_parent_twoToperson.type_doc,
+      role: data.family.person_family_parent_twoToperson.role,
+      email: data.family.person_family_parent_twoToperson.email,
+    });
+  }
+
+  return { child, parents };
+};
+
+const migrateAptToApp = async (req, res) => {
+  const children = await prisma.children.findMany({
+    where: {
+      vacant: {
+        some: {
+          status: "accepted",
+        },
+      },
+    },
+  });
+
+  try {
+    for (const child of children) {
+      const family = await FamilyRepository.getFamilyMembers(+child.id);
+      console.log("init migrate, child", family.person.doc_number);
+      const body = {
+        docNumber: family.person.doc_number,
+      };
+      const response = await axios.post(
+        `${process.env.APP_AE_URL}/enrollment/new`,
+        body
+      );
+      console.log("succesfully migrate, child", family.person.doc_number);
+    }
+    return res.status(201).json({
+      success: true,
+      data: [],
+    });
+  } catch (error) {
+    console.log(error.response?.data?.errors || error.message);
+    console.log(error.response?.data);
+    handleHttpError(res, `error al migrar `, 500);
+  }
+};
+
+const assignDELVacant = async (req, res) => {
   const sucursalMapping = {
     1: "Local 1 - Jr. Huaylas 220",
     2: "Local 2 - Einstinitos 2", //Local 2 - Jr. Augusto B. Leguia Nro 264
@@ -668,7 +933,7 @@ const assignVacant = async (req, res) => {
   }
 };
 
-const denyVacant = async (req, res) => {
+const denyDELVacant = async (req, res) => {
   const NODE_ENV = process.env.NODE_ENV;
   const emailId = process.env.MAUTIC_ID_EMAIL_DENY_VACANT;
   try {
@@ -772,7 +1037,8 @@ export {
   getStatusFamilyAndChildren,
   assignVacant,
   denyVacant,
-
+  getStudentByDocNumber,
   //sctipots
   changeNameFamily,
+  migrateAptToApp,
 };
