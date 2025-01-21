@@ -13,6 +13,7 @@ import {
   getFamily,
   updateCitation,
   SummaryPsyEvaluation,
+  changeApproed,
 } from "../controllers/PsychologyController.js";
 import { upload } from "../utils/handleUpload.js";
 import { validatorInterview, validatorReport } from "../validators/children.js";
@@ -92,6 +93,11 @@ router.put(
 router.get("/citation", ensureAuthenticated(["psicologia-adm"]), getCitations);
 router.get("/completed", ensureAuthenticated(["psicologia-adm"]), getCompleted);
 
+router.put(
+  "/change-approved/:id",
+  ensureAuthenticated(["administrador-adm"]),
+  changeApproed
+);
 // router.post(
 //   "/gaa",
 //   authMiddleware,

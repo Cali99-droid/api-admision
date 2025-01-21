@@ -429,21 +429,32 @@ const getCitations = async (req, res) => {
 // };
 //  const getFamilies = (req, res) => {};
 
-const getCompleted = async (req, res) => {
+const changeApproed = async (req, res) => {
   try {
     const { user } = req;
-    const familyAplieds = await PsychologyRepository.getFamiliesByUser(user.id);
-    const applied = familyAplieds.filter((f) => f.applied === 1);
+    const { id } = req.params;
+    const data = await PsychologyRepository.findOneByFamilyId(id);
+    if (!data) {
+      handleHttpError(res, "EVALUATION_PSYCHOLOGY_NOT_EXIST");
+      return;
+    }
+    if(data.approved == 1){
+      data.approved = 0;
+    }
+    if(data.approved == 0){
+      data.approved = 1;
+    }
+    const update = await PsychologyRepository.update(id,data);
 
     res.status(201).json({
       success: true,
       data: {
-        applied: applied.length,
+        update,
       },
     });
   } catch (error) {
     console.log(error);
-    handleHttpError(res, "ERROR_GET_COMPLETED");
+    handleHttpError(res, "ERROR_UPDATE_APPROVED_COMPLETED");
   }
 };
 export {
@@ -458,4 +469,5 @@ export {
   getCitations,
   getCompleted,
   SummaryPsyEvaluation,
+  changeApproed,
 };
