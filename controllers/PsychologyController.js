@@ -438,13 +438,13 @@ const changeApproed = async (req, res) => {
       handleHttpError(res, "EVALUATION_PSYCHOLOGY_NOT_EXIST");
       return;
     }
-    if(data.approved == 1){
+    if (data.approved == 1) {
       data.approved = 0;
     }
-    if(data.approved == 0){
+    if (data.approved == 0) {
       data.approved = 1;
     }
-    const update = await PsychologyRepository.update(id,data);
+    const update = await PsychologyRepository.update(id, data);
 
     res.status(201).json({
       success: true,
@@ -455,6 +455,23 @@ const changeApproed = async (req, res) => {
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_UPDATE_APPROVED_COMPLETED");
+  }
+};
+const getCompleted = async (req, res) => {
+  try {
+    const { user } = req;
+    const familyAplieds = await PsychologyRepository.getFamiliesByUser(user.id);
+    const applied = familyAplieds.filter((f) => f.applied === 1);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        applied: applied.length,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_COMPLETED");
   }
 };
 export {
