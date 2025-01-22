@@ -23,11 +23,6 @@ const store = async (req, res) => {
               equals: userData.email,
             },
           },
-          {
-            phone: {
-              equals: userData.phone,
-            },
-          },
         ],
       },
     });
@@ -272,18 +267,18 @@ const update = async (req, res) => {
             {
               email: userData.email ? userData.email : undefined,
             },
-            {
-              phone: userData.phone ? userData.phone : undefined,
-            },
-            {
-              doc_number: person.doc_number.toString(),
-            },
+            // {
+            //   phone: userData.phone ? userData.phone : undefined,
+            // },
+            // {
+            //   doc_number: person.doc_number.toString(),
+            // },
           ],
         },
       });
       if (us) {
         if (us.id != id) {
-          handleHttpError(res, "PHONE_OR_EMAIL_EXIST");
+          handleHttpError(res, "EMAIL_EXIST");
           return;
         }
       }
