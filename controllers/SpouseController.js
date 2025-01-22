@@ -382,7 +382,7 @@ const update = async (req, res) => {
         ],
       });
     }
-
+    /** */
     const data = {
       id: personUpdate.id,
       // img1: image1.imageName,
