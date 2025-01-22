@@ -52,10 +52,10 @@ const store = async (req, res) => {
     //     doc_number: children.doc_number.toString(),
     //   },
     // });
-    if (pers) {
-      handleHttpError(res, "NUMBER_DOC_EXIST");
-      return;
-    }
+    // if (pers) {
+    //   handleHttpError(res, "NUMBER_DOC_EXIST");
+    //   return;
+    // }
     const family = await prisma.family.findUnique({
       where: {
         id: parseInt(id),
