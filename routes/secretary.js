@@ -236,7 +236,7 @@ router.get(
 
   getAntecedent
 );
-
+/**c */
 router.post(
   "/antecedent",
   validatorAntecedent,
