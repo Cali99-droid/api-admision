@@ -33,6 +33,7 @@ import {
 import {
   createAntecedent,
   getAntecedent,
+  updateAntecedent,
 } from "../controllers/AntecedentController.js";
 import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 
@@ -240,8 +241,15 @@ router.post(
   "/antecedent",
   validatorAntecedent,
   ensureAuthenticated(["secretaria-adm", "ev-antecedent-adm"]),
-
   createAntecedent
+);
+
+router.put(
+  "/antecedent/:id",
+  validatorAntecedent,
+  ensureAuthenticated(["secretaria-adm", "ev-antecedent-adm"]),
+  validatorIdFamily,
+  updateAntecedent
 );
 
 router.get(

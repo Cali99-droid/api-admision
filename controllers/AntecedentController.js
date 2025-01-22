@@ -38,7 +38,7 @@ const createAntecedent = async (req, res) => {
 };
 const updateAntecedent = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { familyId } = req.params;
     req = matchedData(req);
     const data = req;
 
