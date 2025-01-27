@@ -263,19 +263,17 @@ const update = async (req, res) => {
     if (userData) {
       const us = await prisma.person.findFirst({
         where: {
-          OR: [
-            {
-              email: userData.email ? userData.email : undefined,
+          email: userData.email,
+          AND: {
+            user: {
+              some: {
+                sub: user.sub,
+              },
             },
-            // {
-            //   phone: userData.phone ? userData.phone : undefined,
-            // },
-            // {
-            //   doc_number: person.doc_number.toString(),
-            // },
-          ],
+          },
         },
       });
+      console.log(us);
       if (us) {
         if (us.id != id) {
           handleHttpError(res, "EMAIL_EXIST");
