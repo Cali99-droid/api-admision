@@ -275,7 +275,7 @@ const update = async (req, res) => {
       });
       console.log(us);
       if (us) {
-        if (us.id != id) {
+        if (us.personId != id && person.email) {
           handleHttpError(res, "EMAIL_EXIST");
           return;
         }
