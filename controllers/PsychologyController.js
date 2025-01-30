@@ -439,11 +439,13 @@ const changeApproed = async (req, res) => {
       return;
     }
     if (data.approved == 1) {
+      console.log('entra')
       data.approved = 0;
     }
-    if (data.approved == 0) {
+    else {
       data.approved = 1;
     }
+    console.log(data);
     const update = await PsychologyRepository.update(id, data);
 
     res.status(201).json({
