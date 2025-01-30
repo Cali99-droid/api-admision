@@ -115,11 +115,11 @@ class PsychologyRepository {
       data,
     });
   }
-  async findOneByFamilyId(id) {
-    console.log(Number(id))
-    return prisma.psy_evaluation.findUnique({
+  async findOneByFamilyIdAndYear(familyId,yearId) {
+    return prisma.psy_evaluation.findFirst({
       where: {
-        id: Number(id),
+        year_id: yearId,
+        family_id: Number(familyId),
       },
     });
   }
