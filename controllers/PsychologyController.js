@@ -433,7 +433,15 @@ const changeApproed = async (req, res) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const data = await PsychologyRepository.findOneByFamilyId(id);
+    const year = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const data = await PsychologyRepository.findOneByFamilyIdAndYear(id,year.id);
     if (!data) {
       handleHttpError(res, "EVALUATION_PSYCHOLOGY_NOT_EXIST");
       return;
@@ -441,10 +449,10 @@ const changeApproed = async (req, res) => {
     if (data.approved == 1) {
       data.approved = 0;
     }
-    if (data.approved == 0) {
+    else {
       data.approved = 1;
     }
-    const update = await PsychologyRepository.update(id, data);
+    const update = await PsychologyRepository.update(data.id, data);
 
     res.status(201).json({
       success: true,
