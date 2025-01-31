@@ -699,18 +699,25 @@ const getStudentByDocNumber = async (req, res) => {
 
   const family = await FamilyRepository.getFamilyMembers(+children.id);
 
-  const school = await client.schools.findUnique({
-    select: {
-      id: true,
-      ubigean: true,
-      name: true,
-      level: true,
-      cod_modular: true,
-    },
-    where: {
-      id: children.schoolId,
-    },
-  });
+  let school = {
+    name: "sin info",
+    cod_modular: "sin info",
+  };
+  if (children.schoolId) {
+    school = await client.schools.findUnique({
+      select: {
+        id: true,
+        ubigean: true,
+        name: true,
+        level: true,
+        cod_modular: true,
+      },
+      where: {
+        id: children.schoolId,
+      },
+    });
+  }
+
   family.school = school;
 
   return res.status(201).json({
@@ -720,7 +727,6 @@ const getStudentByDocNumber = async (req, res) => {
 };
 
 const formatFamilyData = (data) => {
-  console.log(data.school);
   if (!data) return null;
   /**TODO cambiar */
   // Extraer la información principal del niño (child)
