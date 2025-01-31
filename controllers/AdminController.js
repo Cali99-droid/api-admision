@@ -663,67 +663,79 @@ const denyVacant = async (req, res) => {
 };
 
 const getStudentByDocNumber = async (req, res) => {
-  req = matchedData(req);
-  const { docNumber } = req;
+  try {
+    req = matchedData(req);
+    const { docNumber } = req;
 
-  /**TODO Agregar condicional año */
-  const person = await prisma.person.findFirst({
-    where: {
-      doc_number: docNumber,
-    },
-  });
-  if (!person || person === null) {
-    handleHttpError(res, "No existe esta persona", 404);
-  }
-
-  /**TODO agregar consulta por año */
-  const children = await prisma.children.findFirst({
-    where: {
-      person_id: person.id,
-    },
-    include: {
-      vacant: {
-        where: {
-          status: "accepted",
-        },
-      },
-    },
-  });
-
-  if (!children) {
-    handleHttpError(res, "No existe postulante", 404);
-  }
-  if (children.vacant.length === 0) {
-    handleHttpError(res, "Psotulante no apto a vacante", 403, children.id);
-  }
-
-  const family = await FamilyRepository.getFamilyMembers(+children.id);
-
-  let school = {
-    name: "sin info",
-    cod_modular: "sin info",
-  };
-  if (children.schoolId) {
-    school = await client.schools.findUnique({
-      select: {
-        id: true,
-        ubigean: true,
-        name: true,
-        level: true,
-        cod_modular: true,
-      },
+    /**TODO Agregar condicional año */
+    const person = await prisma.person.findFirst({
       where: {
-        id: children.schoolId,
+        doc_number: docNumber,
       },
     });
+
+    if (!person) {
+      return handleHttpError(res, "No existe esta persona", 404);
+    }
+
+    /**TODO agregar consulta por año */
+    const children = await prisma.children.findFirst({
+      where: {
+        person_id: person.id,
+      },
+      include: {
+        vacant: {
+          where: {
+            status: "accepted",
+          },
+        },
+      },
+    });
+
+    if (!children) {
+      return handleHttpError(res, "No existe postulante", 404);
+    }
+
+    if (children.vacant.length === 0) {
+      return handleHttpError(
+        res,
+        "Postulante no apto a vacante",
+        403,
+        children.id
+      );
+    }
+
+    const family = await FamilyRepository.getFamilyMembers(+children.id);
+
+    let school = {
+      name: "no information",
+      cod_modular: "no information",
+    };
+
+    if (children.schoolId) {
+      school = await client.schools.findUnique({
+        select: {
+          id: true,
+          ubigean: true,
+          name: true,
+          level: true,
+          cod_modular: true,
+        },
+        where: {
+          id: children.schoolId,
+        },
+      });
+    }
+
+    family.school = school;
+
+    return res.status(201).json({
+      success: true,
+      data: formatFamilyData(family),
+    });
+  } catch (error) {
+    return handleHttpError(res, "Error en la consulta", 500);
   }
-
-  family.school = school;
-
-  return res.status(201).json({
-    success: true,
-    data: formatFamilyData(family),
-  });
 };
 
 const formatFamilyData = (data) => {
