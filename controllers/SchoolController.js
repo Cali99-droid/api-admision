@@ -182,6 +182,7 @@ const show = async (req, res) => {
         ubigean: true,
         name: true,
         level: true,
+        cod_modular: true,
       },
     });
     res.status(200).json({

@@ -577,7 +577,7 @@ const assignVacant = async (req, res) => {
       console.log("no hay email de contacto");
     }
   }
-  console.log(data);
+
   if (parent) {
     const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
     const childName =
@@ -672,11 +672,10 @@ const getStudentByDocNumber = async (req, res) => {
       doc_number: docNumber,
     },
   });
-  console.log("doc", docNumber);
   if (!person || person === null) {
     handleHttpError(res, "No existe esta persona", 404);
   }
-  console.log(person);
+
   /**TODO agregar consulta por año */
   const children = await prisma.children.findFirst({
     where: {
@@ -690,6 +689,7 @@ const getStudentByDocNumber = async (req, res) => {
       },
     },
   });
+
   if (!children) {
     handleHttpError(res, "No existe postulante", 404);
   }
@@ -699,6 +699,20 @@ const getStudentByDocNumber = async (req, res) => {
 
   const family = await FamilyRepository.getFamilyMembers(+children.id);
 
+  const school = await client.schools.findUnique({
+    select: {
+      id: true,
+      ubigean: true,
+      name: true,
+      level: true,
+      cod_modular: true,
+    },
+    where: {
+      id: children.schoolId,
+    },
+  });
+  family.school = school;
+
   return res.status(201).json({
     success: true,
     data: formatFamilyData(family),
@@ -706,6 +720,7 @@ const getStudentByDocNumber = async (req, res) => {
 };
 
 const formatFamilyData = (data) => {
+  console.log(data.school);
   if (!data) return null;
   /**TODO cambiar */
   // Extraer la información principal del niño (child)
@@ -727,6 +742,8 @@ const formatFamilyData = (data) => {
     validate: data.validate,
     validateSchool: data.validateSchool,
     vacant: data.vacant[0],
+    school: data.school.name,
+    modularCode: data.school.cod_modular,
   };
 
   // Extraer la información de los padres (parents)
@@ -1019,6 +1036,7 @@ const changeNameFamily = async (req, res) => {
     console.log(error);
   }
 };
+
 export {
   getAllUsers,
   createUserRole,
