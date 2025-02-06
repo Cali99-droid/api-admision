@@ -1,6 +1,7 @@
 import * as aws from "@aws-sdk/client-ses";
 import nodemailer from "nodemailer";
-import loggerStream from "../utils/handleLogger";
+import loggerStream from "../utils/handleLogger.js";
+
 const ses = new aws.SES({
   apiVersion: "2010-12-01",
   region: process.env.REGION,

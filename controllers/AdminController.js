@@ -20,6 +20,7 @@ import client from "../utils/client.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 import axios from "axios";
 import { deliverEmail } from "../helpers/sendEmailSES.js";
+import loggerStream from "../utils/handleLogger.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -734,6 +735,7 @@ const getStudentByDocNumber = async (req, res) => {
       data: formatFamilyData(family),
     });
   } catch (error) {
+    console.log(error);
     return handleHttpError(res, "Error en la consulta", 500);
   }
 };

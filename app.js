@@ -7,6 +7,8 @@ import swaggerUI from "swagger-ui-express";
 import cron from "node-cron";
 import prisma from "./utils/prisma.js";
 import morganBody from "morgan-body";
+import loggerStream from "./utils/handleLogger.js";
+import morgan from "morgan";
 
 const app = express();
 
@@ -95,7 +97,7 @@ cron.schedule("0 0 * * *", async () => {
 //     return res.statusCode < 400;
 //   },
 // });
-app.use(morganBody("combined", { stream: loggerStream }));
+app.use(morgan("combined", { stream: loggerStream }));
 
 /**
  * Definir ruta de documentación
