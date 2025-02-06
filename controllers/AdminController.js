@@ -678,7 +678,7 @@ const getStudentByDocNumber = async (req, res) => {
     if (!person) {
       return handleHttpError(res, "No existe esta persona", 404);
     }
-    loggerStream.write(`¡Hola desde Admision!`);
+
     /**TODO agregar consulta por año */
     const children = await prisma.children.findFirst({
       where: {
