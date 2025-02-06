@@ -97,7 +97,7 @@ cron.schedule("0 0 * * *", async () => {
 //     return res.statusCode < 400;
 //   },
 // });
-app.use(morgan("combined", { stream: loggerStream }));
+// app.use(morgan("combined", { stream: loggerStream }));
 
 /**
  * Definir ruta de documentación
