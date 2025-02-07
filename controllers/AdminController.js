@@ -565,7 +565,7 @@ const assignVacant = async (req, res) => {
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
-    { status: "accepted" }
+    { status: "accepted", update_time: new Date() }
   );
 
   let parent = null;
@@ -621,7 +621,7 @@ const denyVacant = async (req, res) => {
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
-    { status: "denied" }
+    { status: "denied", update_time: new Date() }
   );
 
   let parent = null;
