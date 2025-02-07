@@ -35,8 +35,13 @@ export const deliverEmail = (toAddresses, name, childName, status) => {
         } else {
           console.log("send succesfully");
           loggerStream.write(
-            `send ${status ? "APTO" : "NO APTO"}
-            email succesfully ${new Date().toLocaleString()} ${info?.envelope} `
+            `send ${
+              status ? "APTO" : "NO APTO"
+            } email succesfully ${new Date().toLocaleString()} from: ${
+              info?.envelope.from
+            } to: ${info?.envelope.to}
+            student: ${childName}
+            `
           );
 
           console.log(new Date().toLocaleString(), info?.envelope);
