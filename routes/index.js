@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
-
+// import { match } from "path-to-regexp";
 const __filename = fileURLToPath(import.meta.url);
 const router = express.Router();
 
@@ -54,8 +54,14 @@ router.use((req, res, next) => {
     "/pdf",
     "/admin/migrate-col",
   ];
-  if (openRoutes.includes(req.path)) {
-    return next(); // No aplicar autenticación a rutas abiertas
+  // if (openRoutes.includes(req.path)) {
+  //   return next(); // No aplicar autenticación a rutas abiertas
+  // }
+  if (
+    openRoutes.includes(req.path) ||
+    req.path.startsWith("/general/ubigean/")
+  ) {
+    return next(); // Permitir acceso sin autenticación
   }
   ensureAuthenticated()(req, res, next); // Aplica autenticación a otras rutas
 });
