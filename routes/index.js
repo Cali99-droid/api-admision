@@ -43,23 +43,25 @@ const loadRoutes = async () => {
 loadRoutes();
 // Aplica autenticación globalmente a todas las rutas, excepto a /login y /callback
 
+const openRoutes = [
+  /^\/cities\/district$/,
+  /^\/cities\/province$/,
+  /^\/cities\/region$/,
+  /^\/check\/available$/,
+  /^\/spouse\/person$/,
+  /^\/admin\/search-new$/,
+  /^\/pdf$/,
+  /^\/admin\/migrate-col$/,
+  /^\/schools$/,
+  /^\/ubigean\/[^\/]+$/, // coincidir con /ubigean/020101, etc.
+  /^\/schools\/[^\/]+$/, // coincidir con /schools/nombre-del-colegio
+];
+
 router.use((req, res, next) => {
-  const openRoutes = [
-    "/cities/district",
-    "/cities/province",
-    "/cities/region",
-    "/check/available",
-    "/spouse/person",
-    "/admin/search-new",
-    "/pdf",
-    "/admin/migrate-col",
-    "/schools",
-    "/ubigean/:ubigean",
-    "/schools/:name",
-  ];
-  if (openRoutes.includes(req.path)) {
-    return next(); // No aplicar autenticación a rutas abiertas
+  const isOpen = openRoutes.some((routeRegex) => routeRegex.test(req.path));
+  if (isOpen) {
+    return next();
   }
-  ensureAuthenticated()(req, res, next); // Aplica autenticación a otras rutas
+  ensureAuthenticated()(req, res, next);
 });
 export default router;
