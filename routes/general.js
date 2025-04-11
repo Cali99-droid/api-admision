@@ -1,5 +1,4 @@
 import express from "express";
-import { authMiddleware } from "../middleware/session.js";
 import {
   show,
   showSchoolByDistrict,

@@ -53,6 +53,9 @@ router.use((req, res, next) => {
     "/admin/search-new",
     "/pdf",
     "/admin/migrate-col",
+    "/schools",
+    "/ubigean/:ubigean",
+    "/schools/:name",
   ];
   if (openRoutes.includes(req.path)) {
     return next(); // No aplicar autenticación a rutas abiertas
