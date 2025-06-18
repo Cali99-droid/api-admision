@@ -205,6 +205,7 @@ const showSchoolByName = async (req, res) => {
         ubigean: true,
         name: true,
         level: true,
+        cod_modular: true,
       },
       where: {
         name: {
