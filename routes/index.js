@@ -53,9 +53,10 @@ const openRoutes = [
   /^\/pdf$/,
   /^\/admin\/migrate-col$/,
   /^\/general\/schools$/,
+  /^\/general\/modular\/[^\/]+$/,
   /^\/general\/ubigean\/[^\/]+$/, // coincidir con /ubigean/020101, etc.
   /^\/general\/schools\/[^\/]+$/, // coincidir con /schools/nombre-del-colegio
-  /^\/general\/modular\/[^\/]+$/, // coincidir con /schools/codigo modular
+  // coincidir con /schools/codigo modular
 ];
 
 router.use((req, res, next) => {
