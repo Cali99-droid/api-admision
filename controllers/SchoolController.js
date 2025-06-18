@@ -249,8 +249,8 @@ const showSchoolByDistrict = async (req, res) => {
 
 const getOneSchoolByModularCode = async (req, res) => {
   try {
-    const { modularCode } = req.params;
-
+    const { modular } = req.params;
+    console.log(modular);
     const school = await client.schools.findFirst({
       select: {
         id: true,
@@ -260,7 +260,7 @@ const getOneSchoolByModularCode = async (req, res) => {
         cod_modular: true,
       },
       where: {
-        cod_modular: modularCode,
+        cod_modular: modular,
       },
     });
     res.status(200).json({
