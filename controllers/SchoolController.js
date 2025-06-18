@@ -273,4 +273,12 @@ const getOneSchoolByModularCode = async (req, res) => {
   }
 };
 
-export { store, update, get, show, showSchoolByName, showSchoolByDistrict };
+export {
+  store,
+  update,
+  get,
+  show,
+  showSchoolByName,
+  showSchoolByDistrict,
+  getOneSchoolByModularCode,
+};

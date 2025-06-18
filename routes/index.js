@@ -61,6 +61,8 @@ const openRoutes = [
 
 router.use((req, res, next) => {
   const isOpen = openRoutes.some((routeRegex) => routeRegex.test(req.path));
+  console.log(isOpen);
+  console.log(req.path);
   if (isOpen) {
     return next();
   }
