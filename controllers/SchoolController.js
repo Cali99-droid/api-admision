@@ -231,6 +231,7 @@ const showSchoolByDistrict = async (req, res) => {
         ubigean: true,
         name: true,
         level: true,
+        cod_modular: true,
       },
       where: {
         ubigean,
@@ -239,6 +240,32 @@ const showSchoolByDistrict = async (req, res) => {
     res.status(200).json({
       success: true,
       data: schools,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_SCHOOLS");
+  }
+};
+
+const getOneSchoolByModularCode = async (req, res) => {
+  try {
+    const { modularCode } = req.params;
+
+    const school = await client.schools.findFirst({
+      select: {
+        id: true,
+        ubigean: true,
+        name: true,
+        level: true,
+        cod_modular: true,
+      },
+      where: {
+        cod_modular: modularCode,
+      },
+    });
+    res.status(200).json({
+      success: true,
+      data: school,
     });
   } catch (error) {
     console.log(error);
