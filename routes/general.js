@@ -10,5 +10,5 @@ const router = express.Router();
 router.get("/schools", show);
 router.get("/schools/:name", showSchoolByName);
 router.get("/ubigean/:ubigean", showSchoolByDistrict);
-router.get("/modular-code/:modularCode", getOneSchoolByModularCode);
+router.get("/modular/:modular", getOneSchoolByModularCode);
 export default router;
