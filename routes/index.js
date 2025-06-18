@@ -52,8 +52,8 @@ const openRoutes = [
   /^\/admin\/search-new$/,
   /^\/pdf$/,
   /^\/admin\/migrate-col$/,
-  /^\/general\/schools$/,
-  /^\/general\/modular\/[^\/]+$/,
+  // /^\/general\/schools$/,
+  // /^\/general\/modular\/[^\/]+$/,
   // /^\/general\/ubigean\/[^\/]+$/, // coincidir con /ubigean/020101, etc.
   // /^\/general\/schools\/[^\/]+$/, // coincidir con /schools/nombre-del-colegio
   // // coincidir con /schools/codigo modular
