@@ -302,7 +302,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
       };
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: format,
     });
