@@ -199,7 +199,7 @@ const showSchoolByName = async (req, res) => {
   try {
     const { name } = req.params;
 
-    const schools = await client.schools.findMany({
+    const schools = await client.schools_new.findMany({
       select: {
         id: true,
         ubigean: true,
@@ -226,7 +226,7 @@ const showSchoolByDistrict = async (req, res) => {
   try {
     const { ubigean } = req.params;
 
-    const schools = await client.schools.findMany({
+    const schools = await client.schools_new.findMany({
       select: {
         id: true,
         ubigean: true,
@@ -251,14 +251,16 @@ const showSchoolByDistrict = async (req, res) => {
 const getOneSchoolByModularCode = async (req, res) => {
   try {
     const { modular } = req.params;
-    console.log(modular);
-    const school = await client.schools.findFirst({
+
+    const school = await client.schools_new.findFirst({
       select: {
         id: true,
         ubigean: true,
         name: true,
         level: true,
         cod_modular: true,
+        cod_gestion: true,
+        gestion_name: true,
       },
       where: {
         cod_modular: modular,

@@ -33,6 +33,7 @@ model answers {
   right        String     @db.Char(1)
   registration DateTime   @default(now()) @db.Timestamp(0)
   questionId   Int?
+  order        Int        @default(0)
   questions    questions? @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_c38697a57844f52584abdb878d7")
 
   @@index([questionId], map: "FK_c38697a57844f52584abdb878d7")
@@ -52,15 +53,64 @@ model questions {
   tags            String    @db.VarChar(255)
   level           String    @db.Char(1)
   category        String    @db.Char(1)
-  contest_name    String    @db.VarChar(255)
-  contest_level   String    @db.VarChar(255)
-  contest_grade   String    @db.VarChar(255)
-  contest_year    String    @db.VarChar(255)
-  test_university String    @db.VarChar(255)
-  test_area       String    @db.VarChar(255)
-  test_year       String    @db.VarChar(255)
-  title           String    @db.Text
+  contest_name    String?   @db.VarChar(255)
+  contest_level   String?   @db.VarChar(255)
+  contest_grade   String?   @db.VarChar(255)
+  contest_year    String?   @db.VarChar(255)
+  test_university String?   @db.VarChar(255)
+  test_area       String?   @db.VarChar(255)
+  test_year       String?   @db.VarChar(255)
+  title           String?   @db.Text
   wording         String    @db.Text
   registration    DateTime  @default(now()) @db.Timestamp(0)
+  reviewed        Int       @default(0) @db.TinyInt
+  groupId         Int?
+  course          String    @db.VarChar(255)
+  chapter         String    @db.VarChar(255)
   answers         answers[]
+  groups          groups?   @relation(fields: [groupId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_09feeade34acdfb5d972a9fa9d6")
+
+  @@index([groupId], map: "FK_09feeade34acdfb5d972a9fa9d6")
+}
+
+model groups {
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(255)
+  created   DateTime    @default(now()) @db.DateTime(6)
+  questions questions[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model padron_colegios {
+  cod_modular  String? @map("ï»¿cod_modular") @db.Text
+  name         String? @db.Text
+  level        String? @db.Text
+  cod_gestion  String? @db.Text
+  gestion_name String? @db.Text
+  director     String? @db.Text
+  address      String? @db.Text
+  ubigean      String? @db.Text
+  region       String? @db.Text
+  ugel         String? @db.Text
+  state        String? @db.Text
+  updated      String? @db.Text
+
+  @@ignore
+}
+
+model schools_new {
+  id           Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  cod_modular  String?   @db.VarChar(45)
+  name         String?   @db.VarChar(255)
+  level        String?   @db.VarChar(45)
+  cod_gestion  String?   @db.VarChar(45)
+  gestion_name String?   @db.VarChar(90)
+  director     String?   @db.VarChar(255)
+  address      String?   @db.VarChar(255)
+  ubigean      String?   @db.VarChar(45)
+  region       String?   @db.VarChar(45)
+  ugel         String?   @db.VarChar(45)
+  state        String?   @db.VarChar(45)
+  updated      String?   @db.VarChar(45)
+  registration DateTime? @default(now()) @db.Timestamp(0)
 }
