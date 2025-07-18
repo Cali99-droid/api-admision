@@ -727,9 +727,10 @@ const getStudentByDocNumber = async (req, res) => {
         },
       });
     }
+    console.log(school);
 
     family.school = school;
-
+    console.log(family.school);
     return res.status(201).json({
       success: true,
       data: formatFamilyData(family),
