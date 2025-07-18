@@ -714,7 +714,7 @@ const getStudentByDocNumber = async (req, res) => {
     };
 
     if (children.schoolId) {
-      school = await client.schools.findUnique({
+      school = await client.schools_new.findUnique({
         select: {
           id: true,
           ubigean: true,
@@ -727,10 +727,9 @@ const getStudentByDocNumber = async (req, res) => {
         },
       });
     }
-    console.log(school);
 
     family.school = school;
-    console.log(family.school);
+
     return res.status(201).json({
       success: true,
       data: formatFamilyData(family),
