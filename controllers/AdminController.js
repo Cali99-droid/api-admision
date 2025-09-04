@@ -494,7 +494,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
 
         // Use conditional operator for schools assignment
         const school = schoolId
-          ? await client.schools.findFirst({
+          ? await client.schools_new.findFirst({
               where: { id: schoolId },
               select: { cod_modular: true, name: true },
             })
