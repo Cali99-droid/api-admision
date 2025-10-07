@@ -146,6 +146,25 @@ class FamilyRepository {
       },
     });
   }
+
+  async assignFamilyToSecretary(idFamily, idSecretary) {
+    /**obtener año activo */
+    const year = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+    return await prisma.familiy_secretary.create({
+      data: {
+        user_id: idSecretary,
+        family_id: idFamily,
+        year_id: year.id,
+      },
+    });
+  }
   async setFamilyToPsychology(idFamily, idPsychology) {
     return prisma.psy_evaluation.updateMany({
       where: { family_id: idFamily },

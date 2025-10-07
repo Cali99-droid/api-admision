@@ -8,6 +8,7 @@ import sendMessageFromSecretary from "../message/fromUser.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import PersonRepository from "../repositories/PersonRepository.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
+import FamilyRepository from "../repositories/FamilyRepository.js";
 const getSummaryOfApplicantsBySecretary = async (req, res) => {
   try {
     const { user } = req;
@@ -335,6 +336,56 @@ const getFamilies = async (req, res) => {
     res.status(200).json({
       success: true,
       data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_FAMILIES");
+  }
+};
+const getAvailablesFamilies = async (req, res) => {
+  try {
+    const families = await prisma.family.findMany({
+      where: {
+        is_assigned: 0,
+      },
+      include: {
+        children: {
+          include: {
+            vacant: true,
+          },
+        },
+        person_family_parent_oneToperson: true,
+      },
+    });
+
+    const data = families.map((f) => {
+      return {
+        id: f.id,
+
+        name: f.name,
+        email: f.person_family_parent_oneToperson.email,
+        phone: f.person_family_parent_oneToperson.phone,
+        nameParent:
+          f.person_family_parent_oneToperson.lastname +
+          " " +
+          f.person_family_parent_oneToperson.mLastname +
+          " " +
+          f.person_family_parent_oneToperson.name,
+        vacant: f.children.map((child) => {
+          const vacant = {
+            level: child.vacant[0]?.level || null,
+            grade: child.vacant[0]?.grade || null,
+            campus: child.vacant[0]?.campus || null,
+          };
+          return vacant;
+        }),
+        children: f.children.length,
+        served: f.status,
+      };
+    });
+    res.status(200).json({
+      success: true,
+      data,
     });
   } catch (error) {
     console.log(error);
@@ -984,6 +1035,54 @@ const getAllFamilies = async (req, res) => {
   }
 };
 
+const takeFamily = async (req, res) => {
+  try {
+    const { familyId } = req.params;
+    const { user } = req;
+    const userDB = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
+    if (!userDB) {
+      return res.status(404).json({
+        success: false,
+        data: { msg: "user not found" },
+      });
+    }
+
+    const family = await prisma.family.findUnique({
+      where: {
+        id: parseInt(familyId),
+        is_assigned: 0,
+      },
+    });
+
+    if (!family) {
+      return res.status(404).json({
+        success: false,
+        data: { msg: "family not found or is taking" },
+      });
+    }
+    await FamilyRepository.assignFamilyToSecretary(+family.id, +userDB.id);
+
+    const updatedFamilyStatus = await prisma.family.update({
+      where: { id: family.id },
+      data: {
+        is_assigned: 1,
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: updatedFamilyStatus,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_TAKE_FAMILY");
+  }
+};
+
 export {
   getFamilies,
   getFamily,
@@ -1001,4 +1100,6 @@ export {
   getSummaryOfApplicantsBySecretary,
   getBackgroundSummary,
   getEconomicEvaluationSummary,
+  getAvailablesFamilies,
+  takeFamily,
 };

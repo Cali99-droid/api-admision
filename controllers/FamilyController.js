@@ -50,47 +50,14 @@ const store = async (req, res) => {
     //   },
     // });
 
-    /**verificar si el usuario tiene otra familia */
-    const AnotherFamily = await prisma.family.findFirst({
-      where: {
-        parent_one: user.personId,
-      },
-    });
-
     /**crear familia */
     const family = await prisma.family.create({
       data: {
         parent_one: parseInt(user.personId),
         name,
+        is_assigned: 0,
       },
     });
-
-    /**si ya tiene familia, se le asigna a la misma secretaria */
-    if (AnotherFamily) {
-      console.log("asignando como existente");
-      const existFamilySecretary = await prisma.familiy_secretary.findFirst({
-        where: {
-          family_id: AnotherFamily.id,
-        },
-      });
-
-      const familyAsig = await prisma.familiy_secretary.create({
-        data: {
-          user_id: existFamilySecretary.user_id,
-          family_id: family.id,
-          year_id: year.id,
-        },
-      });
-    } else {
-      console.log("asignando como nuevo");
-      const familyAsig = await prisma.familiy_secretary.create({
-        data: {
-          user_id: secretariaMenosOcupada.id,
-          family_id: family.id,
-          year_id: year.id,
-        },
-      });
-    }
 
     const data = {
       id: family.id,
@@ -370,25 +337,25 @@ const saveHome = async (req, res) => {
     let dataHome = matchedData(req);
 
     //**Verificar que la familia exista y pertenezca al usuario  */
-     //**Verificar que la familia exista y pertenezca al usuario  */
-  const userRoles =
-    user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
-  const validateAccessRoles = [
-    "psicologia-adm",
-    "secretaria-adm",
-    "administrador-adm",
-  ];
-  const hasRequiredRole = validateAccessRoles.some((role) =>
-    userRoles.includes(role)
-  );
-  if (!hasRequiredRole) {
-    //   console.log("validar que sea la familia del usuario");
-    const verify = await existFamilyUser(id, user.id);
-    if (!verify) {
-      handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
-      return;
+    //**Verificar que la familia exista y pertenezca al usuario  */
+    const userRoles =
+      user.resource_access[process.env.KEYCLOAK_RESOURCE]?.roles || [];
+    const validateAccessRoles = [
+      "psicologia-adm",
+      "secretaria-adm",
+      "administrador-adm",
+    ];
+    const hasRequiredRole = validateAccessRoles.some((role) =>
+      userRoles.includes(role)
+    );
+    if (!hasRequiredRole) {
+      //   console.log("validar que sea la familia del usuario");
+      const verify = await existFamilyUser(id, user.id);
+      if (!verify) {
+        handleHttpError(res, "FAMILY_NOT_AVAILABLE", 404);
+        return;
+      }
     }
-  }
 
     //**Verificar si ya existe un domicilio */
     const homeExist = await prisma.home.findFirst({
