@@ -555,7 +555,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
 };
 
 const hasVacant = async (gradeId, campus) => {
-  const matriculaUrl = `${process.env.APP_AE_URL}/enrollment/vacants/16/grade/${gradeId}/campus/${campus}`;
+  const matriculaUrl = `${process.env.APP_AE_URL}/enrollment/vacants/17/grade/${gradeId}/campus/${campus}`;
   const matriculaResponse = await axios.get(matriculaUrl);
   return matriculaResponse.data;
 };
