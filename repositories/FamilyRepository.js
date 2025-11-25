@@ -26,7 +26,7 @@ class FamilyRepository {
       },
     });
   }
-  async getFamiliesWithEvaluationsApproved() {
+  async getFamiliesWithEvaluationsApproved(yearId) {
     return prisma.family.findMany({
       where: {
         psy_evaluation: {
@@ -42,6 +42,17 @@ class FamilyRepository {
         background_assessment: {
           some: {
             conclusion: "apto",
+          },
+        },
+        children: {
+          every: {
+            vacant: {
+              every: {
+                year: {
+                  id: yearId,
+                },
+              },
+            },
           },
         },
       },
@@ -101,8 +112,15 @@ class FamilyRepository {
       },
     });
   }
-  async getVacant() {
+  async getVacant(yearId) {
     return prisma.children.findMany({
+      where: {
+        vacant: {
+          every: {
+            year_id: yearId,
+          },
+        },
+      },
       include: {
         family: {
           include: {

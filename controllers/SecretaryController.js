@@ -269,15 +269,35 @@ const getEconomicEvaluationSummary = async (req, res) => {
 const getFamilies = async (req, res) => {
   try {
     const { user } = req;
+    const yearId = req.query.yearId;
     /**obtener usuario de la bds */
     const userSession = await prisma.user.findUnique({
       where: {
         sub: user.sub,
       },
     });
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: userSession.id,
+        family: {
+          children: {
+            every: {
+              vacant: {
+                every: {
+                  year: {
+                    id: yearId ? parseInt(yearId) : yearActive.id,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       select: {
         status: true,

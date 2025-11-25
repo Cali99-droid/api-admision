@@ -2,8 +2,23 @@ import prisma from "../utils/prisma.js";
 
 class SecretaryRepository {
   //**Familias asignadas por secretaria */
-  async getAssignments() {
+  async getAssignments(yearId) {
     const data = prisma.familiy_secretary.findMany({
+      where: {
+        family: {
+          children: {
+            every: {
+              vacant: {
+                every: {
+                  year: {
+                    id: yearId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       select: {
         status: true,
         family: {
@@ -21,6 +36,9 @@ class SecretaryRepository {
             person: true,
           },
         },
+      },
+      orderBy: {
+        id: "desc",
       },
     });
 
@@ -84,7 +102,6 @@ class SecretaryRepository {
       },
     });
 
-    console.log(data);
     return data;
   }
 

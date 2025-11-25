@@ -144,9 +144,18 @@ const deleteUserRole = async (req, res) => {
 };
 
 const getSecretaryAssignments = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
   try {
-    const asignaments = await SecretaryRepository.getAssignments();
-    console.log(asignaments[0]);
+    const asignaments = await SecretaryRepository.getAssignments(yearId);
+
     const data = asignaments.map((a) => {
       return {
         id: a.family.id,
@@ -279,8 +288,18 @@ const getPsychologists = async (req, res) => {
 };
 const getSuccessFamilies = async (req, res) => {
   try {
-    const families =
-      await FamilyRepository.getFamiliesWithEvaluationsApproved();
+    let yearId;
+    const yearIdQuery = req.query.yearId;
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
+    const families = await FamilyRepository.getFamiliesWithEvaluationsApproved(
+      yearId
+    );
 
     const format = families.map((family) => {
       return {
@@ -397,8 +416,21 @@ const getFilterByLevelGrade = async (req, res) => {
   }
 };
 const getAllVacants = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  if (yearIdQuery) {
+    yearId = parseInt(yearIdQuery);
+  } else {
+    yearId = yearActive.id;
+  }
   try {
-    const vacants = await VacantRepository.getAllVacants();
+    const vacants = await VacantRepository.getAllVacants(yearId);
     const data = vacants.map((v) => {
       return {
         id: v.id,
@@ -452,8 +484,18 @@ const getStatistics = async (req, res) => {
 };
 
 const getStatusFamilyAndChildren = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
+
   try {
-    const families = await FamilyRepository.getVacant();
+    const families = await FamilyRepository.getVacant(yearId);
 
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0].status === 1
@@ -477,6 +519,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
         const vacantsAss = await prisma.vacant.findMany({
           where: {
             status: "accepted",
+            year_id: yearId,
             AND: {
               grade: grade,
               campus: campus,
