@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
-
+// import { match } from "path-to-regexp";
 const __filename = fileURLToPath(import.meta.url);
 const router = express.Router();
 
@@ -60,12 +60,33 @@ const openRoutes = [
 ];
 
 router.use((req, res, next) => {
+<<<<<<< HEAD
   console.log(req.path);
   const isOpen = openRoutes.some((routeRegex) => routeRegex.test(req.path));
   console.log(isOpen);
 
   if (isOpen) {
     return next();
+=======
+  const openRoutes = [
+    "/cities/district",
+    "/cities/province",
+    "/cities/region",
+    "/check/available",
+    "/spouse/person",
+    "/admin/search-new",
+    "/pdf",
+    "/admin/migrate-col",
+  ];
+  // if (openRoutes.includes(req.path)) {
+  //   return next(); // No aplicar autenticación a rutas abiertas
+  // }
+  if (
+    openRoutes.includes(req.path) ||
+    req.path.startsWith("/general/ubigean/")
+  ) {
+    return next(); // Permitir acceso sin autenticación
+>>>>>>> dev
   }
   ensureAuthenticated()(req, res, next);
 });

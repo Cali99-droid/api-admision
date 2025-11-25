@@ -17,6 +17,8 @@ import {
   getBackgroundSummary,
   getSummaryOfApplicantsBySecretary,
   getEconomicEvaluationSummary,
+  getAvailablesFamilies,
+  takeFamily,
 } from "../controllers/SecretaryController.js";
 import {
   validatorAntecedent,
@@ -40,6 +42,17 @@ import { ensureAuthenticated } from "../middleware/ensureAuthenticated.js";
 const router = express.Router();
 
 router.get("/", ensureAuthenticated(["secretaria-adm"]), getFamilies);
+router.get(
+  "/available-families",
+  ensureAuthenticated(["secretaria-adm"]),
+  getAvailablesFamilies
+);
+router.post(
+  "/take-family/:familyId",
+  ensureAuthenticated(["secretaria-adm"]),
+  validatorIdFamily,
+  takeFamily
+);
 /**
  * Get all summary-applicants
  * @openapi
