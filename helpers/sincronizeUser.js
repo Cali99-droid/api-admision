@@ -16,6 +16,7 @@ export async function saveUserIdIfNotExists(user) {
         mLastname: user.family_name.split(" ")[1] || user.family_name,
         email: user.email,
         doc_number: user.dni,
+        phone: user.phone,
         role: user.parentesco === "Padre" ? "P" : "M",
       },
     });
@@ -29,6 +30,18 @@ export async function saveUserIdIfNotExists(user) {
     console.log("New user add succesfully", userCreated.id);
     return userCreated;
   } else {
+    const updatePhone = await prisma.user.update({
+      where: {
+        id: userDB.id,
+      },
+      data: {
+        person: {
+          update: {
+            phone: user.phone,
+          },
+        },
+      },
+    });
     console.log("Exist user, not sincronized", userDB.id);
     return userDB;
   }
