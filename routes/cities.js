@@ -9,7 +9,7 @@ import { authMiddleware } from "../middleware/session.js";
 const router = express.Router();
 
 /**
- * Get all storages
+ * Get all storagesss
  * @openapi
  * /cities/region:
  *    get:
