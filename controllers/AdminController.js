@@ -498,7 +498,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
     const families = await FamilyRepository.getVacant(yearId);
 
     const dat = families.filter(
-      (f) => f.family.familiy_secretary[0].status === 1
+      (f) => f.family.familiy_secretary[0]?.status === 1
     );
     const format = await Promise.all(
       dat.map(async (f) => {
