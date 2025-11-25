@@ -868,6 +868,7 @@ const setServed = async (req, res) => {
       },
       data: {
         name: lastname + " " + mlastname,
+        status: 1,
       },
     });
   }
