@@ -283,17 +283,17 @@ const getFamilies = async (req, res) => {
       },
     });
 
+    const targetYearId = yearId ? parseInt(yearId) : yearActive.id;
+    console.log("year", targetYearId);
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: userSession.id,
         family: {
           children: {
-            every: {
+            some: {
               vacant: {
-                every: {
-                  year: {
-                    id: yearId ? parseInt(yearId) : yearActive.id,
-                  },
+                some: {
+                  year_id: targetYearId,
                 },
               },
             },
@@ -306,7 +306,11 @@ const getFamilies = async (req, res) => {
           include: {
             children: {
               include: {
-                vacant: true,
+                vacant: {
+                  where: {
+                    year_id: targetYearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,

@@ -51,9 +51,21 @@ function convertirAEntero(objeto) {
 }
 const getFamilies = async (req, res) => {
   const { user } = req;
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
+  console.log(yearId);
   try {
     //commit
-    const s = await PsychologyRepository.getFamiliesByUser(user.userId);
+    const s = await PsychologyRepository.getFamiliesByUser(user.userId, yearId);
+    console.log(s);
     const filterFamilies = s.filter((f) => {
       if (f.applied === 3 && f.family.children.length === 1) {
         return false;
@@ -441,15 +453,17 @@ const changeApproed = async (req, res) => {
         id: true,
       },
     });
-    const data = await PsychologyRepository.findOneByFamilyIdAndYear(id,year.id);
+    const data = await PsychologyRepository.findOneByFamilyIdAndYear(
+      id,
+      year.id
+    );
     if (!data) {
       handleHttpError(res, "EVALUATION_PSYCHOLOGY_NOT_EXIST");
       return;
     }
     if (data.approved == 1) {
       data.approved = 0;
-    }
-    else {
+    } else {
       data.approved = 1;
     }
     const update = await PsychologyRepository.update(data.id, data);

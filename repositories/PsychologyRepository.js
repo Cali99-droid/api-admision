@@ -27,22 +27,38 @@ class PsychologyRepository {
     return data;
   }
 
-  async getFamiliesByUser(userId) {
+  async getFamiliesByUser(userId, yearId) {
     const data = prisma.psy_evaluation.findMany({
       where: {
         user_id: userId,
-        //  AND:{
-        //   applied:{
-        //     not:2
-        //   }
-        //  }
+        family: {
+          children: {
+            some: {
+              vacant: {
+                some: {
+                  year: {
+                    id: yearId,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       select: {
         id: true,
         family: {
           include: {
             person_family_parent_oneToperson: true,
-            children: true,
+            children: {
+              include: {
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
+              },
+            },
           },
         },
         applied: true,
@@ -115,7 +131,7 @@ class PsychologyRepository {
       data,
     });
   }
-  async findOneByFamilyIdAndYear(familyId,yearId) {
+  async findOneByFamilyIdAndYear(familyId, yearId) {
     return prisma.psy_evaluation.findFirst({
       where: {
         year_id: yearId,

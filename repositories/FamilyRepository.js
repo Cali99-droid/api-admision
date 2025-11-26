@@ -32,34 +32,57 @@ class FamilyRepository {
         psy_evaluation: {
           some: {
             approved: 1,
+            // year_id: yearId,
           },
         },
         economic_evaluation: {
           some: {
             conclusion: "apto",
+            // year_id: yearId,
           },
         },
         background_assessment: {
           some: {
             conclusion: "apto",
+            // year_id: yearId,
           },
         },
         children: {
-          every: {
+          some: {
             vacant: {
-              every: {
-                year: {
-                  id: yearId,
-                },
+              some: {
+                year_id: yearId,
               },
             },
           },
         },
       },
       include: {
-        psy_evaluation: true,
-        economic_evaluation: true,
-        background_assessment: true,
+        // psy_evaluation: {
+        //   where: {
+        //     year_id: yearId,
+        //   },
+        // },
+        // economic_evaluation: {
+        //   where: {
+        //     year_id: yearId,
+        //   },
+        // },
+        // background_assessment: {
+        //   where: {
+        //     year_id: yearId,
+        //   },
+        // },
+        children: {
+          include: {
+            vacant: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            person: true,
+          },
+        },
       },
     });
   }
@@ -116,7 +139,7 @@ class FamilyRepository {
     return prisma.children.findMany({
       where: {
         vacant: {
-          every: {
+          some: {
             year_id: yearId,
           },
         },
@@ -131,7 +154,11 @@ class FamilyRepository {
             person_family_parent_oneToperson: true,
           },
         },
-        vacant: true,
+        vacant: {
+          where: {
+            year_id: yearId,
+          },
+        },
         person: true,
       },
     });
