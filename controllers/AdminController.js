@@ -500,92 +500,130 @@ const getStatusFamilyAndChildren = async (req, res) => {
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0]?.status === 1
     );
-    const format = await Promise.all(
-      dat.map(async (f) => {
-        // Destructure with default values
-        const {
-          vacant: [{ id, campus, level, grade } = {}] = [],
-          schoolId,
-          family,
-          person,
-        } = f;
-        let vacants = 0;
-        if (grade) {
-          const vacantMat = await hasVacant(grade, campus);
-          vacants = vacantMat.vacants;
-        }
 
-        /***TODO AGREGAR año a consulta */
-        const vacantsAss = await prisma.vacant.findMany({
-          where: {
-            status: "accepted",
-            year_id: yearId,
-            AND: {
-              grade: grade,
-              campus: campus,
-            },
-          },
-        });
+    // Optimización 1: Extraer combinaciones únicas de grade/campus para consultas batch
+    const uniqueGradeCampus = new Set();
+    const schoolIds = new Set();
 
-        // Use filter directly in the function argument
-        // const getdataSIGE = dataSIGE.filter(
-        //   (x) =>
-        //     x.sucursal === parseInt(campus) &&
-        //     x.nivel === parseInt(level) &&
-        //     x.id_gra === parseInt(grade)
-        // );
+    dat.forEach((f) => {
+      const { vacant: [{ campus, grade } = {}] = [], schoolId } = f;
+      if (grade && campus) {
+        uniqueGradeCampus.add(`${grade}-${campus}`);
+      }
+      if (schoolId) {
+        schoolIds.add(schoolId);
+      }
+    });
 
-        // Use conditional operator for schools assignment
-        const school = schoolId
-          ? await client.schools_new.findFirst({
-              where: { id: schoolId },
-              select: { cod_modular: true, name: true },
-            })
-          : null;
+    // Optimización 2: Hacer consultas batch en paralelo
+    const [vacantsAcceptedByGradeCampus, vacantsBySIGE, schoolsData] = await Promise.all([
+      // Consulta única para vacantes aceptadas
+      prisma.vacant.findMany({
+        where: {
+          status: "accepted",
+          year_id: yearId,
+        },
+        select: {
+          grade: true,
+          campus: true,
+        },
+      }),
+      // Consultas SIGE en paralelo
+      Promise.all(
+        Array.from(uniqueGradeCampus).map(async (key) => {
+          const [gradeId, campus] = key.split('-');
+          try {
+            const vacantMat = await hasVacant(gradeId, campus);
+            return { key, vacants: vacantMat.vacants };
+          } catch (error) {
+            console.error(`Error fetching SIGE data for ${key}:`, error);
+            return { key, vacants: 0 };
+          }
+        })
+      ),
+      // Consulta única para todas las escuelas
+      schoolIds.size > 0
+        ? client.schools_new.findMany({
+            where: { id: { in: Array.from(schoolIds) } },
+            select: { id: true, cod_modular: true, name: true },
+          })
+        : Promise.resolve([]),
+    ]);
 
-        return {
-          id: f.id,
-          idFamily: family.id,
-          name: person.name,
-          lastname: person.lastname,
-          mLastname: person.mLastname,
-          gender: person.gender,
-          dni: person.doc_number,
-          birthdate: person.birthdate,
-          family: family.name,
-          inscription: family.create_time,
-          phone: family.person_family_parent_oneToperson.phone,
-          email: family.person_family_parent_oneToperson.email,
-          vacantId: id,
-          campus: parseInt(campus),
-          level: parseInt(level),
-          grade: parseInt(grade),
-          vacants: vacants,
-          awarded: vacantsAss.length,
-          secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
-          economic:
-            family.economic_evaluation[0]?.conclusion === "apto"
-              ? 1
-              : family.economic_evaluation.length > 0
-              ? 2
-              : 3,
-          antecedent:
-            family.background_assessment[0]?.conclusion === "apto"
-              ? 1
-              : family.background_assessment.length > 0
-              ? 2
-              : 3,
-          psychology:
-            family.psy_evaluation[0]?.applied === 0
-              ? 3
-              : family.psy_evaluation[0]?.approved || 0,
-          status: f.vacant[0]?.status,
+    // Optimización 3: Crear mapas para búsqueda O(1)
+    const vacantsAcceptedMap = {};
+    vacantsAcceptedByGradeCampus.forEach((v) => {
+      const key = `${v.grade}-${v.campus}`;
+      vacantsAcceptedMap[key] = (vacantsAcceptedMap[key] || 0) + 1;
+    });
 
-          dataParent: family.person_family_parent_oneToperson,
-          school,
-        };
-      })
-    );
+    const vacantsSIGEMap = {};
+    vacantsBySIGE.forEach(({ key, vacants }) => {
+      vacantsSIGEMap[key] = vacants;
+    });
+
+    const schoolsMap = {};
+    schoolsData.forEach((school) => {
+      schoolsMap[school.id] = school;
+    });
+
+    // Optimización 4: Mapeo sin consultas adicionales
+    const format = dat.map((f) => {
+      // Destructure with default values
+      const {
+        vacant: [{ id, campus, level, grade } = {}] = [],
+        schoolId,
+        family,
+        person,
+      } = f;
+
+      const gradeCampusKey = `${grade}-${campus}`;
+      const vacants = grade ? vacantsSIGEMap[gradeCampusKey] || 0 : 0;
+      const awarded = vacantsAcceptedMap[gradeCampusKey] || 0;
+      const school = schoolId ? schoolsMap[schoolId] || null : null;
+
+      return {
+        id: f.id,
+        idFamily: family.id,
+        name: person.name,
+        lastname: person.lastname,
+        mLastname: person.mLastname,
+        gender: person.gender,
+        dni: person.doc_number,
+        birthdate: person.birthdate,
+        family: family.name,
+        inscription: family.create_time,
+        phone: family.person_family_parent_oneToperson.phone,
+        email: family.person_family_parent_oneToperson.email,
+        vacantId: id,
+        campus: parseInt(campus),
+        level: parseInt(level),
+        grade: parseInt(grade),
+        vacants: vacants,
+        awarded: awarded,
+        secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
+        economic:
+          family.economic_evaluation[0]?.conclusion === "apto"
+            ? 1
+            : family.economic_evaluation.length > 0
+            ? 2
+            : 3,
+        antecedent:
+          family.background_assessment[0]?.conclusion === "apto"
+            ? 1
+            : family.background_assessment.length > 0
+            ? 2
+            : 3,
+        psychology:
+          family.psy_evaluation[0]?.applied === 0
+            ? 3
+            : family.psy_evaluation[0]?.approved || 0,
+        status: f.vacant[0]?.status,
+
+        dataParent: family.person_family_parent_oneToperson,
+        school,
+      };
+    });
 
     res.status(201).json({
       success: true,
