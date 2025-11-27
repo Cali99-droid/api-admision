@@ -27,7 +27,7 @@ class SecretaryRepository {
               include: {
                 vacant: {
                   where: {
-                    year_id: yearId,
+                    year_id: targetYearId,
                   },
                 },
               },
@@ -41,9 +41,9 @@ class SecretaryRepository {
           },
         },
       },
-      // orderBy: {
-      //   id: "asc",
-      // },
+      orderBy: {
+        id: "asc",
+      },
     });
 
     return data;
