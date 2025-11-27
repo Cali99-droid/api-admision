@@ -7,9 +7,9 @@ class SecretaryRepository {
       where: {
         family: {
           children: {
-            every: {
+            some: {
               vacant: {
-                every: {
+                some: {
                   year: {
                     id: yearId,
                   },
@@ -24,8 +24,12 @@ class SecretaryRepository {
         family: {
           include: {
             children: {
-              select: {
-                vacant: true,
+              include: {
+                vacant: {
+                  where: {
+                    year_id: targetYearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,
@@ -37,9 +41,9 @@ class SecretaryRepository {
           },
         },
       },
-      orderBy: {
-        id: "desc",
-      },
+      // orderBy: {
+      //   id: "asc",
+      // },
     });
 
     return data;

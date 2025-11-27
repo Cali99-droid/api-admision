@@ -284,7 +284,6 @@ const getFamilies = async (req, res) => {
     });
 
     const targetYearId = yearId ? parseInt(yearId) : yearActive.id;
-    console.log("year", targetYearId);
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: userSession.id,

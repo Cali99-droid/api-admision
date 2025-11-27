@@ -407,7 +407,7 @@ const getStatusFamilyByUser = async (req, res) => {
     if (!userKy) {
       return res.status(200).json({ status: "no registrado" });
     }
-    console.log(userKy);
+
     // 1. Verificar si el usuario existe
     const user = await prisma.user.findUnique({
       where: { sub: userKy.id },
@@ -501,7 +501,8 @@ const getStatusFamilyByUser = async (req, res) => {
             latestBackgroundAssessment.conclusion === "apto"
           ) {
             return res.status(200).json({
-              status: "evaluaciones completas - en espera de asignación",
+              status:
+                "evaluaciones completas - en espera de asignación vacante",
             });
           }
           return res.status(200).json({
