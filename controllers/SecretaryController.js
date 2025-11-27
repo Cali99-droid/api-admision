@@ -287,17 +287,42 @@ const getFamilies = async (req, res) => {
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: userSession.id,
-        family: {
-          children: {
-            some: {
-              vacant: {
+        OR: [
+          // Familias con vacantes del año especificado
+          {
+            family: {
+              children: {
                 some: {
-                  year_id: targetYearId,
+                  vacant: {
+                    some: {
+                      year_id: targetYearId,
+                    },
+                  },
                 },
               },
             },
           },
-        },
+          // Familias con hijos pero sin vacantes
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    none: {},
+                  },
+                },
+              },
+            },
+          },
+          // Familias sin hijos
+          {
+            family: {
+              children: {
+                none: {},
+              },
+            },
+          },
+        ],
       },
       select: {
         status: true,
