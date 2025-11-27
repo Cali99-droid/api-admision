@@ -21,6 +21,7 @@ import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 import axios from "axios";
 import { deliverEmail } from "../helpers/sendEmailSES.js";
 import loggerStream from "../utils/handleLogger.js";
+import { getUser } from "./UserController.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -395,6 +396,147 @@ const getStatusFamilies = async (req, res) => {
   } catch (error) {
     console.log(error);
     handleHttpError(res, "ERROR_GET_STATUS");
+  }
+};
+
+const getStatusFamilyByUser = async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const userKy = await getUser(email);
+    if (!userKy) {
+      return res.status(200).json({ status: "no registrado" });
+    }
+    console.log(userKy);
+    // 1. Verificar si el usuario existe
+    const user = await prisma.user.findUnique({
+      where: { sub: userKy.id },
+      include: {
+        person: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(200).json({ status: "no registrado" });
+    }
+
+    // 2. Buscar familia asociada al usuario
+    const family = await prisma.family.findFirst({
+      where: {
+        OR: [{ parent_one: user.person.id }, { parent_two: user.person.id }],
+      },
+      include: {
+        children: {
+          include: {
+            vacant: {
+              orderBy: { create_time: "desc" },
+            },
+          },
+        },
+        familiy_secretary: true,
+        psy_evaluation: {
+          orderBy: { create_time: "desc" },
+        },
+        economic_evaluation: {
+          orderBy: { create_time: "desc" },
+        },
+        background_assessment: {
+          orderBy: { create_time: "desc" },
+        },
+      },
+    });
+
+    if (!family) {
+      return res.status(200).json({ status: "familia no creada" });
+    }
+
+    // 3. Verificar si tiene hijos
+    if (!family.children || family.children.length === 0) {
+      return res
+        .status(200)
+        .json({ status: "familia creada - sin hijos agregados" });
+    }
+
+    // 4. Verificar si los hijos tienen vacantes solicitadas
+    const hasVacants = family.children.some(
+      (child) => child.vacant && child.vacant.length > 0
+    );
+    if (!hasVacants) {
+      return res
+        .status(200)
+        .json({ status: "hijos agregados - sin vacantes solicitadas" });
+    }
+
+    // 5. Verificar el estado de las vacantes
+    const latestVacant = family.children
+      .flatMap((child) => child.vacant)
+      .sort((a, b) => new Date(b.create_time) - new Date(a.create_time))[0];
+
+    // Verificar si fue aceptado o rechazado
+    if (latestVacant.status === "accepted") {
+      return res.status(200).json({ status: "vacante asignada" });
+    }
+
+    if (latestVacant.status === "rejected") {
+      return res.status(200).json({ status: "vacante rechazada" });
+    }
+
+    // 6. Verificar evaluaciones
+    const latestPsyEvaluation = family.psy_evaluation[0];
+    const latestEconomicEvaluation = family.economic_evaluation[0];
+    const latestBackgroundAssessment = family.background_assessment[0];
+    const latestSecretaryValidation = family.familiy_secretary[0];
+
+    // Evaluación psicológica
+    if (latestPsyEvaluation) {
+      if (latestPsyEvaluation.approved === 1) {
+        // Verificar evaluación económica
+        if (
+          latestEconomicEvaluation &&
+          latestEconomicEvaluation.conclusion === "apto"
+        ) {
+          // Verificar evaluación de antecedentes
+          if (
+            latestBackgroundAssessment &&
+            latestBackgroundAssessment.conclusion === "apto"
+          ) {
+            return res.status(200).json({
+              status: "evaluaciones completas - en espera de asignación",
+            });
+          }
+          return res.status(200).json({
+            status:
+              "evaluado por psicología y economía - en evaluación de antecedentes",
+          });
+        }
+        return res.status(200).json({
+          status: "evaluado por psicología - en evaluación económica",
+        });
+      } else if (latestPsyEvaluation.approved === 2) {
+        return res
+          .status(200)
+          .json({ status: "rechazado en evaluación psicológica" });
+      } else if (latestPsyEvaluation.applied === 1) {
+        return res.status(200).json({
+          status: "evaluación psicológica aplicada - en espera de resultado",
+        });
+      }
+    }
+
+    // Validación de secretaría
+    if (latestSecretaryValidation && latestSecretaryValidation.status === 1) {
+      return res.status(200).json({
+        status: "validado por secretaría - en espera de evaluación psicológica",
+      });
+    }
+
+    // 7. Si llegó aquí, tiene vacante solicitada pero no ha sido validada
+    return res.status(200).json({
+      status: "solicitud completada - en espera de validación de secretaría",
+    });
+  } catch (error) {
+    console.error("Error in getStatusFamilyByUser:", error);
+    return res.status(400).json({ status: "error al procesar la solicitud" });
   }
 };
 
@@ -1171,4 +1313,5 @@ export {
   //sctipots
   changeNameFamily,
   migrateAptToApp,
+  getStatusFamilyByUser,
 };

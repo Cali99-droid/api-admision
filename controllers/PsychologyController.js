@@ -61,7 +61,7 @@ const getFamilies = async (req, res) => {
   });
 
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
-  console.log(yearId);
+
   try {
     //commit
     const s = await PsychologyRepository.getFamiliesByUser(user.userId, yearId);

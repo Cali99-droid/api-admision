@@ -94,6 +94,33 @@ const getDetailUser = async (req, res) => {
     handleHttpError(res, "ERROR_GET_USERS");
   }
 };
+const getUser = async (emailToSearch) => {
+  const token = await getKeycloakToken();
+  const realm = process.env.KEYCLOAK_REALM;
+  try {
+    const response = await axios.get(
+      `https://login.colegioae.edu.pe/admin/realms/${realm}/users`,
+      {
+        params: {
+          email: emailToSearch,
+          exact: true, // IMPORTANTE: Para que no busque coincidencias parciales
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const users = response.data;
+
+    if (users.length === 0) {
+      console.log("Usuario no encontrado");
+    }
+    return users[0];
+  } catch (error) {
+    console.log(error);
+  }
+};
 const getUsersByRoleName = async (req, res) => {
   const { roleName } = req.params;
   try {
@@ -176,4 +203,5 @@ export {
   deleteRole,
   getUsersByRoleName,
   getDetailUser,
+  getUser,
 };
