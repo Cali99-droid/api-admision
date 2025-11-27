@@ -5,19 +5,42 @@ class SecretaryRepository {
   async getAssignments(yearId) {
     const data = prisma.familiy_secretary.findMany({
       where: {
-        family: {
-          children: {
-            some: {
-              vacant: {
+        OR: [
+          // Familias con vacantes del año especificado
+          {
+            family: {
+              children: {
                 some: {
-                  year: {
-                    id: yearId,
+                  vacant: {
+                    some: {
+                      year_id: yearId,
+                    },
                   },
                 },
               },
             },
           },
-        },
+          // Familias con hijos pero sin vacantes
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    none: {},
+                  },
+                },
+              },
+            },
+          },
+          // Familias sin hijos
+          {
+            family: {
+              children: {
+                none: {},
+              },
+            },
+          },
+        ],
       },
       select: {
         status: true,
