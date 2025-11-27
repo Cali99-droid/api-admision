@@ -27,7 +27,7 @@ class SecretaryRepository {
               include: {
                 vacant: {
                   where: {
-                    year_id: targetYearId,
+                    year_id: yearId,
                   },
                 },
               },
