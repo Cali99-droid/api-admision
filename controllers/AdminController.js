@@ -188,8 +188,18 @@ const getSecretaryAssignments = async (req, res) => {
 };
 
 const getPsychologyAssignments = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
   try {
-    const asignaments = await PsychologyRepository.getAssignments();
+    const asignaments = await PsychologyRepository.getAssignments(yearId);
     const data = asignaments.map((a) => {
       return {
         id: a.family.id,
@@ -516,39 +526,40 @@ const getStatusFamilyAndChildren = async (req, res) => {
     });
 
     // Optimización 2: Hacer consultas batch en paralelo
-    const [vacantsAcceptedByGradeCampus, vacantsBySIGE, schoolsData] = await Promise.all([
-      // Consulta única para vacantes aceptadas
-      prisma.vacant.findMany({
-        where: {
-          status: "accepted",
-          year_id: yearId,
-        },
-        select: {
-          grade: true,
-          campus: true,
-        },
-      }),
-      // Consultas SIGE en paralelo
-      Promise.all(
-        Array.from(uniqueGradeCampus).map(async (key) => {
-          const [gradeId, campus] = key.split('-');
-          try {
-            const vacantMat = await hasVacant(gradeId, campus);
-            return { key, vacants: vacantMat.vacants };
-          } catch (error) {
-            console.error(`Error fetching SIGE data for ${key}:`, error);
-            return { key, vacants: 0 };
-          }
-        })
-      ),
-      // Consulta única para todas las escuelas
-      schoolIds.size > 0
-        ? client.schools_new.findMany({
-            where: { id: { in: Array.from(schoolIds) } },
-            select: { id: true, cod_modular: true, name: true },
+    const [vacantsAcceptedByGradeCampus, vacantsBySIGE, schoolsData] =
+      await Promise.all([
+        // Consulta única para vacantes aceptadas
+        prisma.vacant.findMany({
+          where: {
+            status: "accepted",
+            year_id: yearId,
+          },
+          select: {
+            grade: true,
+            campus: true,
+          },
+        }),
+        // Consultas SIGE en paralelo
+        Promise.all(
+          Array.from(uniqueGradeCampus).map(async (key) => {
+            const [gradeId, campus] = key.split("-");
+            try {
+              const vacantMat = await hasVacant(gradeId, campus);
+              return { key, vacants: vacantMat.vacants };
+            } catch (error) {
+              console.error(`Error fetching SIGE data for ${key}:`, error);
+              return { key, vacants: 0 };
+            }
           })
-        : Promise.resolve([]),
-    ]);
+        ),
+        // Consulta única para todas las escuelas
+        schoolIds.size > 0
+          ? client.schools_new.findMany({
+              where: { id: { in: Array.from(schoolIds) } },
+              select: { id: true, cod_modular: true, name: true },
+            })
+          : Promise.resolve([]),
+      ]);
 
     // Optimización 3: Crear mapas para búsqueda O(1)
     const vacantsAcceptedMap = {};

@@ -1,16 +1,35 @@
 import prisma from "../utils/prisma.js";
 
 class PsychologyRepository {
-  async getAssignments() {
+  async getAssignments(yearId) {
     const data = prisma.psy_evaluation.findMany({
+      where: {
+        family: {
+          children: {
+            some: {
+              vacant: {
+                some: {
+                  year: {
+                    id: yearId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       select: {
         applied: true,
         approved: true,
         family: {
           include: {
             children: {
-              select: {
-                vacant: true,
+              include: {
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,
