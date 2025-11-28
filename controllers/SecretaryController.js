@@ -140,6 +140,7 @@ const getBackgroundSummary = async (req, res) => {
             },
           },
         ],
+        status: true,
       },
       select: {
         status: true,
