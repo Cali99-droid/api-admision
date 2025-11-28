@@ -108,42 +108,20 @@ const getBackgroundSummary = async (req, res) => {
     const families = await prisma.familiy_secretary.findMany({
       where: {
         // user_id: userSession.id,
-        OR: [
-          // Familias con vacantes del año especificado
-          {
-            family: {
-              children: {
+
+        // Familias con vacantes del año especificado
+
+        family: {
+          children: {
+            some: {
+              vacant: {
                 some: {
-                  vacant: {
-                    some: {
-                      year_id: yearId,
-                    },
-                  },
+                  year_id: yearId,
                 },
               },
             },
           },
-          // Familias con hijos pero sin vacantes
-          {
-            family: {
-              children: {
-                some: {
-                  vacant: {
-                    none: {},
-                  },
-                },
-              },
-            },
-          },
-          // Familias sin hijos
-          {
-            family: {
-              children: {
-                none: {},
-              },
-            },
-          },
-        ],
+        },
       },
       select: {
         status: true,
