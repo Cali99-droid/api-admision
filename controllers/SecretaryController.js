@@ -91,26 +91,16 @@ const getSummaryOfApplicantsBySecretary = async (req, res) => {
 const getBackgroundSummary = async (req, res) => {
   try {
     let yearId;
-    const { user } = req;
-    const userSession = await prisma.user.findUnique({
-      where: {
-        sub: user.sub,
-      },
-    });
     const yearIdQuery = req.query.yearId;
     const yearActive = await prisma.year.findFirst({
       where: {
         status: true,
       },
     });
-    console.log("llamando a antecedentes");
     yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.familiy_secretary.findMany({
       where: {
-        // user_id: userSession.id,
-
         // Familias con vacantes del año especificado
-
         family: {
           children: {
             some: {
@@ -144,7 +134,6 @@ const getBackgroundSummary = async (req, res) => {
         user: true,
       },
     });
-
     const data = families.map((f) => {
       return {
         vacant: f.family.children.map((child) => {
@@ -160,6 +149,8 @@ const getBackgroundSummary = async (req, res) => {
         secretary: f.user.id,
       };
     });
+
+    console.log(data.length);
     const groupedData = data.reduce((result, item) => {
       const key = JSON.stringify({
         level: item.vacant[0]?.level || null,
@@ -192,6 +183,7 @@ const getBackgroundSummary = async (req, res) => {
     }, {});
 
     const finalResult = Object.values(groupedData);
+    console.log(finalResult.length);
     const sortedResult = finalResult.sort((a, b) => {
       if (a.campus !== b.campus) {
         return a.campus?.localeCompare(b.campus);
@@ -1104,15 +1096,33 @@ const getAllFamilies = async (req, res) => {
   try {
     const { user } = req;
 
-    user.permi;
+    // user.permi;
     const families = await prisma.familiy_secretary.findMany({
+      where: {
+        // Familias con vacantes del año especificado
+        family: {
+          children: {
+            some: {
+              vacant: {
+                some: {
+                  year_id: yearId,
+                },
+              },
+            },
+          },
+        },
+      },
       select: {
         status: true,
         family: {
           include: {
             children: {
               include: {
-                vacant: true,
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,
