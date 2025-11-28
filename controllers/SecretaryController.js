@@ -90,11 +90,56 @@ const getSummaryOfApplicantsBySecretary = async (req, res) => {
 };
 const getBackgroundSummary = async (req, res) => {
   try {
+    let yearId;
     const { user } = req;
 
+    const yearIdQuery = req.query.yearId;
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.familiy_secretary.findMany({
       where: {
         user_id: user.userId,
+        OR: [
+          // Familias con vacantes del año especificado
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    some: {
+                      year_id: yearId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          // Familias con hijos pero sin vacantes
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    none: {},
+                  },
+                },
+              },
+            },
+          },
+          // Familias sin hijos
+          {
+            family: {
+              children: {
+                none: {},
+              },
+            },
+          },
+        ],
       },
       select: {
         status: true,
@@ -102,7 +147,11 @@ const getBackgroundSummary = async (req, res) => {
           include: {
             children: {
               include: {
-                vacant: true,
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,
@@ -179,12 +228,58 @@ const getBackgroundSummary = async (req, res) => {
 };
 const getEconomicEvaluationSummary = async (req, res) => {
   try {
+    let yearId;
     const { user } = req;
+
+    const yearIdQuery = req.query.yearId;
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
 
     const families = await prisma.familiy_secretary.findMany({
       where: {
         // user_id: 104,
         user_id: user.userId,
+        OR: [
+          // Familias con vacantes del año especificado
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    some: {
+                      year_id: yearId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          // Familias con hijos pero sin vacantes
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    none: {},
+                  },
+                },
+              },
+            },
+          },
+          // Familias sin hijos
+          {
+            family: {
+              children: {
+                none: {},
+              },
+            },
+          },
+        ],
       },
       select: {
         status: true,
@@ -192,7 +287,11 @@ const getEconomicEvaluationSummary = async (req, res) => {
           include: {
             children: {
               include: {
-                vacant: true,
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
               },
             },
             economic_evaluation: true,
