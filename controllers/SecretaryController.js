@@ -1095,7 +1095,14 @@ const deleteChildren = async (req, res) => {
 const getAllFamilies = async (req, res) => {
   try {
     const { user } = req;
-
+    let yearId;
+    const yearIdQuery = req.query.yearId;
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+    yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     // user.permi;
     const families = await prisma.familiy_secretary.findMany({
       where: {
