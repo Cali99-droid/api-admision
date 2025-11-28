@@ -92,7 +92,11 @@ const getBackgroundSummary = async (req, res) => {
   try {
     let yearId;
     const { user } = req;
-
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const yearIdQuery = req.query.yearId;
     const yearActive = await prisma.year.findFirst({
       where: {
@@ -103,7 +107,7 @@ const getBackgroundSummary = async (req, res) => {
     yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.familiy_secretary.findMany({
       where: {
-        user_id: user.userId,
+        user_id: userSession.id,
         OR: [
           // Familias con vacantes del año especificado
           {
@@ -231,7 +235,11 @@ const getEconomicEvaluationSummary = async (req, res) => {
   try {
     let yearId;
     const { user } = req;
-
+    const userSession = await prisma.user.findUnique({
+      where: {
+        sub: user.sub,
+      },
+    });
     const yearIdQuery = req.query.yearId;
     const yearActive = await prisma.year.findFirst({
       where: {
@@ -244,7 +252,7 @@ const getEconomicEvaluationSummary = async (req, res) => {
     const families = await prisma.familiy_secretary.findMany({
       where: {
         // user_id: 104,
-        user_id: user.userId,
+        user_id: userSession.id,
         OR: [
           // Familias con vacantes del año especificado
           {
