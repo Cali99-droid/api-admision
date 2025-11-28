@@ -150,7 +150,6 @@ const getBackgroundSummary = async (req, res) => {
       };
     });
 
-    console.log(data.length);
     const groupedData = data.reduce((result, item) => {
       const key = JSON.stringify({
         level: item.vacant[0]?.level || null,
@@ -183,7 +182,7 @@ const getBackgroundSummary = async (req, res) => {
     }, {});
 
     const finalResult = Object.values(groupedData);
-    console.log(finalResult.length);
+
     const sortedResult = finalResult.sort((a, b) => {
       if (a.campus !== b.campus) {
         return a.campus?.localeCompare(b.campus);
@@ -205,12 +204,6 @@ const getBackgroundSummary = async (req, res) => {
 const getEconomicEvaluationSummary = async (req, res) => {
   try {
     let yearId;
-    const { user } = req;
-    const userSession = await prisma.user.findUnique({
-      where: {
-        sub: user.sub,
-      },
-    });
     const yearIdQuery = req.query.yearId;
     const yearActive = await prisma.year.findFirst({
       where: {
@@ -223,43 +216,18 @@ const getEconomicEvaluationSummary = async (req, res) => {
     const families = await prisma.familiy_secretary.findMany({
       where: {
         // user_id: 104,
-        user_id: userSession.id,
-        OR: [
-          // Familias con vacantes del año especificado
-          {
-            family: {
-              children: {
+
+        family: {
+          children: {
+            some: {
+              vacant: {
                 some: {
-                  vacant: {
-                    some: {
-                      year_id: yearId,
-                    },
-                  },
+                  year_id: yearId,
                 },
               },
             },
           },
-          // Familias con hijos pero sin vacantes
-          {
-            family: {
-              children: {
-                some: {
-                  vacant: {
-                    none: {},
-                  },
-                },
-              },
-            },
-          },
-          // Familias sin hijos
-          {
-            family: {
-              children: {
-                none: {},
-              },
-            },
-          },
-        ],
+        },
       },
       select: {
         status: true,
