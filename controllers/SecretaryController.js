@@ -107,7 +107,7 @@ const getBackgroundSummary = async (req, res) => {
     yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.familiy_secretary.findMany({
       where: {
-        user_id: userSession.id,
+        // user_id: userSession.id,
         OR: [
           // Familias con vacantes del año especificado
           {
@@ -144,7 +144,6 @@ const getBackgroundSummary = async (req, res) => {
             },
           },
         ],
-        status: true,
       },
       select: {
         status: true,
@@ -164,6 +163,7 @@ const getBackgroundSummary = async (req, res) => {
             background_assessment: true,
           },
         },
+        user: true,
       },
     });
 
@@ -179,6 +179,7 @@ const getBackgroundSummary = async (req, res) => {
         }),
         antecedent: f.family.background_assessment.length || 0,
         resultAntecedent: f.family.background_assessment[0]?.conclusion || null,
+        secretary: f.user.id,
       };
     });
     const groupedData = data.reduce((result, item) => {
