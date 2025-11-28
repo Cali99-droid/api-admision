@@ -103,7 +103,7 @@ const getBackgroundSummary = async (req, res) => {
         status: true,
       },
     });
-
+    console.log("llamando a antecedentes");
     yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.familiy_secretary.findMany({
       where: {
