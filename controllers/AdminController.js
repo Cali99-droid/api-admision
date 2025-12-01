@@ -406,8 +406,8 @@ const getStatusFamilyByUser = async (req, res) => {
     const userKy = await getUser(email);
     if (!userKy) {
       return res.status(200).json({
-        status: "registro",
-        description: "no registrado en el sistema",
+        status: "Registro ",
+        description: "Email no registrado en el sistema",
       });
     }
 
@@ -420,9 +420,11 @@ const getStatusFamilyByUser = async (req, res) => {
     });
 
     if (!user) {
-      return res
-        .status(200)
-        .json({ status: "registro", description: "Sin validar email." });
+      return res.status(200).json({
+        status: "Registro (Email Pendiente)",
+        description:
+          "La familia se registró, pero aún no validó el correo electrónico.",
+      });
     }
 
     // 2. Buscar familia asociada al usuario
@@ -453,16 +455,17 @@ const getStatusFamilyByUser = async (req, res) => {
 
     if (!family) {
       return res.status(200).json({
-        status: "Inicio Sesión",
-        description: " familia no creada",
+        status: "Cuenta Activa (Sin Familia)",
+        description: "Inició sesión, pero no creó la unidad familiar.",
       });
     }
 
     // 3. Verificar si tiene hijos
     if (!family.children || family.children.length === 0) {
       return res.status(200).json({
-        status: "Inicio Sesion",
-        description: "No Creo Hijos",
+        status: "Familia Creada (Sin Postulantes)",
+        description:
+          "La familia está creada, pero no han registrado ningún hijo postulante.",
       });
     }
 
@@ -472,8 +475,9 @@ const getStatusFamilyByUser = async (req, res) => {
     );
     if (!hasVacants) {
       return res.status(200).json({
-        status: "hijos agregados ",
-        description: "sin vacantes solicitadas",
+        status: "Postulante Registrado (Sin Nivel/Grado)",
+        description:
+          "Crearon al hijo, pero no indicaron nivel ni grado al que postula.",
       });
     }
 
@@ -484,18 +488,18 @@ const getStatusFamilyByUser = async (req, res) => {
 
     // Verificar si fue aceptado o rechazado
     if (latestVacant.status === "accepted") {
-      return res.status(200).json({
-        status: "Resultado",
-        description: " vacante asignada ",
-      });
-
       //TODO **comunicar con COLEGIO */
+      return res.status(200).json({
+        status: "Vacante Otorgada",
+        description: "La familia obtuvo la vacante y pasa a reserva.",
+      });
     }
 
     if (latestVacant.status === "rejected") {
-      return res
-        .status(200)
-        .json({ status: "Resultado", description: "vacante rechazada" });
+      return res.status(200).json({
+        status: "Sin Vacante",
+        description: "La familia no obtiene vacante",
+      });
     }
 
     // 6. Verificar evaluaciones
@@ -518,27 +522,27 @@ const getStatusFamilyByUser = async (req, res) => {
             latestBackgroundAssessment.conclusion === "apto"
           ) {
             return res.status(200).json({
-              status: "evaluaciones completas",
+              status: "Evaluaciones completas",
               description: "en espera de asignación vacante",
             });
           }
           return res.status(200).json({
-            status: "en evaluación de antecedentes",
+            status: " Evaluaciones en Proceso",
             description: "evaluado por psicología y economía ",
           });
         }
         return res.status(200).json({
-          status: "evaluado por psicología",
-          description: "en evaluación económica ",
+          status: "Evaluaciones en Proceso",
+          description: "evaluado por psicología, en evaluación económica ",
         });
       } else if (latestPsyEvaluation.approved === 2) {
         return res.status(200).json({
-          status: "rechazado en evaluación psicológica",
+          status: "Evaluaciones en Proceso",
           description: "no paso evaluacion, en evaluación economica",
         });
       } else if (latestPsyEvaluation.applied === 1) {
         return res.status(200).json({
-          status: "evaluación psicológica aplicada",
+          status: "Evaluaciones en Proceso",
           description: "en espera de resultado",
         });
       }
@@ -547,16 +551,17 @@ const getStatusFamilyByUser = async (req, res) => {
     // Validación de secretaría
     if (latestSecretaryValidation && latestSecretaryValidation.status === 1) {
       return res.status(200).json({
-        status: "solicitud completada",
+        status: "Postulación Validada",
         description:
-          "validado por secretaria, espera de evaluacion psicologica",
+          "Secretaría aprobó la documentación y el expediente está listo para evaluaciones.",
       });
     }
 
     // 7. Si llegó aquí, tiene vacante solicitada pero no ha sido validada
     return res.status(200).json({
-      status: "solicitud completada",
-      description: "en espera de validación de secretaría",
+      status: "Postulación Enviada (Revisión Secretaría)",
+      description:
+        "Formularios completos; pendiente de revisión por Secretaría.",
     });
   } catch (error) {
     console.error("Error in getStatusFamilyByUser:", error);
