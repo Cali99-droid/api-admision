@@ -495,7 +495,7 @@ const getAvailablesFamilies = async (req, res) => {
           };
           return vacant;
         }),
-        children: f.children.filter((c) => c.vacant.year_id == yearId).length,
+        children: f.children.length,
         served: f.status,
       };
     });
