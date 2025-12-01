@@ -450,6 +450,17 @@ const getAvailablesFamilies = async (req, res) => {
     const families = await prisma.family.findMany({
       where: {
         is_assigned: 0,
+        family: {
+          children: {
+            some: {
+              vacant: {
+                some: {
+                  year_id: yearId,
+                },
+              },
+            },
+          },
+        },
       },
       include: {
         children: {
