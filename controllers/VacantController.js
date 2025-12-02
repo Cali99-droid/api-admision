@@ -139,6 +139,9 @@ const get = async (req, res) => {
       where: {
         children_id: child.id,
       },
+      include: {
+        year: true,
+      },
     });
     const data = {
       id: vacant?.id,
