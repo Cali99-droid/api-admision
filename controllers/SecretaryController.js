@@ -439,35 +439,14 @@ const getFamilies = async (req, res) => {
 };
 const getAvailablesFamilies = async (req, res) => {
   try {
-    let yearId;
-    const yearIdQuery = req.query.yearId;
-    const yearActive = await prisma.year.findFirst({
-      where: {
-        status: true,
-      },
-    });
-    yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.family.findMany({
       where: {
         is_assigned: 0,
-        children: {
-          some: {
-            vacant: {
-              some: {
-                year_id: yearId,
-              },
-            },
-          },
-        },
       },
       include: {
         children: {
           include: {
-            vacant: {
-              where: {
-                year_id: yearId,
-              },
-            },
+            vacant: true,
           },
         },
         person_family_parent_oneToperson: true,
