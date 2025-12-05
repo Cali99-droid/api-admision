@@ -90,9 +90,83 @@ export const sendBulkEmails = async (options) => {
         if (filterByDatabase) {
           // Opción nueva: Filtrar por usuarios en la base de datos
           console.log("Obteniendo usuarios de la base de datos...");
-
+          const data = await prisma.familiy_secretary.findMany({
+            where: {
+              OR: [
+                // Familias con vacantes del año especificado
+                {
+                  family: {
+                    children: {
+                      some: {
+                        vacant: {
+                          some: {
+                            year_id: yearId,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                // Familias con hijos pero sin vacantes
+                {
+                  family: {
+                    children: {
+                      some: {
+                        vacant: {
+                          none: {},
+                        },
+                      },
+                    },
+                  },
+                },
+                // Familias sin hijos
+                {
+                  family: {
+                    children: {
+                      none: {},
+                    },
+                  },
+                },
+              ],
+            },
+            select: {
+              status: true,
+              family: {
+                include: {
+                  children: {
+                    include: {
+                      vacant: {
+                        where: {
+                          year_id: yearId,
+                        },
+                      },
+                    },
+                  },
+                  person_family_parent_oneToperson: {
+                    select: {
+                      user: true,
+                    },
+                  },
+                },
+              },
+              user: {
+                select: {
+                  person: true,
+                },
+              },
+            },
+            orderBy: {
+              id: "asc",
+            },
+          });
+          const ids = data.map((as) => {
+            return as.family.person_family_parent_oneToperson.user.id;
+          });
           // Obtener todos los 'sub' de la tabla user
           const dbUsers = await prisma.user.findMany({
+            where: {
+              in: ids, // Busca usuarios con ID 1 O 3 O 5
+            },
             select: {
               sub: true,
               person: {
@@ -107,7 +181,7 @@ export const sendBulkEmails = async (options) => {
           });
 
           console.log(`Total de usuarios en BD: ${dbUsers.length}`);
-
+          return;
           if (dbUsers.length === 0) {
             const error = new Error(
               "No se encontraron usuarios en la base de datos"
