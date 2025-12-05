@@ -144,7 +144,7 @@ export const sendBulkEmails = async (options) => {
                     include: {
                       vacant: {
                         where: {
-                          year_id: yearId,
+                          year_id: yearActive.id,
                         },
                       },
                     },
