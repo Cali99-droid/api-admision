@@ -555,17 +555,24 @@ const getStatusFamilyByUser = async (req, res) => {
         });
       } else if (latestPsyEvaluation.approved === 2) {
         return res.status(200).json({
-          status: "Evaluaciones en Proceso",
-          description: "no paso evaluacion, en evaluación economica",
+          status: "Evaluación Psicologica Aplicada",
+          description:
+            "no paso evaluacion Psicologica, en evaluación economica",
           family: family.familiy_secretary[0].user.person.name,
         });
       } else if (latestPsyEvaluation.applied === 1) {
         return res.status(200).json({
-          status: "Evaluaciones en Proceso",
+          status: "Evaluación Psicologica Aplicada",
           description: "en espera de resultado",
           agent: family.familiy_secretary[0].user.person.name,
         });
       }
+    } else {
+      return res.status(200).json({
+        status: "Evaluación Psicologica Pendiente",
+        description: "en espera de envaluacion psicologica",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
     }
 
     // Validación de secretaría
