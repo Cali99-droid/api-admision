@@ -566,6 +566,12 @@ const getStatusFamilyByUser = async (req, res) => {
           description: "en espera de resultado",
           agent: family.familiy_secretary[0].user.person.name,
         });
+      } else if (latestPsyEvaluation.applied === 0) {
+        return res.status(200).json({
+          status: "Evaluación Psicologica Pendiente",
+          description: "en espera de envaluacion psicologica",
+          agent: family.familiy_secretary[0].user.person.name,
+        });
       }
     } else {
       return res.status(200).json({
