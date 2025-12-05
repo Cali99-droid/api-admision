@@ -149,11 +149,7 @@ export const sendBulkEmails = async (options) => {
                       },
                     },
                   },
-                  person_family_parent_oneToperson: {
-                    select: {
-                      user: true,
-                    },
-                  },
+                  person_family_parent_oneToperson: true,
                 },
               },
               user: {
@@ -167,7 +163,7 @@ export const sendBulkEmails = async (options) => {
             },
           });
           const ids = data.map((as) => {
-            return as.family.person_family_parent_oneToperson.id;
+            return as.family.person_family_parent_oneToperson.;
           });
           console.log(`Total de asignaciones en BD: ${data.length}`);
           // Obtener todos los 'sub' de la tabla user
