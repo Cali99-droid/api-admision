@@ -22,7 +22,11 @@ export async function saveUserIdIfNotExists(user) {
         role: user.parentesco === "Padre" ? "P" : "M",
       },
     });
-
+    const userKY = {
+      email: user.email,
+      firstName: user.given_name,
+      lastName: user.family_name,
+    };
     const userCreated = await prisma.user.create({
       data: {
         sub: user.sub,
@@ -43,7 +47,7 @@ export async function saveUserIdIfNotExists(user) {
       "utf-8"
     );
     await sendSingleEmail(
-      user,
+      userKY,
       htmlContent,
       "Políticas de admisión 2026",
       processState
