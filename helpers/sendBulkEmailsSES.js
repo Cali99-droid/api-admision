@@ -60,13 +60,7 @@ export const sendBulkEmails = async (options) => {
     onError,
   } = options;
   /**año activo */
-  const yearActive = await prisma.year.findFirst({
-    where: {
-      status: true,
-    },
-  });
 
-  yearId = yearActive.id;
   // Validar que se proporcione roleName, users o filterByDatabase
   if (!roleName && !providedUsers && !filterByDatabase) {
     throw new Error("Debe proporcionar roleName, users o filterByDatabase");
@@ -95,6 +89,13 @@ export const sendBulkEmails = async (options) => {
 
       if (!users) {
         if (filterByDatabase) {
+          const yearActive = await prisma.year.findFirst({
+            where: {
+              status: true,
+            },
+          });
+
+          yearId = yearActive.id;
           // Opción nueva: Filtrar por usuarios en la base de datos
           console.log("Obteniendo usuarios de la base de datos...");
           const data = await prisma.familiy_secretary.findMany({
