@@ -385,7 +385,7 @@ async function sendSingleEmail(user, htmlContent, subject, processState) {
           to: email,
           subject: personalizedSubject,
           html: personalizedHtml,
-          cc: "orellano428@gmail.com",
+          bcc: "copia_oculta@colegioae.com",
         },
         (err, info) => {
           if (err) {
