@@ -187,7 +187,7 @@ export const sendBulkEmails = async (options) => {
           });
 
           console.log(`Total de usuarios en BD: ${dbUsers.length}`);
-          return;
+
           if (dbUsers.length === 0) {
             const error = new Error(
               "No se encontraron usuarios en la base de datos"
