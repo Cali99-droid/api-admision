@@ -95,7 +95,6 @@ export const sendBulkEmails = async (options) => {
             },
           });
 
-          yearId = yearActive.id;
           // Opción nueva: Filtrar por usuarios en la base de datos
           console.log("Obteniendo usuarios de la base de datos...");
           const data = await prisma.familiy_secretary.findMany({
@@ -108,7 +107,7 @@ export const sendBulkEmails = async (options) => {
                       some: {
                         vacant: {
                           some: {
-                            year_id: yearId,
+                            year_id: yearActive.id,
                           },
                         },
                       },
