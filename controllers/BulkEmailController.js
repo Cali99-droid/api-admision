@@ -1,4 +1,8 @@
-import { sendBulkEmails, sendBulkEmailsByRole } from "../helpers/sendBulkEmailsSES.js";
+import {
+  sendBulkEmails,
+  sendBulkEmailsByRole,
+  sendBulkEmailsFromDatabase,
+} from "../helpers/sendBulkEmailsSES.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -319,6 +323,93 @@ export const getProcessResults = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error al obtener los resultados del proceso",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Envía emails masivos a usuarios filtrados desde la base de datos
+ * POST /api/bulk-email/send-from-database
+ * Body: { subject, htmlFilePath, batchSize, batchDelay, pauseAfterBatch }
+ */
+export const sendEmailsFromDatabase = async (req, res) => {
+  try {
+    const {
+      subject = "Información Importante - Colegio Albert Einstein",
+      htmlFilePath,
+      batchSize = 5,
+      batchDelay = 2000,
+      pauseAfterBatch = 1000,
+    } = req.body;
+
+    // Validaciones
+    if (!htmlFilePath) {
+      return res.status(400).json({
+        success: false,
+        message: "El campo htmlFilePath es requerido",
+      });
+    }
+
+    // Generar ID único para el proceso
+    const processId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+    // Iniciar el proceso en segundo plano
+    const processState = await sendBulkEmails({
+      filterByDatabase: true,
+      htmlTemplatePath: htmlFilePath,
+      subject,
+      batchSize,
+      batchDelay,
+      pauseAfterBatch,
+      onProgress: (sent, total) => {
+        console.log(`[${processId}] Progreso: ${sent}/${total} emails enviados`);
+      },
+      onComplete: (results) => {
+        console.log(`[${processId}] Proceso completado`);
+        const state = activeProcesses.get(processId);
+        if (state) {
+          state.status = "completed";
+          state.completedAt = new Date();
+        }
+      },
+      onError: (error) => {
+        console.error(`[${processId}] Error:`, error);
+        const state = activeProcesses.get(processId);
+        if (state) {
+          state.status = "error";
+          state.error = error.message;
+          state.completedAt = new Date();
+        }
+      },
+    });
+
+    // Guardar referencia al proceso
+    activeProcesses.set(processId, {
+      ...processState,
+      processId,
+      subject,
+      createdAt: new Date(),
+      filterByDatabase: true,
+    });
+
+    // Limpiar procesos antiguos
+    cleanupOldProcesses();
+
+    // Responder inmediatamente
+    res.status(202).json({
+      success: true,
+      message: "Proceso de envío masivo iniciado en segundo plano (filtrado por BD)",
+      processId,
+      status: "running",
+      totalEmails: processState.totalEmails,
+      estimatedDuration: `${Math.ceil((processState.totalEmails * 2) / 60)} minutos aprox.`,
+    });
+  } catch (error) {
+    console.error("Error iniciando envío masivo:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al iniciar el proceso de envío masivo",
       error: error.message,
     });
   }

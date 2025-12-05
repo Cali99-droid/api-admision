@@ -3,7 +3,14 @@ import nodemailer from "nodemailer";
 import { promises as fs } from "fs";
 import path from "path";
 import loggerStream from "../utils/handleLogger.js";
-import { getUsersByRole, getUsersByRoleClient } from "./getUsersKeycloakByRealmRole.js";
+import {
+  getUsersByRole,
+  getUsersByRoleClient,
+} from "./getUsersKeycloakByRealmRole.js";
+import { getKeycloakUsersByIds } from "./getKeycloakUserById.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const ses = new aws.SES({
   apiVersion: "2010-12-01",
@@ -23,9 +30,10 @@ const transporter = nodemailer.createTransport({
 /**
  * Envía emails masivos a usuarios de Keycloak en segundo plano
  * @param {Object} options - Opciones de configuración
- * @param {string} options.roleName - Nombre del rol de Keycloak (opcional si se pasa users)
+ * @param {string} options.roleName - Nombre del rol de Keycloak (opcional si se pasa users o filterByDatabase)
  * @param {boolean} options.isClientRole - Si es un rol de cliente (default: false)
- * @param {Array} options.users - Array de usuarios con { email, firstName, lastName } (opcional si se pasa roleName)
+ * @param {Array} options.users - Array de usuarios con { email, firstName, lastName } (opcional si se pasa roleName o filterByDatabase)
+ * @param {boolean} options.filterByDatabase - Si true, filtra usuarios de Keycloak usando los 'sub' de la BD (default: false)
  * @param {string} options.htmlTemplatePath - Ruta al archivo HTML del template
  * @param {string} options.subject - Asunto del email
  * @param {number} options.batchSize - Cantidad de emails por lote (default: 5)
@@ -41,6 +49,7 @@ export const sendBulkEmails = async (options) => {
     roleName,
     isClientRole = false,
     users: providedUsers,
+    filterByDatabase = false,
     htmlTemplatePath,
     subject = "Información Importante - Colegio Albert Einstein",
     batchSize = 5,
@@ -51,9 +60,9 @@ export const sendBulkEmails = async (options) => {
     onError,
   } = options;
 
-  // Validar que se proporcione roleName o users
-  if (!roleName && !providedUsers) {
-    throw new Error("Debe proporcionar roleName o users");
+  // Validar que se proporcione roleName, users o filterByDatabase
+  if (!roleName && !providedUsers && !filterByDatabase) {
+    throw new Error("Debe proporcionar roleName, users o filterByDatabase");
   }
 
   if (!htmlTemplatePath) {
@@ -78,16 +87,71 @@ export const sendBulkEmails = async (options) => {
       let users = providedUsers;
 
       if (!users) {
-        console.log(`Obteniendo usuarios del rol: ${roleName}...`);
-        if (isClientRole) {
-          users = await getUsersByRoleClient(roleName);
+        if (filterByDatabase) {
+          // Opción nueva: Filtrar por usuarios en la base de datos
+          console.log("Obteniendo usuarios de la base de datos...");
+
+          // Obtener todos los 'sub' de la tabla user
+          const dbUsers = await prisma.user.findMany({
+            select: {
+              sub: true,
+              person: {
+                select: {
+                  name: true,
+                  lastname: true,
+                  mLastname: true,
+                  email: true,
+                },
+              },
+            },
+          });
+
+          console.log(`Total de usuarios en BD: ${dbUsers.length}`);
+
+          if (dbUsers.length === 0) {
+            const error = new Error(
+              "No se encontraron usuarios en la base de datos"
+            );
+            processState.status = "completed";
+            processState.endTime = new Date();
+            if (onError) onError(error);
+            return;
+          }
+
+          // Extraer los 'sub' (IDs de Keycloak)
+          const keycloakIds = dbUsers.map((u) => u.sub);
+
+          // Obtener información de esos usuarios desde Keycloak
+          console.log(
+            `Obteniendo información de ${keycloakIds.length} usuarios desde Keycloak...`
+          );
+          const keycloakUsers = await getKeycloakUsersByIds(keycloakIds);
+
+          // Mapear los usuarios de Keycloak con formato esperado
+          users = keycloakUsers.map((kUser) => ({
+            id: kUser.id,
+            email: kUser.email,
+            firstName: kUser.firstName || "",
+            lastName: kUser.lastName || "",
+            username: kUser.username,
+          }));
+
+          console.log(`Usuarios de Keycloak obtenidos: ${users.length}`);
         } else {
-          users = await getUsersByRole(roleName);
+          // Opción original: Por rol
+          console.log(`Obteniendo usuarios del rol: ${roleName}...`);
+          if (isClientRole) {
+            users = await getUsersByRoleClient(roleName);
+          } else {
+            users = await getUsersByRole(roleName);
+          }
         }
       }
 
       if (!users || users.length === 0) {
-        const error = new Error("No se encontraron usuarios para enviar emails");
+        const error = new Error(
+          "No se encontraron usuarios para enviar emails"
+        );
         processState.status = "completed";
         processState.endTime = new Date();
         if (onError) onError(error);
@@ -106,7 +170,9 @@ export const sendBulkEmails = async (options) => {
       );
 
       if (validUsers.length === 0) {
-        const error = new Error("No se encontraron usuarios con emails válidos");
+        const error = new Error(
+          "No se encontraron usuarios con emails válidos"
+        );
         processState.status = "completed";
         processState.endTime = new Date();
         if (onError) onError(error);
@@ -140,7 +206,9 @@ export const sendBulkEmails = async (options) => {
 
         // Pausa después del lote (excepto en el último)
         if (i + batchSize < validUsers.length) {
-          console.log(`Pausando ${pauseAfterBatch}ms antes del siguiente lote...`);
+          console.log(
+            `Pausando ${pauseAfterBatch}ms antes del siguiente lote...`
+          );
           await sleep(pauseAfterBatch);
         }
 
@@ -195,12 +263,35 @@ export const sendBulkEmails = async (options) => {
 };
 
 /**
+ * Helper para capitalizar la primera letra de cada palabra
+ * @private
+ */
+function capitalizeFirstLetter(text) {
+  if (!text) return "";
+  return text
+    .split(" ")
+    .map((word) => {
+      if (!word) return "";
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
+/**
  * Envía un email individual
  * @private
  */
 async function sendSingleEmail(user, htmlContent, subject, processState) {
   const { email, firstName, lastName } = user;
   const fullName = `${firstName || ""} ${lastName || ""}`.trim() || "Usuario";
+
+  // Capitalizar apellidos
+  const capitalizedLastName = capitalizeFirstLetter(lastName || "");
+
+  // Personalizar asunto con apellidos
+  const personalizedSubject = capitalizedLastName
+    ? `${subject} - ${capitalizedLastName}`
+    : subject;
 
   try {
     // Personalizar el HTML (si se necesita)
@@ -212,8 +303,9 @@ async function sendSingleEmail(user, htmlContent, subject, processState) {
         {
           from: `"Admisión Colegio AE" <${process.env.AWS_SES_FROM}>`,
           to: email,
-          subject: subject,
+          subject: personalizedSubject,
           html: personalizedHtml,
+          cc: "orellano428@gmail.com",
         },
         (err, info) => {
           if (err) {
@@ -248,10 +340,14 @@ async function sendSingleEmail(user, htmlContent, subject, processState) {
       timestamp: new Date(),
     });
 
-    console.error(`✗ Error enviando a ${email} (${fullName}): ${error.message}`);
+    console.error(
+      `✗ Error enviando a ${email} (${fullName}): ${error.message}`
+    );
 
     loggerStream.write(
-      `[${new Date().toISOString()}] ERROR: Falló envío a ${email} (${fullName}) - ${error.message}\n`
+      `[${new Date().toISOString()}] ERROR: Falló envío a ${email} (${fullName}) - ${
+        error.message
+      }\n`
     );
   }
 }
@@ -281,6 +377,33 @@ export const sendBulkEmailsByRole = async (
   return await sendBulkEmails({
     roleName,
     isClientRole,
+    htmlTemplatePath: htmlFilePath,
+    subject,
+    batchSize: 5,
+    batchDelay: 2000,
+    pauseAfterBatch: 1000,
+    onProgress: (sent, total) => {
+      console.log(`Progreso: ${sent}/${total} emails enviados`);
+    },
+    onComplete: (results) => {
+      console.log("Proceso completado exitosamente");
+    },
+    onError: (error) => {
+      console.error("Error en el proceso:", error);
+    },
+  });
+};
+
+/**
+ * Función simplificada para enviar a usuarios filtrados por base de datos
+ * Obtiene todos los 'sub' de la tabla user y envía emails a esos usuarios de Keycloak
+ * @param {string} htmlFilePath - Ruta al archivo HTML
+ * @param {string} subject - Asunto del email
+ * @returns {Promise<Object>} - Estado del proceso
+ */
+export const sendBulkEmailsFromDatabase = async (htmlFilePath, subject) => {
+  return await sendBulkEmails({
+    filterByDatabase: true,
     htmlTemplatePath: htmlFilePath,
     subject,
     batchSize: 5,
