@@ -361,7 +361,12 @@ function capitalizeFirstLetter(text) {
  * Envía un email individual
  * @private
  */
-async function sendSingleEmail(user, htmlContent, subject, processState) {
+export async function sendSingleEmail(
+  user,
+  htmlContent,
+  subject,
+  processState
+) {
   const { email, firstName, lastName } = user;
   const fullName = `${firstName || ""} ${lastName || ""}`.trim() || "Usuario";
 
@@ -385,7 +390,7 @@ async function sendSingleEmail(user, htmlContent, subject, processState) {
           to: email,
           subject: personalizedSubject,
           html: personalizedHtml,
-          bcc: "admision@mail.colegioae.com",
+          // bcc: "admision@mail.colegioae.com",
           replyTo: "soporte@colegioae.freshdesk.com",
         },
         (err, info) => {
