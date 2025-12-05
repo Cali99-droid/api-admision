@@ -408,6 +408,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Registro ",
         description: "Email no registrado en el sistema",
+        agent: "",
       });
     }
 
@@ -424,6 +425,7 @@ const getStatusFamilyByUser = async (req, res) => {
         status: "Registro (Email Pendiente)",
         description:
           "La familia se registró, pero aún no validó el correo electrónico.",
+        agent: "",
       });
     }
 
@@ -440,7 +442,15 @@ const getStatusFamilyByUser = async (req, res) => {
             },
           },
         },
-        familiy_secretary: true,
+        familiy_secretary: {
+          include: {
+            user: {
+              include: {
+                person: true,
+              },
+            },
+          },
+        },
         psy_evaluation: {
           orderBy: { create_time: "desc" },
         },
@@ -457,6 +467,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Cuenta Activa (Sin Familia)",
         description: "Inició sesión, pero no creó la unidad familiar.",
+        agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
@@ -466,6 +477,7 @@ const getStatusFamilyByUser = async (req, res) => {
         status: "Familia Creada (Sin Postulantes)",
         description:
           "La familia está creada, pero no han registrado ningún hijo postulante.",
+        agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
@@ -478,6 +490,7 @@ const getStatusFamilyByUser = async (req, res) => {
         status: "Postulante Registrado (Sin Nivel/Grado)",
         description:
           "Crearon al hijo, pero no indicaron nivel ni grado al que postula.",
+        agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
@@ -492,6 +505,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Vacante Otorgada",
         description: "La familia obtuvo la vacante y pasa a reserva.",
+        agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
@@ -499,6 +513,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Sin Vacante",
         description: "La familia no obtiene vacante",
+        agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
@@ -524,26 +539,31 @@ const getStatusFamilyByUser = async (req, res) => {
             return res.status(200).json({
               status: "Evaluaciones completas",
               description: "en espera de asignación vacante",
+              agent: family.familiy_secretary[0].user.person.name,
             });
           }
           return res.status(200).json({
             status: " Evaluaciones en Proceso",
             description: "evaluado por psicología y economía ",
+            agent: family.familiy_secretary[0].user.person.name,
           });
         }
         return res.status(200).json({
           status: "Evaluaciones en Proceso",
           description: "evaluado por psicología, en evaluación económica ",
+          agent: family.familiy_secretary[0].user.person.name,
         });
       } else if (latestPsyEvaluation.approved === 2) {
         return res.status(200).json({
           status: "Evaluaciones en Proceso",
           description: "no paso evaluacion, en evaluación economica",
+          family: family.familiy_secretary[0].user.person.name,
         });
       } else if (latestPsyEvaluation.applied === 1) {
         return res.status(200).json({
           status: "Evaluaciones en Proceso",
           description: "en espera de resultado",
+          agent: family.familiy_secretary[0].user.person.name,
         });
       }
     }
@@ -554,6 +574,7 @@ const getStatusFamilyByUser = async (req, res) => {
         status: "Postulación Validada",
         description:
           "Secretaría aprobó la documentación y el expediente está listo para evaluaciones.",
+        agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
@@ -562,6 +583,7 @@ const getStatusFamilyByUser = async (req, res) => {
       status: "Postulación Enviada (Revisión Secretaría)",
       description:
         "Formularios completos; pendiente de revisión por Secretaría.",
+      agent: family.familiy_secretary[0].user.person.name,
     });
   } catch (error) {
     console.error("Error in getStatusFamilyByUser:", error);
