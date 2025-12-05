@@ -390,7 +390,7 @@ export async function sendSingleEmail(
           to: email,
           subject: personalizedSubject,
           html: personalizedHtml,
-          // bcc: "admision@mail.colegioae.com",
+          bcc: "admision@mail.colegioae.com",
           replyTo: "soporte@colegioae.freshdesk.com",
         },
         (err, info) => {
