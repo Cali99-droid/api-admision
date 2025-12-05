@@ -162,6 +162,7 @@ export const sendBulkEmails = async (options) => {
           const ids = data.map((as) => {
             return as.family.person_family_parent_oneToperson.user.id;
           });
+          console.log(`Total de asignaciones en BD: ${data.length}`);
           // Obtener todos los 'sub' de la tabla user
           const dbUsers = await prisma.user.findMany({
             where: {
