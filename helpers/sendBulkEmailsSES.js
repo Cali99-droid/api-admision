@@ -59,7 +59,14 @@ export const sendBulkEmails = async (options) => {
     onComplete,
     onError,
   } = options;
+  /**año activo */
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
 
+  yearId = yearActive.id;
   // Validar que se proporcione roleName, users o filterByDatabase
   if (!roleName && !providedUsers && !filterByDatabase) {
     throw new Error("Debe proporcionar roleName, users o filterByDatabase");
