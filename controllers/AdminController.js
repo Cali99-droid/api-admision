@@ -707,10 +707,9 @@ const getStatusFamilyAndChildren = async (req, res) => {
       status: true,
     },
   });
-  console.log(yearActive);
-  console.log(yearActive.id);
+
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
-  console.log("EL yYEAR ID", yearId);
+
   try {
     const families = await FamilyRepository.getVacant(yearActive.id);
 

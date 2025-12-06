@@ -659,6 +659,7 @@ const getFamily = async (req, res) => {
     }));
 
     const parents = [mainSpouse, spouse];
+    console.log("familiy secrtari", family.familiy_secretary);
     const data = {
       id: family.id,
       family: family.name,
