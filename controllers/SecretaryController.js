@@ -495,7 +495,11 @@ const getFamily = async (req, res) => {
     }
     req = matchedData(req);
     const id = parseInt(req.id);
-
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
     const family = await prisma.family.findUnique({
       where: {
         id,
@@ -524,6 +528,13 @@ const getFamily = async (req, res) => {
           },
         },
         children: {
+          where: {
+            vacant: {
+              some: {
+                year_id: yearActive.id,
+              },
+            },
+          },
           select: {
             validate: true,
             schoolId: true,
@@ -535,6 +546,11 @@ const getFamily = async (req, res) => {
                 lastname: true,
                 mLastname: true,
                 validate: true,
+              },
+            },
+            vacant: {
+              where: {
+                year_id: yearActive.id,
               },
             },
           },
@@ -557,7 +573,11 @@ const getFamily = async (req, res) => {
             },
           },
         },
-        familiy_secretary: true,
+        familiy_secretary: {
+          where: {
+            year_id: yearActive.id,
+          },
+        },
       },
     });
 
@@ -656,10 +676,11 @@ const getFamily = async (req, res) => {
       validate: handleVerifyValidate(child.validate),
       school: child.schoolId,
       validateSchool: child.validateSchool,
+      // vacant: child.
     }));
 
     const parents = [mainSpouse, spouse];
-    console.log("familiy secrtari", family.familiy_secretary);
+
     const data = {
       id: family.id,
       family: family.name,
