@@ -707,7 +707,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
       status: true,
     },
   });
-
+  console.log(yearActive);
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
   console.log("EL yYEAR ID", yearId);
   try {
