@@ -107,7 +107,12 @@ const getFamily = async (req, res) => {
   const id = parseInt(req.id);
 
   try {
-    const family = await PsychologyRepository.getFamilyById(id);
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+    const family = await PsychologyRepository.getFamilyById(id, yearActive.id);
     //formatear
     const phone = family.person_family_parent_oneToperson.phone;
     let status = true;

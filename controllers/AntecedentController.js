@@ -1,13 +1,21 @@
 import AntecedentRepository from "../repositories/AntecedentRepository.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
+import prisma from "../utils/prisma.js";
 
 const getAntecedent = async (req, res) => {
   try {
     const { familyId } = req.params;
 
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
     const antecedent = await AntecedentRepository.getAntecedentByFamily(
-      parseInt(familyId)
+      parseInt(familyId),
+      yearActive.id
     );
 
     res.status(201).json({
@@ -24,6 +32,14 @@ const createAntecedent = async (req, res) => {
   try {
     req = matchedData(req);
     const data = req;
+
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    data.year_id = yearActive.id;
 
     const createAntecedent = await AntecedentRepository.createAntecedent(data);
 

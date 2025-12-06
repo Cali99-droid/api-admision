@@ -32,19 +32,19 @@ class FamilyRepository {
         psy_evaluation: {
           some: {
             approved: 1,
-            // year_id: yearId,
+            year_id: yearId,
           },
         },
         economic_evaluation: {
           some: {
             conclusion: "apto",
-            // year_id: yearId,
+            year_id: yearId,
           },
         },
         background_assessment: {
           some: {
             conclusion: "apto",
-            // year_id: yearId,
+            year_id: yearId,
           },
         },
         children: {
@@ -58,21 +58,21 @@ class FamilyRepository {
         },
       },
       include: {
-        // psy_evaluation: {
-        //   where: {
-        //     year_id: yearId,
-        //   },
-        // },
-        // economic_evaluation: {
-        //   where: {
-        //     year_id: yearId,
-        //   },
-        // },
-        // background_assessment: {
-        //   where: {
-        //     year_id: yearId,
-        //   },
-        // },
+        psy_evaluation: {
+          where: {
+            year_id: yearId,
+          },
+        },
+        economic_evaluation: {
+          where: {
+            year_id: yearId,
+          },
+        },
+        background_assessment: {
+          where: {
+            year_id: yearId,
+          },
+        },
         children: {
           include: {
             vacant: {
@@ -87,12 +87,13 @@ class FamilyRepository {
     });
   }
 
-  async getFamiliesWithEvaluationsStatus() {
+  async getFamiliesWithEvaluationsStatus(yearId) {
     return prisma.family.findMany({
       where: {
         psy_evaluation: {
           some: {
             applied: 1,
+            year_id: yearId,
           },
         },
         economic_evaluation: {
@@ -100,6 +101,7 @@ class FamilyRepository {
             conclusion: {
               not: null,
             },
+            year_id: yearId,
           },
         },
         background_assessment: {
@@ -107,31 +109,65 @@ class FamilyRepository {
             conclusion: {
               not: null,
             },
+            year_id: yearId,
           },
         },
       },
       include: {
-        psy_evaluation: true,
-        economic_evaluation: true,
-        background_assessment: true,
+        psy_evaluation: {
+          where: {
+            year_id: yearId,
+          },
+        },
+        economic_evaluation: {
+          where: {
+            year_id: yearId,
+          },
+        },
+        background_assessment: {
+          where: {
+            year_id: yearId,
+          },
+        },
       },
     });
   }
 
-  async getFamiliesStatus() {
+  async getFamiliesStatus(yearId) {
     return prisma.familiy_secretary.findMany({
+      where: {
+        status: 1,
+        year_id: yearId,
+      },
       include: {
         family: {
           include: {
-            psy_evaluation: true,
-            economic_evaluation: true,
-            background_assessment: true,
-            children: true,
+            psy_evaluation: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            economic_evaluation: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            background_assessment: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            children: {
+              include: {
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
+              },
+            },
           },
         },
-      },
-      where: {
-        status: 1,
       },
     });
   }
@@ -147,10 +183,26 @@ class FamilyRepository {
       include: {
         family: {
           include: {
-            psy_evaluation: true,
-            economic_evaluation: true,
-            background_assessment: true,
-            familiy_secretary: true,
+            psy_evaluation: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            economic_evaluation: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            background_assessment: {
+              where: {
+                year_id: yearId,
+              },
+            },
+            familiy_secretary: {
+              where: {
+                year_id: yearId,
+              },
+            },
             person_family_parent_oneToperson: true,
           },
         },

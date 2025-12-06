@@ -1,13 +1,21 @@
 import EconomicRepository from "../repositories/EconomicRepository.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
+import prisma from "../utils/prisma.js";
 
 const getEconomic = async (req, res) => {
   try {
     const { familyId } = req.params;
 
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
     const economic = await EconomicRepository.getEconomicByFamily(
-      parseInt(familyId)
+      parseInt(familyId),
+      yearActive.id
     );
 
     res.status(201).json({
@@ -24,6 +32,14 @@ const createEconomic = async (req, res) => {
   try {
     req = matchedData(req);
     const data = req;
+
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    data.year_id = yearActive.id;
 
     const createEconomic = await EconomicRepository.createEconomic(data);
 

@@ -6,10 +6,11 @@ class AntecedentRepository {
     return prisma.background_assessment.findMany();
   }
 
-  async getAntecedentByFamily(familyId) {
+  async getAntecedentByFamily(familyId, yearId) {
     return prisma.background_assessment.findFirst({
       where: {
         family_id: familyId,
+        year_id: yearId,
       },
     });
   }

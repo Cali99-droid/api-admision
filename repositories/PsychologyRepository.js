@@ -90,7 +90,7 @@ class PsychologyRepository {
     return data;
   }
 
-  async getFamilyById(familyId) {
+  async getFamilyById(familyId, yearId) {
     const data = await prisma.family.findUnique({
       where: {
         id: familyId,
@@ -103,7 +103,9 @@ class PsychologyRepository {
           select: {
             id: true,
             person: true,
-            vacant: true,
+            vacant: {
+              where: yearId ? { year_id: yearId } : undefined,
+            },
             report_psy: {
               select: {
                 doc: true,
@@ -112,6 +114,7 @@ class PsychologyRepository {
           },
         },
         psy_evaluation: {
+          where: yearId ? { year_id: yearId } : undefined,
           select: {
             applied: true,
             approved: true,
