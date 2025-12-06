@@ -708,10 +708,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
     },
   });
   console.log(yearActive);
+  console.log(yearActive.id);
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
   console.log("EL yYEAR ID", yearId);
   try {
-    const families = await FamilyRepository.getVacant(yearId);
+    const families = await FamilyRepository.getVacant(yearActive.id);
 
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0]?.status === 1
