@@ -79,7 +79,14 @@ const show = async (req, res) => {
     if (!user) {
       handleHttpError(res, "NOT_EXIST_USER");
     }
-
+    // let yearId;
+    // const yearIdQuery = req.query.yearId;
+    // const yearActive = await prisma.year.findFirst({
+    //   where: {
+    //     status: true,
+    //   },
+    // });
+    // yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
     const families = await prisma.family.findMany({
       where: {
         parent_one: user.personId,

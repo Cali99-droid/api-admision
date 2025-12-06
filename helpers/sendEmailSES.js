@@ -1,5 +1,7 @@
 import * as aws from "@aws-sdk/client-ses";
 import nodemailer from "nodemailer";
+import loggerStream from "../utils/handleLogger.js";
+
 const ses = new aws.SES({
   apiVersion: "2010-12-01",
   region: process.env.REGION,
@@ -32,6 +34,16 @@ export const deliverEmail = (toAddresses, name, childName, status) => {
           console.error(err);
         } else {
           console.log("send succesfully");
+          loggerStream.write(
+            `send ${
+              status ? "APTO" : "NO APTO"
+            } email succesfully ${new Date().toLocaleString()} from: ${
+              info?.envelope.from
+            } to: ${info?.envelope.to}
+            student: ${childName}
+            `
+          );
+
           console.log(new Date().toLocaleString(), info?.envelope);
           console.log(info?.messageId);
         }

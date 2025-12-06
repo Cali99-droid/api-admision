@@ -13,10 +13,11 @@ class EconomicRepository {
     return prisma.economic_evaluation.findMany();
   }
 
-  async getEconomicByFamily(familyId) {
+  async getEconomicByFamily(familyId, yearId) {
     return prisma.economic_evaluation.findFirst({
       where: {
         family_id: familyId,
+        year_id: yearId,
       },
     });
   }

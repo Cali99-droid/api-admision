@@ -43,26 +43,31 @@ const loadRoutes = async () => {
 loadRoutes();
 // Aplica autenticación globalmente a todas las rutas, excepto a /login y /callback
 
+const openRoutes = [
+  /^\/cities\/district$/,
+  /^\/cities\/province$/,
+  /^\/cities\/region$/,
+  /^\/check\/available$/,
+  /^\/spouse\/person$/,
+  /^\/admin\/search-new$/,
+  /^\/pdf$/,
+  /^\/admin\/migrate-col$/,
+  /^\/general\/schools$/,
+  /^\/general\/modular\/[^\/]+$/,
+  /^\/general\/ubigean\/[^\/]+$/, // coincidir con /ubigean/020101, etc.
+  /^\/general\/schools\/[^\/]+$/, // coincidir con /schools/nombre-del-colegio
+  /^\/general\/user\/[^\/]+$/, // coincidir con /schools/nombre-del-colegio
+  // coincidir con /schools/codigo modular
+];
+
 router.use((req, res, next) => {
-  const openRoutes = [
-    "/cities/district",
-    "/cities/province",
-    "/cities/region",
-    "/check/available",
-    "/spouse/person",
-    "/admin/search-new",
-    "/pdf",
-    "/admin/migrate-col",
-  ];
-  // if (openRoutes.includes(req.path)) {
-  //   return next(); // No aplicar autenticación a rutas abiertas
-  // }
-  if (
-    openRoutes.includes(req.path) ||
-    req.path.startsWith("/general/ubigean/")
-  ) {
-    return next(); // Permitir acceso sin autenticación
+  console.log(req.path);
+  const isOpen = openRoutes.some((routeRegex) => routeRegex.test(req.path));
+  console.log(isOpen);
+
+  if (isOpen) {
+    return next();
   }
-  ensureAuthenticated()(req, res, next); // Aplica autenticación a otras rutas
+  ensureAuthenticated()(req, res, next);
 });
 export default router;

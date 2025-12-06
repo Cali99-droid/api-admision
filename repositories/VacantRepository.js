@@ -2,8 +2,11 @@ import UserNotFoundError from "../errors/UserNotFoundError.js";
 import prisma from "../utils/prisma.js";
 
 class VacantRepository {
-  async getAllVacants() {
+  async getAllVacants(yearId) {
     return prisma.vacant.findMany({
+      where: {
+        year_id: yearId,
+      },
       include: {
         children: {
           include: {
@@ -35,7 +38,7 @@ class VacantRepository {
   }
   async createVacant(data) {
     return prisma.vacant.create({
-      data
+      data,
     });
   }
   async updateVacant(vacantId, data) {

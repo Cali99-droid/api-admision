@@ -2,15 +2,57 @@ import prisma from "../utils/prisma.js";
 
 class SecretaryRepository {
   //**Familias asignadas por secretaria */
-  async getAssignments() {
+  async getAssignments(yearId) {
     const data = prisma.familiy_secretary.findMany({
+      where: {
+        OR: [
+          // Familias con vacantes del año especificado
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    some: {
+                      year_id: yearId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          // Familias con hijos pero sin vacantes
+          {
+            family: {
+              children: {
+                some: {
+                  vacant: {
+                    none: {},
+                  },
+                },
+              },
+            },
+          },
+          // Familias sin hijos
+          {
+            family: {
+              children: {
+                none: {},
+              },
+            },
+          },
+        ],
+      },
       select: {
         status: true,
         family: {
           include: {
             children: {
-              select: {
-                vacant: true,
+              include: {
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,
@@ -21,6 +63,9 @@ class SecretaryRepository {
             person: true,
           },
         },
+      },
+      orderBy: {
+        id: "asc",
       },
     });
 
@@ -48,7 +93,7 @@ class SecretaryRepository {
     return data;
   }
 
-  async getFamilyById(familyId) {
+  async getFamilyById(familyId, yearId) {
     const data = await prisma.family.findUnique({
       where: {
         id: familyId,
@@ -64,7 +109,9 @@ class SecretaryRepository {
         children: {
           select: {
             person: true,
-            vacant: true,
+            vacant: {
+              where: yearId ? { year_id: yearId } : undefined,
+            },
             report_psy: {
               select: {
                 doc: true,
@@ -73,6 +120,7 @@ class SecretaryRepository {
           },
         },
         psy_evaluation: {
+          where: yearId ? { year_id: yearId } : undefined,
           select: {
             applied: true,
             approved: true,
@@ -84,7 +132,6 @@ class SecretaryRepository {
       },
     });
 
-    console.log(data);
     return data;
   }
 

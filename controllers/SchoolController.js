@@ -199,12 +199,13 @@ const showSchoolByName = async (req, res) => {
   try {
     const { name } = req.params;
 
-    const schools = await client.schools.findMany({
+    const schools = await client.schools_new.findMany({
       select: {
         id: true,
         ubigean: true,
         name: true,
         level: true,
+        cod_modular: true,
       },
       where: {
         name: {
@@ -225,12 +226,13 @@ const showSchoolByDistrict = async (req, res) => {
   try {
     const { ubigean } = req.params;
 
-    const schools = await client.schools.findMany({
+    const schools = await client.schools_new.findMany({
       select: {
         id: true,
         ubigean: true,
         name: true,
         level: true,
+        cod_modular: true,
       },
       where: {
         ubigean,
@@ -246,4 +248,40 @@ const showSchoolByDistrict = async (req, res) => {
   }
 };
 
-export { store, update, get, show, showSchoolByName, showSchoolByDistrict };
+const getOneSchoolByModularCode = async (req, res) => {
+  try {
+    const { modular } = req.params;
+
+    const school = await client.schools_new.findFirst({
+      select: {
+        id: true,
+        ubigean: true,
+        name: true,
+        level: true,
+        cod_modular: true,
+        cod_gestion: true,
+        gestion_name: true,
+      },
+      where: {
+        cod_modular: modular,
+      },
+    });
+    res.status(200).json({
+      success: true,
+      data: school,
+    });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_SCHOOLS");
+  }
+};
+
+export {
+  store,
+  update,
+  get,
+  show,
+  showSchoolByName,
+  showSchoolByDistrict,
+  getOneSchoolByModularCode,
+};

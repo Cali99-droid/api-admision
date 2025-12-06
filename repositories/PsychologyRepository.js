@@ -1,16 +1,35 @@
 import prisma from "../utils/prisma.js";
 
 class PsychologyRepository {
-  async getAssignments() {
+  async getAssignments(yearId) {
     const data = prisma.psy_evaluation.findMany({
+      where: {
+        family: {
+          children: {
+            some: {
+              vacant: {
+                some: {
+                  year: {
+                    id: yearId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       select: {
         applied: true,
         approved: true,
         family: {
           include: {
             children: {
-              select: {
-                vacant: true,
+              include: {
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
               },
             },
             person_family_parent_oneToperson: true,
@@ -27,22 +46,38 @@ class PsychologyRepository {
     return data;
   }
 
-  async getFamiliesByUser(userId) {
+  async getFamiliesByUser(userId, yearId) {
     const data = prisma.psy_evaluation.findMany({
       where: {
         user_id: userId,
-        //  AND:{
-        //   applied:{
-        //     not:2
-        //   }
-        //  }
+        family: {
+          children: {
+            some: {
+              vacant: {
+                some: {
+                  year: {
+                    id: yearId,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       select: {
         id: true,
         family: {
           include: {
             person_family_parent_oneToperson: true,
-            children: true,
+            children: {
+              include: {
+                vacant: {
+                  where: {
+                    year_id: yearId,
+                  },
+                },
+              },
+            },
           },
         },
         applied: true,
@@ -55,7 +90,7 @@ class PsychologyRepository {
     return data;
   }
 
-  async getFamilyById(familyId) {
+  async getFamilyById(familyId, yearId) {
     const data = await prisma.family.findUnique({
       where: {
         id: familyId,
@@ -68,7 +103,9 @@ class PsychologyRepository {
           select: {
             id: true,
             person: true,
-            vacant: true,
+            vacant: {
+              where: yearId ? { year_id: yearId } : undefined,
+            },
             report_psy: {
               select: {
                 doc: true,
@@ -77,6 +114,7 @@ class PsychologyRepository {
           },
         },
         psy_evaluation: {
+          where: yearId ? { year_id: yearId } : undefined,
           select: {
             applied: true,
             approved: true,
@@ -115,7 +153,7 @@ class PsychologyRepository {
       data,
     });
   }
-  async findOneByFamilyIdAndYear(familyId,yearId) {
+  async findOneByFamilyIdAndYear(familyId, yearId) {
     return prisma.psy_evaluation.findFirst({
       where: {
         year_id: yearId,

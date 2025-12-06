@@ -20,6 +20,8 @@ import client from "../utils/client.js";
 import { getUsersByRole } from "../helpers/getUsersKeycloakByRealmRole.js";
 import axios from "axios";
 import { deliverEmail } from "../helpers/sendEmailSES.js";
+import loggerStream from "../utils/handleLogger.js";
+import { getUser } from "./UserController.js";
 
 const getAllUsers = async (req, res) => {
   try {
@@ -143,9 +145,18 @@ const deleteUserRole = async (req, res) => {
 };
 
 const getSecretaryAssignments = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
   try {
-    const asignaments = await SecretaryRepository.getAssignments();
-    console.log(asignaments[0]);
+    const asignaments = await SecretaryRepository.getAssignments(yearId);
+
     const data = asignaments.map((a) => {
       return {
         id: a.family.id,
@@ -178,8 +189,18 @@ const getSecretaryAssignments = async (req, res) => {
 };
 
 const getPsychologyAssignments = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
   try {
-    const asignaments = await PsychologyRepository.getAssignments();
+    const asignaments = await PsychologyRepository.getAssignments(yearId);
     const data = asignaments.map((a) => {
       return {
         id: a.family.id,
@@ -278,8 +299,18 @@ const getPsychologists = async (req, res) => {
 };
 const getSuccessFamilies = async (req, res) => {
   try {
-    const families =
-      await FamilyRepository.getFamiliesWithEvaluationsApproved();
+    let yearId;
+    const yearIdQuery = req.query.yearId;
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
+    const families = await FamilyRepository.getFamiliesWithEvaluationsApproved(
+      yearId
+    );
 
     const format = families.map((family) => {
       return {
@@ -368,6 +399,211 @@ const getStatusFamilies = async (req, res) => {
   }
 };
 
+const getStatusFamilyByUser = async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const userKy = await getUser(email);
+    if (!userKy) {
+      return res.status(200).json({
+        status: "Registro ",
+        description: "Email no registrado en el sistema",
+        agent: "",
+      });
+    }
+
+    // 1. Verificar si el usuario existe
+    const user = await prisma.user.findUnique({
+      where: { sub: userKy.id },
+      include: {
+        person: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(200).json({
+        status: "Registro (Email Pendiente)",
+        description:
+          "La familia se registró, pero aún no validó el correo electrónico.",
+        agent: "",
+      });
+    }
+
+    // 2. Buscar familia asociada al usuario
+    const family = await prisma.family.findFirst({
+      where: {
+        OR: [{ parent_one: user.person.id }, { parent_two: user.person.id }],
+      },
+      include: {
+        children: {
+          include: {
+            vacant: {
+              orderBy: { create_time: "desc" },
+            },
+          },
+        },
+        familiy_secretary: {
+          include: {
+            user: {
+              include: {
+                person: true,
+              },
+            },
+          },
+        },
+        psy_evaluation: {
+          orderBy: { create_time: "desc" },
+        },
+        economic_evaluation: {
+          orderBy: { create_time: "desc" },
+        },
+        background_assessment: {
+          orderBy: { create_time: "desc" },
+        },
+      },
+    });
+
+    if (!family) {
+      return res.status(200).json({
+        status: "Cuenta Activa (Sin Familia)",
+        description: "Inició sesión, pero no creó la unidad familiar.",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    // 3. Verificar si tiene hijos
+    if (!family.children || family.children.length === 0) {
+      return res.status(200).json({
+        status: "Familia Creada (Sin Postulantes)",
+        description:
+          "La familia está creada, pero no han registrado ningún hijo postulante.",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    // 4. Verificar si los hijos tienen vacantes solicitadas
+    const hasVacants = family.children.some(
+      (child) => child.vacant && child.vacant.length > 0
+    );
+    if (!hasVacants) {
+      return res.status(200).json({
+        status: "Postulante Registrado (Sin Nivel/Grado)",
+        description:
+          "Crearon al hijo, pero no indicaron nivel ni grado al que postula.",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    // 5. Verificar el estado de las vacantes
+    const latestVacant = family.children
+      .flatMap((child) => child.vacant)
+      .sort((a, b) => new Date(b.create_time) - new Date(a.create_time))[0];
+
+    // Verificar si fue aceptado o rechazado
+    if (latestVacant.status === "accepted") {
+      //TODO **comunicar con COLEGIO */
+      return res.status(200).json({
+        status: "Vacante Otorgada",
+        description: "La familia obtuvo la vacante y pasa a reserva.",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    if (latestVacant.status === "rejected") {
+      return res.status(200).json({
+        status: "Sin Vacante",
+        description: "La familia no obtiene vacante",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    // 6. Verificar evaluaciones
+    const latestPsyEvaluation = family.psy_evaluation[0];
+    const latestEconomicEvaluation = family.economic_evaluation[0];
+    const latestBackgroundAssessment = family.background_assessment[0];
+    const latestSecretaryValidation = family.familiy_secretary[0];
+
+    // Evaluación psicológica
+    if (latestPsyEvaluation) {
+      if (latestPsyEvaluation.approved === 1) {
+        // Verificar evaluación económica
+        if (
+          latestEconomicEvaluation &&
+          latestEconomicEvaluation.conclusion === "apto"
+        ) {
+          // Verificar evaluación de antecedentes
+          if (
+            latestBackgroundAssessment &&
+            latestBackgroundAssessment.conclusion === "apto"
+          ) {
+            return res.status(200).json({
+              status: "Evaluaciones completas",
+              description: "en espera de asignación vacante",
+              agent: family.familiy_secretary[0].user.person.name,
+            });
+          }
+          return res.status(200).json({
+            status: " Evaluaciones en Proceso",
+            description: "evaluado por psicología y economía ",
+            agent: family.familiy_secretary[0].user.person.name,
+          });
+        }
+        return res.status(200).json({
+          status: "Evaluaciones en Proceso",
+          description: "evaluado por psicología, en evaluación económica ",
+          agent: family.familiy_secretary[0].user.person.name,
+        });
+      } else if (latestPsyEvaluation.approved === 2) {
+        return res.status(200).json({
+          status: "Evaluación Psicologica Aplicada",
+          description:
+            "no paso evaluacion Psicologica, en evaluación economica",
+          family: family.familiy_secretary[0].user.person.name,
+        });
+      } else if (latestPsyEvaluation.applied === 1) {
+        return res.status(200).json({
+          status: "Evaluación Psicologica Aplicada",
+          description: "en espera de resultado",
+          agent: family.familiy_secretary[0].user.person.name,
+        });
+      } else if (latestPsyEvaluation.applied === 0) {
+        return res.status(200).json({
+          status: "Evaluación Psicologica Pendiente",
+          description: "en espera de envaluacion psicologica",
+          agent: family.familiy_secretary[0].user.person.name,
+        });
+      }
+    } else {
+      return res.status(200).json({
+        status: "Evaluación Psicologica Pendiente",
+        description: "en espera de envaluacion psicologica",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    // Validación de secretaría
+    if (latestSecretaryValidation && latestSecretaryValidation.status === 1) {
+      return res.status(200).json({
+        status: "Postulación Validada",
+        description:
+          "Secretaría aprobó la documentación y el expediente está listo para evaluaciones.",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+
+    // 7. Si llegó aquí, tiene vacante solicitada pero no ha sido validada
+    return res.status(200).json({
+      status: "Postulación Enviada (Revisión Secretaría)",
+      description:
+        "Formularios completos; pendiente de revisión por Secretaría.",
+      agent: family.familiy_secretary[0].user.person.name,
+    });
+  } catch (error) {
+    console.error("Error in getStatusFamilyByUser:", error);
+    return res.status(400).json({ status: "error al procesar la solicitud" });
+  }
+};
+
 const getFilterByLevelGrade = async (req, res) => {
   try {
     const { level, grade } = req.params;
@@ -396,8 +632,21 @@ const getFilterByLevelGrade = async (req, res) => {
   }
 };
 const getAllVacants = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  if (yearIdQuery) {
+    yearId = parseInt(yearIdQuery);
+  } else {
+    yearId = yearActive.id;
+  }
   try {
-    const vacants = await VacantRepository.getAllVacants();
+    const vacants = await VacantRepository.getAllVacants(yearId);
     const data = vacants.map((v) => {
       return {
         id: v.id,
@@ -451,97 +700,147 @@ const getStatistics = async (req, res) => {
 };
 
 const getStatusFamilyAndChildren = async (req, res) => {
+  let yearId;
+  const yearIdQuery = req.query.yearId;
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
+
+  yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
+
   try {
-    const families = await FamilyRepository.getVacant();
+    const families = await FamilyRepository.getVacant(yearId);
 
     const dat = families.filter(
       (f) => f.family.familiy_secretary[0]?.status === 1
     );
-    const format = await Promise.all(
-      dat.map(async (f) => {
-        // Destructure with default values
-        const {
-          vacant: [{ id, campus, level, grade } = {}] = [],
-          schoolId,
-          family,
-          person,
-        } = f;
-        let vacants = 0;
-        if (grade) {
-          const vacantMat = await hasVacant(grade, campus);
-          vacants = vacantMat.vacants;
-        }
 
-        /***TODO AGREGAR año a consulta */
-        const vacantsAss = await prisma.vacant.findMany({
+    // Optimización 1: Extraer combinaciones únicas de grade/campus para consultas batch
+    const uniqueGradeCampus = new Set();
+    const schoolIds = new Set();
+
+    dat.forEach((f) => {
+      const { vacant: [{ campus, grade } = {}] = [], schoolId } = f;
+      if (grade && campus) {
+        uniqueGradeCampus.add(`${grade}-${campus}`);
+      }
+      if (schoolId) {
+        schoolIds.add(schoolId);
+      }
+    });
+
+    // Optimización 2: Hacer consultas batch en paralelo
+    const [vacantsAcceptedByGradeCampus, vacantsBySIGE, schoolsData] =
+      await Promise.all([
+        // Consulta única para vacantes aceptadas
+        prisma.vacant.findMany({
           where: {
             status: "accepted",
-            AND: {
-              grade: grade,
-              campus: campus,
-            },
+            year_id: yearId,
           },
-        });
-
-        // Use filter directly in the function argument
-        // const getdataSIGE = dataSIGE.filter(
-        //   (x) =>
-        //     x.sucursal === parseInt(campus) &&
-        //     x.nivel === parseInt(level) &&
-        //     x.id_gra === parseInt(grade)
-        // );
-
-        // Use conditional operator for schools assignment
-        const school = schoolId
-          ? await client.schools.findFirst({
-              where: { id: schoolId },
-              select: { cod_modular: true, name: true },
+          select: {
+            grade: true,
+            campus: true,
+          },
+        }),
+        // Consultas SIGE en paralelo
+        Promise.all(
+          Array.from(uniqueGradeCampus).map(async (key) => {
+            const [gradeId, campus] = key.split("-");
+            try {
+              const vacantMat = await hasVacant(gradeId, campus);
+              return { key, vacants: vacantMat.vacants };
+            } catch (error) {
+              console.error(`Error fetching SIGE data for ${key}:`, error);
+              return { key, vacants: 0 };
+            }
+          })
+        ),
+        // Consulta única para todas las escuelas
+        schoolIds.size > 0
+          ? client.schools_new.findMany({
+              where: { id: { in: Array.from(schoolIds) } },
+              select: { id: true, cod_modular: true, name: true },
             })
-          : null;
+          : Promise.resolve([]),
+      ]);
 
-        return {
-          id: f.id,
-          idFamily: family.id,
-          name: person.name,
-          lastname: person.lastname,
-          mLastname: person.mLastname,
-          gender: person.gender,
-          dni: person.doc_number,
-          birthdate: person.birthdate,
-          family: family.name,
-          inscription: family.create_time,
-          phone: family.person_family_parent_oneToperson.phone,
-          email: family.person_family_parent_oneToperson.email,
-          vacantId: id,
-          campus: parseInt(campus),
-          level: parseInt(level),
-          grade: parseInt(grade),
-          vacants: vacants,
-          awarded: vacantsAss.length,
-          secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
-          economic:
-            family.economic_evaluation[0]?.conclusion === "apto"
-              ? 1
-              : family.economic_evaluation.length > 0
-              ? 2
-              : 3,
-          antecedent:
-            family.background_assessment[0]?.conclusion === "apto"
-              ? 1
-              : family.background_assessment.length > 0
-              ? 2
-              : 3,
-          psychology:
-            family.psy_evaluation[0]?.applied === 0
-              ? 3
-              : family.psy_evaluation[0]?.approved || 0,
-          status: f.vacant[0]?.status,
+    // Optimización 3: Crear mapas para búsqueda O(1)
+    const vacantsAcceptedMap = {};
+    vacantsAcceptedByGradeCampus.forEach((v) => {
+      const key = `${v.grade}-${v.campus}`;
+      vacantsAcceptedMap[key] = (vacantsAcceptedMap[key] || 0) + 1;
+    });
 
-          dataParent: family.person_family_parent_oneToperson,
-          school,
-        };
-      })
-    );
+    const vacantsSIGEMap = {};
+    vacantsBySIGE.forEach(({ key, vacants }) => {
+      vacantsSIGEMap[key] = vacants;
+    });
+
+    const schoolsMap = {};
+    schoolsData.forEach((school) => {
+      schoolsMap[school.id] = school;
+    });
+
+    // Optimización 4: Mapeo sin consultas adicionales
+    const format = dat.map((f) => {
+      // Destructure with default values
+      const {
+        vacant: [{ id, campus, level, grade } = {}] = [],
+        schoolId,
+        family,
+        person,
+      } = f;
+
+      const gradeCampusKey = `${grade}-${campus}`;
+      const vacants = grade ? vacantsSIGEMap[gradeCampusKey] || 0 : 0;
+      const awarded = vacantsAcceptedMap[gradeCampusKey] || 0;
+      const school = schoolId ? schoolsMap[schoolId] || null : null;
+
+      return {
+        id: f.id,
+        idFamily: family.id,
+        name: person.name,
+        lastname: person.lastname,
+        mLastname: person.mLastname,
+        gender: person.gender,
+        dni: person.doc_number,
+        birthdate: person.birthdate,
+        family: family.name,
+        inscription: family.create_time,
+        phone: family.person_family_parent_oneToperson.phone,
+        email: family.person_family_parent_oneToperson.email,
+        vacantId: id,
+        campus: parseInt(campus),
+        level: parseInt(level),
+        grade: parseInt(grade),
+        vacants: vacants,
+        awarded: awarded,
+        secretary: family.familiy_secretary[0]?.status === 1 ? 1 : 2,
+        economic:
+          family.economic_evaluation[0]?.conclusion === "apto"
+            ? 1
+            : family.economic_evaluation.length > 0
+            ? 2
+            : 3,
+        antecedent:
+          family.background_assessment[0]?.conclusion === "apto"
+            ? 1
+            : family.background_assessment.length > 0
+            ? 2
+            : 3,
+        psychology:
+          family.psy_evaluation[0]?.applied === 0
+            ? 3
+            : family.psy_evaluation[0]?.approved || 0,
+        status: f.vacant[0]?.status,
+
+        dataParent: family.person_family_parent_oneToperson,
+        school,
+      };
+    });
 
     res.status(201).json({
       success: true,
@@ -564,7 +863,7 @@ const assignVacant = async (req, res) => {
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
-    { status: "accepted" }
+    { status: "accepted", update_time: new Date() }
   );
 
   let parent = null;
@@ -620,7 +919,7 @@ const denyVacant = async (req, res) => {
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
-    { status: "denied" }
+    { status: "denied", update_time: new Date() }
   );
 
   let parent = null;
@@ -691,7 +990,7 @@ const getStudentByDocNumber = async (req, res) => {
         },
       },
     });
-
+    console.log(children);
     if (!children) {
       return handleHttpError(res, "No existe postulante", 404);
     }
@@ -713,7 +1012,7 @@ const getStudentByDocNumber = async (req, res) => {
     };
 
     if (children.schoolId) {
-      school = await client.schools.findUnique({
+      school = await client.schools_new.findUnique({
         select: {
           id: true,
           ubigean: true,
@@ -734,6 +1033,7 @@ const getStudentByDocNumber = async (req, res) => {
       data: formatFamilyData(family),
     });
   } catch (error) {
+    console.log(error);
     return handleHttpError(res, "Error en la consulta", 500);
   }
 };
@@ -1077,4 +1377,5 @@ export {
   //sctipots
   changeNameFamily,
   migrateAptToApp,
+  getStatusFamilyByUser,
 };
