@@ -878,13 +878,13 @@ const assignVacant = async (req, res) => {
   }
 
   if (parent) {
-    const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
-    const childName =
-      data.person.name +
-      " " +
-      data.person.lastname +
-      " " +
-      data.person.mLastname;
+    const name = parent.name;
+    //" " + parent.lastname + " " + parent.mLastname;
+    const childName = data.person.name;
+    // " " +
+    // data.person.lastname +
+    // " " +
+    // data.person.mLastname;
     const body = {
       docNumber: data.person.doc_number,
     };
@@ -934,13 +934,13 @@ const denyVacant = async (req, res) => {
   }
 
   if (parent) {
-    const name = parent.name + " " + parent.lastname + " " + parent.mLastname;
-    const childName =
-      data.person.name +
-      " " +
-      data.person.lastname +
-      " " +
-      data.person.mLastname;
+    const name = parent.name;
+    //" " + parent.lastname + " " + parent.mLastname;
+    const childName = data.person.name;
+    // " " +
+    // data.person.lastname +
+    // " " +
+    // data.person.mLastname;
     if (process.env.NODE_ENV === "production") {
       console.log("enviando email prod deny");
       const ress = deliverEmail(parent.email, name, childName, false);
