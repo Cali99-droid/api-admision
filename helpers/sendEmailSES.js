@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const deliverEmail = (toAddresses, name, childName, status) => {
-  childNameCapitalized = capitalizeFirstLetter(childName);
+  let childNameCapitalized = capitalizeFirstLetter(childName);
   return new Promise(async (resolve, reject) => {
     transporter.sendMail(
       {
