@@ -18,17 +18,20 @@ const transporter = nodemailer.createTransport({
 });
 
 export const deliverEmail = (toAddresses, name, childName, status) => {
+  childNameCapitalized = capitalizeFirstLetter(childName);
   return new Promise(async (resolve, reject) => {
     transporter.sendMail(
       {
         // it should be verified email from AWS SES
         from: `"Admisión Colegio AE" <${process.env.AWS_SES_FROM}>`,
         to: toAddresses,
-        subject: "ESTADO DE VACANTE",
+        subject: status
+          ? `${childNameCapitalized} ha obtenido una vacante para el 2026`
+          : "Comunicación del Proceso de Admisión 2026",
         html: generateBody(
           status,
           capitalizeFirstLetter(name),
-          capitalizeFirstLetter(childName)
+          childNameCapitalized
         ),
         bcc: "admision@mail.colegioae.com",
         replyTo: "soporte@colegioae.freshdesk.com",
