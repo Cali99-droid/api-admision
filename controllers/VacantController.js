@@ -134,10 +134,15 @@ const get = async (req, res) => {
       return;
     }
     const child = children.children[0];
-
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
     const vacant = await prisma.vacant.findFirst({
       where: {
         children_id: child.id,
+        year_id: yearActive.id,
       },
       include: {
         year: true,
