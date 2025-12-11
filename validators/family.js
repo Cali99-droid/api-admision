@@ -137,12 +137,9 @@ export const validateDate = async (req, res, next) => {
 
   // Verificar que no haya otra entrevista en la primera media hora
   const fechaMediaHoraDespues = new Date(fechaEntrevista);
-  fechaMediaHoraDespues.setMinutes(fechaMediaHoraDespues.getMinutes() + 30);
+  fechaMediaHoraDespues.setMinutes(fechaMediaHoraDespues.getMinutes() + 10);
   const fechaMediaHoraAntes = new Date(fechaEntrevista);
-  fechaMediaHoraAntes.setMinutes(fechaMediaHoraAntes.getMinutes() - 29);
-  console.log(fechaEntrevista);
-  console.log(fechaMediaHoraAntes);
-  console.log(fechaMediaHoraDespues);
+  fechaMediaHoraAntes.setMinutes(fechaMediaHoraAntes.getMinutes() - 10);
   const entrevistasEnEseRango = await prisma.quotes.findMany({
     where: {
       date: {
@@ -156,7 +153,7 @@ export const validateDate = async (req, res, next) => {
       },
     },
   });
-  console.log(entrevistasEnEseRango);
+
   if (entrevistasEnEseRango.length > 0) {
     handleHttpError(
       res,
