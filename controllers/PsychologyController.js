@@ -158,7 +158,9 @@ const getFamily = async (req, res) => {
       children,
       status,
       date:
-        evPsy.quotes[0]?.date === undefined ? "pending" : evPsy.quotes[0]?.date,
+        evPsy?.quotes?.[0]?.date === undefined
+          ? "pending"
+          : evPsy?.quotes?.[0]?.date,
     };
     res.status(201).json({
       success: true,
