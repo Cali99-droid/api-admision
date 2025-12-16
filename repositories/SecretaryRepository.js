@@ -40,6 +40,9 @@ class SecretaryRepository {
               },
             },
           },
+          {
+            year_id: yearId,
+          },
         ],
       },
       select: {
