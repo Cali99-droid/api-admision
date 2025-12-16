@@ -4,6 +4,7 @@ class PsychologyRepository {
   async getAssignments(yearId) {
     const data = prisma.psy_evaluation.findMany({
       where: {
+        year_id: yearId,
         family: {
           children: {
             some: {
