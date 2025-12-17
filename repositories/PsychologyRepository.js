@@ -104,7 +104,7 @@ class PsychologyRepository {
           where: {
             vacant: {
               some: {
-                year_id: yearActive.id,
+                year_id: yearId,
               },
             },
           },
@@ -113,7 +113,7 @@ class PsychologyRepository {
             person: true,
             vacant: {
               where: {
-                year_id: yearActive.id,
+                year_id: yearId,
               },
             },
             report_psy: {
