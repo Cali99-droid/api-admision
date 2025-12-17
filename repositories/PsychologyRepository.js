@@ -101,11 +101,20 @@ class PsychologyRepository {
         name: true,
         person_family_parent_oneToperson: true,
         children: {
+          where: {
+            vacant: {
+              some: {
+                year_id: yearActive.id,
+              },
+            },
+          },
           select: {
             id: true,
             person: true,
             vacant: {
-              where: yearId ? { year_id: yearId } : undefined,
+              where: {
+                year_id: yearActive.id,
+              },
             },
             report_psy: {
               select: {
