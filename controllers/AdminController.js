@@ -1138,6 +1138,51 @@ const migrateAptToApp = async (req, res) => {
   }
 };
 
+/**RECIBIR EXPIRADOS */
+const processExpired = async (req, res) => {
+  try {
+    const { dni, yearName } = req.body;
+    const vacant = await prisma.vacant.findFirst({
+      where: {
+        children: {
+          person: {
+            doc_number: dni,
+          },
+        },
+        year: {
+          name: yearName,
+        },
+      },
+    });
+
+    if (!vacant) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Vacante no encontrada" });
+    }
+
+    if (vacant.status === "accepted") {
+      const updatedVacant = await prisma.vacant.update({
+        where: { id: vacant.id },
+        data: { status: "expired", update_time: new Date() },
+      });
+
+      return res.status(201).json({ success: true, data: updatedVacant });
+    }
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        data: vacant,
+        message: "No se cambió el estado (no estaba 'accepted')",
+      });
+  } catch (error) {
+    console.error("processExpired error:", error);
+    handleHttpError(res, "ERROR_PROCESS_EXPIRED");
+  }
+};
+
 const assignDELVacant = async (req, res) => {
   const sucursalMapping = {
     1: "Local 1 - Jr. Huaylas 220",
@@ -1374,6 +1419,7 @@ export {
   assignVacant,
   denyVacant,
   getStudentByDocNumber,
+  processExpired,
   //sctipots
   changeNameFamily,
   migrateAptToApp,

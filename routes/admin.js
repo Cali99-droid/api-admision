@@ -18,6 +18,7 @@ import {
   denyVacant,
   getStudentByDocNumber,
   migrateAptToApp,
+  processExpired,
 } from "../controllers/AdminController.js";
 
 import {
@@ -59,6 +60,8 @@ const router = express.Router();
 
 router.get("/users", ensureAuthenticated(["administrador-adm"]), getAllUsers);
 router.post("/user-role", validatorCreateUserRole, createUserRole);
+
+router.post("/process-expired", processExpired);
 
 /**
  * Route put user-role

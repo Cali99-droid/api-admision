@@ -319,11 +319,11 @@ model year {
   created_at            DateTime?               @default(now()) @db.Timestamp(0)
   updated_at            DateTime?               @default(now()) @db.Timestamp(0)
   status                Boolean                 @default(true)
+  background_assessment background_assessment[]
+  economic_evaluation   economic_evaluation[]
   familiy_secretary     familiy_secretary[]
   psy_evaluation        psy_evaluation[]
   vacant                vacant[]
-  background_assessment background_assessment[]
-  economic_evaluation   economic_evaluation[]
 }
 
 enum person_gender {
@@ -369,4 +369,5 @@ enum vacant_status {
   on_process @map("on process")
   accepted
   denied
+  expired
 }
