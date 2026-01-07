@@ -50,6 +50,7 @@ const openRoutes = [
   /^\/check\/available$/,
   /^\/spouse\/person$/,
   /^\/admin\/search-new$/,
+  /^\/admin\/process-expired$/,
   /^\/pdf$/,
   /^\/admin\/migrate-col$/,
   /^\/general\/schools$/,
