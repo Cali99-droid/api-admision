@@ -860,6 +860,7 @@ const hasVacant = async (gradeId, campus) => {
 
 const assignVacant = async (req, res) => {
   const { idChildren } = req.params;
+
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
@@ -1170,13 +1171,11 @@ const processExpired = async (req, res) => {
       return res.status(201).json({ success: true, data: updatedVacant });
     }
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        data: vacant,
-        message: "No se cambió el estado (no estaba 'accepted')",
-      });
+    return res.status(200).json({
+      success: true,
+      data: vacant,
+      message: "No se cambió el estado (no estaba 'accepted')",
+    });
   } catch (error) {
     console.error("processExpired error:", error);
     handleHttpError(res, "ERROR_PROCESS_EXPIRED");

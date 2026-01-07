@@ -218,13 +218,24 @@ class FamilyRepository {
 
   // Otros métodos relacionados con el repositorio de usuario
   async getFamilyMembers(idChildren) {
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
+
+    let yearId = yearActive.id;
     return prisma.children.findUnique({
       where: {
         id: idChildren,
       },
       include: {
         person: true,
-        vacant: true,
+        vacant: {
+          where: {
+            year_id: yearId,
+          },
+        },
         family: {
           include: {
             person_family_parent_oneToperson: true,
