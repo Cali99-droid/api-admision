@@ -261,7 +261,7 @@ router.put(
   "/antecedent/:id",
   validatorAntecedent,
   ensureAuthenticated(["secretaria-adm", "ev-antecedent-adm"]),
-  validatorIdFamily,
+
   updateAntecedent
 );
 
