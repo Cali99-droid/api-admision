@@ -71,7 +71,7 @@ const updateAntecedent = async (req, res) => {
     const data = req;
 
     const createAntecedent = await AntecedentRepository.updateAntecedent(
-      id,
+      +id,
       data
     );
 
