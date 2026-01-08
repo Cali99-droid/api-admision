@@ -40,6 +40,18 @@ const createAntecedent = async (req, res) => {
     });
 
     data.year_id = yearActive.id;
+    const existAnt = await prisma.background_assessment.findFirst({
+      where: {
+        family_id: data.familyId,
+        year_id: yearActive.id,
+      },
+    });
+    if (existAnt) {
+      res.status(400).json({
+        success: false,
+        message: "Ya existe una evaluación creada",
+      });
+    }
 
     const createAntecedent = await AntecedentRepository.createAntecedent(data);
 
