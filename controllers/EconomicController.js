@@ -57,13 +57,32 @@ const updateEconomic = async (req, res) => {
     const { id } = req.params;
     req = matchedData(req);
     const data = req;
-
-    console.log(data);
     const economic = await EconomicRepository.get(+id);
     if (!economic) {
       handleHttpError(res, "NOT_EXIST_ID", 404);
     }
     const updateEconomic = await EconomicRepository.updateEconomic(+id, data);
+
+    const vacants = await prisma.vacant.findMany({
+      where: {
+        children: {
+          family_id: data.family_id,
+        },
+        status: "denied",
+      },
+    });
+    if (vacants.length > 0) {
+      await prisma.vacant.update({
+        where: {
+          id: {
+            in: vacants.map((v) => v.id),
+          },
+        },
+        data: {
+          status: "on_process",
+        },
+      });
+    }
 
     res.status(201).json({
       success: true,

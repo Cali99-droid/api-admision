@@ -473,6 +473,27 @@ const changeApproed = async (req, res) => {
     } else {
       data.approved = 1;
     }
+    const vacants = await prisma.vacant.findMany({
+      where: {
+        children: {
+          family_id: data.family_id,
+        },
+        status: "denied",
+      },
+    });
+    if (vacants.length > 0) {
+      await prisma.vacant.update({
+        where: {
+          id: {
+            in: vacants.map((v) => v.id),
+          },
+        },
+        data: {
+          status: "on_process",
+        },
+      });
+    }
+
     const update = await PsychologyRepository.update(data.id, data);
 
     res.status(201).json({

@@ -63,6 +63,27 @@ const updateAntecedent = async (req, res) => {
       data
     );
 
+    const vacants = await prisma.vacant.findMany({
+      where: {
+        children: {
+          family_id: data.family_id,
+        },
+        status: "denied",
+      },
+    });
+    if (vacants.length > 0) {
+      await prisma.vacant.update({
+        where: {
+          id: {
+            in: vacants.map((v) => v.id),
+          },
+        },
+        data: {
+          status: "on_process",
+        },
+      });
+    }
+
     res.status(201).json({
       success: true,
       data: createAntecedent,
