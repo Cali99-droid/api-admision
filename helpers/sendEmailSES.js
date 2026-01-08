@@ -33,7 +33,7 @@ export const deliverEmail = (toAddresses, name, childName, status) => {
           capitalizeFirstLetter(name),
           childNameCapitalized
         ),
-        bcc: "admision@mail.colegioae.com",
+        // bcc: "admision@mail.colegioae.com",
         replyTo: "soporte@colegioae.freshdesk.com",
       },
       (err, info) => {

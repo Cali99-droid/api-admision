@@ -72,7 +72,7 @@ const updateAntecedent = async (req, res) => {
       },
     });
     if (vacants.length > 0) {
-      await prisma.vacant.update({
+      await prisma.vacant.updateMany({
         where: {
           id: {
             in: vacants.map((v) => v.id),
