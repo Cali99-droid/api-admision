@@ -190,7 +190,7 @@ const destroy = async (req, res) => {
     const logger = await prisma.deletion_log.create({
       data: {
         table: `${destroyFamily.name}  ${destroyFamily.id} `,
-        user: user.id + "",
+        user: user.sub + "",
       },
     });
     res.status(201).json({
