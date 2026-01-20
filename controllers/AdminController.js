@@ -967,21 +967,15 @@ const getStudentByDocNumber = async (req, res) => {
     const { docNumber } = req;
 
     /**TODO Agregar condicional año */
-    const person = await prisma.person.findMany({
-      where: {
-        doc_number: docNumber,
-      },
-    });
-
-    if (person.length <= 0) {
-      return handleHttpError(res, "No existe esta persona", 404);
-    }
-    const idsPerson = person.map((p) => p.id);
-    /**TODO agregar consulta por año */
     const children = await prisma.children.findFirst({
       where: {
-        person_id: {
-          in: idsPerson, // El ID debe ser 1 O 3 O 5
+        person: {
+          doc_number: docNumber,
+        },
+        vacant: {
+          some: {
+            status: "accepted",
+          },
         },
       },
       include: {
@@ -992,6 +986,7 @@ const getStudentByDocNumber = async (req, res) => {
         },
       },
     });
+
     console.log("children", children);
     if (!children) {
       return handleHttpError(res, "No existe postulante", 404);
