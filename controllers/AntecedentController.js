@@ -102,7 +102,7 @@ const updateAntecedent = async (req, res) => {
     });
   } catch (e) {
     console.log(e);
-    handleHttpError(res, "ERROR_CREATE_ECONOMIC");
+    handleHttpError(res, "ERROR_UPDATE_ECONOMIC");
   }
 };
 
