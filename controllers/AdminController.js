@@ -976,11 +976,13 @@ const getStudentByDocNumber = async (req, res) => {
     if (person.length <= 0) {
       return handleHttpError(res, "No existe esta persona", 404);
     }
-
+    const idsPerson = person.map((p) => p.id);
     /**TODO agregar consulta por año */
     const children = await prisma.children.findFirst({
       where: {
-        person_id: In(person.map((p) => p.id)),
+        person_id: {
+          in: idsPerson, // El ID debe ser 1 O 3 O 5
+        },
       },
       include: {
         vacant: {
