@@ -101,7 +101,7 @@ const updateUserRole = async (req, res) => {
     const { id, ...data } = rest;
     const userRoleUpdate = await UserRoleRepository.updateUserRole(
       idUserRole,
-      data
+      data,
     );
     /**actualizar permisisos */
     if (req.roles_id === 2) {
@@ -308,9 +308,8 @@ const getSuccessFamilies = async (req, res) => {
     });
 
     yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
-    const families = await FamilyRepository.getFamiliesWithEvaluationsApproved(
-      yearId
-    );
+    const families =
+      await FamilyRepository.getFamiliesWithEvaluationsApproved(yearId);
 
     const format = families.map((family) => {
       return {
@@ -372,20 +371,20 @@ const getStatusFamilies = async (req, res) => {
           f.family.economic_evaluation[0]?.conclusion === "apto"
             ? true
             : f.family.economic_evaluation.length > 0
-            ? false
-            : "pending",
+              ? false
+              : "pending",
         antecendent:
           f.family.background_assessment[0]?.conclusion === "apto"
             ? true
             : f.family.background_assessment > 0
-            ? false
-            : "pending",
+              ? false
+              : "pending",
         psychology:
           f.family.psy_evaluation[0]?.approved === 1
             ? true
             : f.family.psy_evaluation[0]?.approved === 0
-            ? false
-            : "pending",
+              ? false
+              : "pending",
       };
     });
 
@@ -483,7 +482,7 @@ const getStatusFamilyByUser = async (req, res) => {
 
     // 4. Verificar si los hijos tienen vacantes solicitadas
     const hasVacants = family.children.some(
-      (child) => child.vacant && child.vacant.length > 0
+      (child) => child.vacant && child.vacant.length > 0,
     );
     if (!hasVacants) {
       return res.status(200).json({
@@ -714,7 +713,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
     const families = await FamilyRepository.getVacant(yearActive.id);
 
     const dat = families.filter(
-      (f) => f.family.familiy_secretary[0]?.status === 1
+      (f) => f.family.familiy_secretary[0]?.status === 1,
     );
 
     // Optimización 1: Extraer combinaciones únicas de grade/campus para consultas batch
@@ -756,7 +755,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
               console.error(`Error fetching SIGE data for ${key}:`, error);
               return { key, vacants: 0 };
             }
-          })
+          }),
         ),
         // Consulta única para todas las escuelas
         schoolIds.size > 0
@@ -823,14 +822,14 @@ const getStatusFamilyAndChildren = async (req, res) => {
           family.economic_evaluation[0]?.conclusion === "apto"
             ? 1
             : family.economic_evaluation.length > 0
-            ? 2
-            : 3,
+              ? 2
+              : 3,
         antecedent:
           family.background_assessment[0]?.conclusion === "apto"
             ? 1
             : family.background_assessment.length > 0
-            ? 2
-            : 3,
+              ? 2
+              : 3,
         psychology:
           family.psy_evaluation[0]?.applied === 0
             ? 3
@@ -864,7 +863,7 @@ const assignVacant = async (req, res) => {
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
-    { status: "accepted", update_time: new Date() }
+    { status: "accepted", update_time: new Date() },
   );
 
   let parent = null;
@@ -891,7 +890,7 @@ const assignVacant = async (req, res) => {
     };
     const response = await axios.post(
       `${process.env.APP_AE_URL}/enrollment/new`,
-      body
+      body,
     );
     console.log("succesfully migrate, child", data.person.doc_number);
     if (process.env.NODE_ENV !== "development") {
@@ -903,7 +902,7 @@ const assignVacant = async (req, res) => {
         "carlosjhardel4@gmail.com",
         name,
         childName,
-        true
+        true,
       );
     }
   }
@@ -920,7 +919,7 @@ const denyVacant = async (req, res) => {
   const data = await FamilyRepository.getFamilyMembers(+idChildren);
   const updateVacantStatus = await VacantRepository.updateVacant(
     data.vacant[0].id,
-    { status: "denied", update_time: new Date() }
+    { status: "denied", update_time: new Date() },
   );
 
   let parent = null;
@@ -951,7 +950,7 @@ const denyVacant = async (req, res) => {
         "carlosjhardel4@gmail.com",
         name,
         childName,
-        false
+        false,
       );
     }
   }
@@ -968,20 +967,20 @@ const getStudentByDocNumber = async (req, res) => {
     const { docNumber } = req;
 
     /**TODO Agregar condicional año */
-    const person = await prisma.person.findFirst({
+    const person = await prisma.person.findMany({
       where: {
         doc_number: docNumber,
       },
     });
 
-    if (!person) {
+    if (person.length <= 0) {
       return handleHttpError(res, "No existe esta persona", 404);
     }
 
     /**TODO agregar consulta por año */
     const children = await prisma.children.findFirst({
       where: {
-        person_id: person.id,
+        person_id: In(person.map((p) => p.id)),
       },
       include: {
         vacant: {
@@ -991,7 +990,7 @@ const getStudentByDocNumber = async (req, res) => {
         },
       },
     });
-    console.log(children);
+
     if (!children) {
       return handleHttpError(res, "No existe postulante", 404);
     }
@@ -1001,7 +1000,7 @@ const getStudentByDocNumber = async (req, res) => {
         res,
         "Postulante no apto a vacante",
         403,
-        children.id
+        children.id,
       );
     }
 
@@ -1124,7 +1123,7 @@ const migrateAptToApp = async (req, res) => {
       };
       const response = await axios.post(
         `${process.env.APP_AE_URL}/enrollment/new`,
-        body
+        body,
       );
       console.log("succesfully migrate, child", family.person.doc_number);
     }
@@ -1212,12 +1211,12 @@ const assignDELVacant = async (req, res) => {
     const respVerifyFamilySIGE = await verifyFamilySIGE(
       data.person.lastname,
       data.person.mLastname,
-      token
+      token,
     );
     if (respVerifyFamilySIGE.result === 1) {
       const updateVacantStatus = await VacantRepository.updateVacant(
         data.vacant[0].id,
-        { status: "2" }
+        { status: "2" },
       );
       /**Enviar email */
       const campus = sucursalMapping[updateVacantStatus.campus];
@@ -1251,14 +1250,14 @@ const assignDELVacant = async (req, res) => {
     const respCreateMainConyugue = await createFamiliarsSIGE(
       respFamily.result.id_gpf,
       data.family.mainConyugue,
-      token
+      token,
     );
     /**Crear Conyugue SIGE */
     if (data.family.conyugue) {
       const respCreateConyugue = await createFamiliarsSIGE(
         respFamily.result.id_gpf,
         data.family.conyugue,
-        token
+        token,
       );
       console.log("Respuesta al crear Conyugue SIGE");
       console.log(respCreateConyugue);
@@ -1267,14 +1266,14 @@ const assignDELVacant = async (req, res) => {
     const respCreateStudent = await createStudentSIGE(
       respFamily.result.id_gpf,
       data.person,
-      token
+      token,
     );
     console.log("Respuesta al crear Estudiante SIGE");
     console.log(respCreateStudent);
     /**Actualizar Vacante */
     const updateVacantStatus = await VacantRepository.updateVacant(
       data.vacant[0].id,
-      { status: "1" }
+      { status: "1" },
     );
     /**Enviar email */
     const campus = sucursalMapping[updateVacantStatus.campus];

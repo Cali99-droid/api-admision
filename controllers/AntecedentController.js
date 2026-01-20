@@ -15,7 +15,7 @@ const getAntecedent = async (req, res) => {
 
     const antecedent = await AntecedentRepository.getAntecedentByFamily(
       parseInt(familyId),
-      yearActive.id
+      yearActive.id,
     );
 
     res.status(201).json({
@@ -72,7 +72,7 @@ const updateAntecedent = async (req, res) => {
 
     const createAntecedent = await AntecedentRepository.updateAntecedent(
       +id,
-      data
+      data,
     );
 
     const vacants = await prisma.vacant.findMany({
@@ -102,7 +102,7 @@ const updateAntecedent = async (req, res) => {
     });
   } catch (e) {
     console.log(e);
-    handleHttpError(res, "ERROR_UPDATE_ECONOMIC");
+    handleHttpError(res, "ERROR_UPDATE_ANTECEDENT");
   }
 };
 
