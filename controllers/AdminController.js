@@ -967,6 +967,11 @@ const getStudentByDocNumber = async (req, res) => {
     const { docNumber } = req;
 
     /**TODO Agregar condicional año */
+    const yearActive = await prisma.year.findFirst({
+      where: {
+        status: true,
+      },
+    });
     const children = await prisma.children.findFirst({
       where: {
         person: {
@@ -975,6 +980,7 @@ const getStudentByDocNumber = async (req, res) => {
         vacant: {
           some: {
             status: "accepted",
+            year_id: yearActive.id,
           },
         },
       },
@@ -982,6 +988,7 @@ const getStudentByDocNumber = async (req, res) => {
         vacant: {
           where: {
             status: "accepted",
+            year_id: yearActive.id,
           },
         },
       },
