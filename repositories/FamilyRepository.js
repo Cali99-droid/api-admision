@@ -171,8 +171,22 @@ class FamilyRepository {
       },
     });
   }
-  async getVacant(yearId) {
-    return prisma.children.findMany({
+  async getVacant(yearId, page = 1, pageSize = 20) {
+    const skip = (page - 1) * pageSize;
+
+    // Contar el total de registros
+    const total = await prisma.children.count({
+      where: {
+        vacant: {
+          some: {
+            year_id: yearId,
+          },
+        },
+      },
+    });
+
+    // Obtener datos paginados
+    const data = await prisma.children.findMany({
       where: {
         vacant: {
           some: {
@@ -187,34 +201,81 @@ class FamilyRepository {
               where: {
                 year_id: yearId,
               },
+              select: {
+                conclusion: true,
+                applied: true,
+                approved: true,
+              },
             },
             economic_evaluation: {
               where: {
                 year_id: yearId,
+              },
+              select: {
+                conclusion: true,
               },
             },
             background_assessment: {
               where: {
                 year_id: yearId,
               },
+              select: {
+                conclusion: true,
+              },
             },
             familiy_secretary: {
               where: {
                 year_id: yearId,
               },
+              select: {
+                status: true,
+              },
             },
-            person_family_parent_oneToperson: true,
+            person_family_parent_oneToperson: {
+              select: {
+                phone: true,
+                email: true,
+              },
+            },
           },
         },
         vacant: {
           where: {
             year_id: yearId,
           },
+          select: {
+            id: true,
+            campus: true,
+            grade: true,
+            level: true,
+            status: true,
+          },
         },
-        person: true,
+        person: {
+          select: {
+            name: true,
+            lastname: true,
+            mLastname: true,
+            gender: true,
+            doc_number: true,
+            birthdate: true,
+          },
+        },
       },
-      // take: 10,
+      orderBy: {
+        id: "desc",
+      },
+      skip,
+      take: pageSize,
     });
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   // Otros métodos relacionados con el repositorio de usuario

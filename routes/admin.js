@@ -97,7 +97,7 @@ router.put(
   "/user-role/:id",
 
   validatorUpdateUserRole,
-  updateUserRole
+  updateUserRole,
 );
 /**
  * Route delete user-role
@@ -128,27 +128,27 @@ router.delete(
   "/user-role/:id",
 
   validatorDeleteUserRole,
-  deleteUserRole
+  deleteUserRole,
 );
 router.get(
   "/secretary/assignments",
   ensureAuthenticated(["administrador-adm"]),
-  getSecretaryAssignments
+  getSecretaryAssignments,
 );
 router.get(
   "/psychology/assignments",
 
-  getPsychologyAssignments
+  getPsychologyAssignments,
 );
 router.get(
   "/secretaries",
   ensureAuthenticated(["administrador-adm"]),
-  getSecretaries
+  getSecretaries,
 );
 router.get(
   "/psychologists",
   ensureAuthenticated(["administrador-adm"]),
-  getPsychologists
+  getPsychologists,
 );
 /**Gestion familias */
 router.put("/family/:id", validatorFamily, validatorGetFamily, update);
@@ -156,19 +156,78 @@ router.delete(
   "/family/:id",
   ensureAuthenticated(["administrador-adm"]),
   validatorGetFamily,
-  destroy
+  destroy,
 );
 
 router.get(
   "/success-families",
   ensureAuthenticated(["administrador-adm"]),
-  getSuccessFamilies
+  getSuccessFamilies,
 );
 // router.get("/status-families", ensureAuthenticated(["administrador-adm"]), getStatusFamilies);
+/**
+ * Get status families and children with pagination
+ * @openapi
+ * /admin/status-families:
+ *    get:
+ *      tags:
+ *        - Admin
+ *      summary: "Obtener estado de familias e hijos"
+ *      description: Obtiene el estado de familias e hijos con evaluaciones, paginado
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: query
+ *          name: page
+ *          schema:
+ *            type: integer
+ *            default: 1
+ *          description: Número de página (comienza en 1)
+ *        - in: query
+ *          name: pageSize
+ *          schema:
+ *            type: integer
+ *            default: 20
+ *          description: Cantidad de registros por página
+ *        - in: query
+ *          name: yearId
+ *          schema:
+ *            type: integer
+ *          description: ID del año (opcional, usa el año activo por defecto)
+ *      responses:
+ *        '200':
+ *          description: Retorna la lista de familias con sus estados de evaluación
+ *          content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     pageSize:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *        '401':
+ *          description: No autenticado
+ *        '403':
+ *          description: No tiene permisos
+ */
 router.get(
   "/status-families",
   ensureAuthenticated(["administrador-adm"]),
-  getStatusFamilyAndChildren
+  getStatusFamilyAndChildren,
 );
 
 //dashboard
@@ -176,12 +235,12 @@ router.get(
 router.get(
   "/statistics/vacant/:level/:grade",
 
-  getFilterByLevelGrade
+  getFilterByLevelGrade,
 );
 router.get(
   "/statistics/vacant/all",
   ensureAuthenticated(["administrador-adm"]),
-  getAllVacants
+  getAllVacants,
 );
 // router.get("/status-family", ensureAuthenticated(["administrador-adm"]), getStatusFamilies);
 // router.get("/status-families", ensureAuthenticated(["administrador-adm"]), getFamiliesEvaluationStatus);
@@ -190,12 +249,12 @@ router.get(
 router.post(
   "/assign/vacant/:idChildren",
   ensureAuthenticated(["administrador-adm"]),
-  assignVacant
+  assignVacant,
 );
 router.post(
   "/deny/vacant/:idChildren",
   ensureAuthenticated(["administrador-adm"]),
-  denyVacant
+  denyVacant,
 );
 
 /**comunicacion con colegio */
@@ -203,13 +262,13 @@ router.post(
   "/search-new",
   // ensureAuthenticated(["administrador-adm"]),
   validatorConsult,
-  getStudentByDocNumber
+  getStudentByDocNumber,
 );
 
 router.get(
   "/migrate-col",
   // ensureAuthenticated(["administrador-adm"]),
-  migrateAptToApp
+  migrateAptToApp,
 );
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;
