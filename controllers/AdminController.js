@@ -157,27 +157,30 @@ const getSecretaryAssignments = async (req, res) => {
   try {
     const asignaments = await SecretaryRepository.getAssignments(yearId);
 
-    const data = asignaments.map((a) => {
-      return {
-        id: a.family.id,
-        name: a.family.name,
-        email: a.family.person_family_parent_oneToperson.email,
-        phone: a.family.person_family_parent_oneToperson.phone,
-        nameParent:
-          a.family.person_family_parent_oneToperson.lastname +
-          " " +
-          a.family.person_family_parent_oneToperson.mLastname +
-          " " +
-          a.family.person_family_parent_oneToperson.name,
-        count_children: a.family.children.length,
-        vacants: a.family.children.map((v) => {
-          return v.vacant[0];
-        }),
-        status: a.status,
-        agent: a.user.person.name,
-        register_date: a.family.create_time,
-      };
-    });
+    const data = asignaments
+      .map((a) => {
+        return {
+          id: a.family.id,
+          name: a.family.name,
+          email: a.family.person_family_parent_oneToperson.email,
+          phone: a.family.person_family_parent_oneToperson.phone,
+          nameParent:
+            a.family.person_family_parent_oneToperson.lastname +
+            " " +
+            a.family.person_family_parent_oneToperson.mLastname +
+            " " +
+            a.family.person_family_parent_oneToperson.name,
+          count_children: a.family.children.length,
+          vacants: a.family.children.map((v) => {
+            return v.vacant[0];
+          }),
+          status: a.status,
+          agent: a.user.person.name,
+          register_date: a.family.create_time,
+        };
+      })
+      .sort((a, b) => a.id - b.id);
+
     res.status(201).json({
       success: true,
       data,
