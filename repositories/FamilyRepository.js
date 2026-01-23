@@ -202,7 +202,6 @@ class FamilyRepository {
                 year_id: yearId,
               },
               select: {
-                conclusion: true,
                 applied: true,
                 approved: true,
               },
