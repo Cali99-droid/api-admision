@@ -713,7 +713,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
 
   try {
-    // Obtener datos paginados del repositorio
+    // Obtener datos paginados del repositorio (filtro ya aplicado en la query)
     const result = await FamilyRepository.getVacant(
       yearActive.id,
       page,
@@ -721,13 +721,8 @@ const getStatusFamilyAndChildren = async (req, res) => {
     );
     const families = result.data;
 
-    // Filtrar familias con secretario asignado
-    const dat = families.filter(
-      (f) => f.family.familiy_secretary[0]?.status === 1,
-    );
-
-    // Si no hay datos después del filtro, retornar vacío
-    if (dat.length === 0) {
+    // Si no hay datos, retornar vacío
+    if (families.length === 0) {
       return res.status(200).json({
         success: true,
         data: [],
@@ -742,7 +737,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
 
     // Extraer combinaciones únicas de grade/campus para consultas SIGE batch
     const uniqueGradeCampus = new Set();
-    dat.forEach((f) => {
+    families.forEach((f) => {
       const { vacant: [{ campus, grade } = {}] = [], family } = f;
       if (grade && campus && family?.name) {
         uniqueGradeCampus.add(`${grade}-${campus}-${family.name}`);
@@ -810,7 +805,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
     });
 
     // Mapeo final sin consultas adicionales
-    const format = dat.map((f) => {
+    const format = families.map((f) => {
       const {
         vacant: [{ id, campus, level, grade } = {}] = [],
         family,

@@ -174,7 +174,7 @@ class FamilyRepository {
   async getVacant(yearId, page = 1, pageSize = 20) {
     const skip = (page - 1) * pageSize;
 
-    // Contar el total de registros
+    // Contar el total de registros CON FILTRO de secretario
     const total = await prisma.children.count({
       where: {
         vacant: {
@@ -182,15 +182,31 @@ class FamilyRepository {
             year_id: yearId,
           },
         },
+        family: {
+          familiy_secretary: {
+            some: {
+              status: 1,
+              year_id: yearId,
+            },
+          },
+        },
       },
     });
 
-    // Obtener datos paginados
+    // Obtener datos paginados CON FILTRO aplicado en la query
     const data = await prisma.children.findMany({
       where: {
         vacant: {
           some: {
             year_id: yearId,
+          },
+        },
+        family: {
+          familiy_secretary: {
+            some: {
+              status: 1,
+              year_id: yearId,
+            },
           },
         },
       },
