@@ -47,48 +47,48 @@ const PORT = process.env.PORT || 4000;
 /**
  * Cron para eliminar usuario no confirmados
  */
-cron.schedule("0 0 * * *", async () => {
-  const threeDaysAgo = new Date();
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+// cron.schedule("0 0 * * *", async () => {
+//   const threeDaysAgo = new Date();
+//   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-  try {
-    const unconfirmedUsers = await prisma.user.findMany({
-      where: {
-        confirmed_email: 0,
-        create_time: { lt: threeDaysAgo },
-        mauticId: {
-          not: null,
-        },
-      },
-    });
-    console.log(unconfirmedUsers);
-    if (unconfirmedUsers.length === 0) {
-      console.log("No unconfirmed users to clean up.");
-      return;
-    }
-    console.log(`Cleaning up ${unconfirmedUsers.length} unconfirmed users...`);
-    const personIds = unconfirmedUsers.map((user) => user.person_id);
-    console.log(personIds);
-    await prisma.person
-      .deleteMany({
-        where: {
-          id: {
-            in: personIds,
-          },
-        },
-      })
-      .then(
-        () => console.log("Completed Unconfirmed users cleaned up."),
-        (r) => {
-          console.log("error" + r);
-        }
-      );
+//   try {
+//     const unconfirmedUsers = await prisma.user.findMany({
+//       where: {
+//         confirmed_email: 0,
+//         create_time: { lt: threeDaysAgo },
+//         mauticId: {
+//           not: null,
+//         },
+//       },
+//     });
+//     console.log(unconfirmedUsers);
+//     if (unconfirmedUsers.length === 0) {
+//       console.log("No unconfirmed users to clean up.");
+//       return;
+//     }
+//     console.log(`Cleaning up ${unconfirmedUsers.length} unconfirmed users...`);
+//     const personIds = unconfirmedUsers.map((user) => user.person_id);
+//     console.log(personIds);
+//     await prisma.person
+//       .deleteMany({
+//         where: {
+//           id: {
+//             in: personIds,
+//           },
+//         },
+//       })
+//       .then(
+//         () => console.log("Completed Unconfirmed users cleaned up."),
+//         (r) => {
+//           console.log("error" + r);
+//         }
+//       );
 
-    console.log("Unconfirmed users cleaned up.");
-  } catch (error) {
-    console.error("Error al eliminar usuarios:", error);
-  }
-});
+//     console.log("Unconfirmed users cleaned up.");
+//   } catch (error) {
+//     console.error("Error al eliminar usuarios:", error);
+//   }
+// });
 
 // morganBody(app, {
 //   noColors: true,
@@ -106,7 +106,7 @@ cron.schedule("0 0 * * *", async () => {
 app.use(
   "/documentation",
   swaggerUI.serve,
-  swaggerUI.setup(openApiConfigration)
+  swaggerUI.setup(openApiConfigration),
 );
 // app.use(customMiddleware);
 /**

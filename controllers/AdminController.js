@@ -721,9 +721,9 @@ const getStatusFamilyAndChildren = async (req, res) => {
     const schoolIds = new Set();
 
     dat.forEach((f) => {
-      const { vacant: [{ campus, grade } = {}] = [], schoolId } = f;
-      if (grade && campus) {
-        uniqueGradeCampus.add(`${grade}-${campus}`);
+      const { vacant: [{ campus, grade } = {}] = [], schoolId, family } = f;
+      if (grade && campus && family) {
+        uniqueGradeCampus.add(`${grade}-${campus}-${family.name}`);
       }
       if (schoolId) {
         schoolIds.add(schoolId);
@@ -742,15 +742,24 @@ const getStatusFamilyAndChildren = async (req, res) => {
           select: {
             grade: true,
             campus: true,
+            children: {
+              select: {
+                family: true,
+              },
+            },
           },
         }),
         // Consultas SIGE en paralelo
         Promise.all(
           Array.from(uniqueGradeCampus).map(async (key) => {
-            const [gradeId, campus] = key.split("-");
+            const [gradeId, campus, familyName] = key.split("-");
             try {
-              const vacantMat = await hasVacant(gradeId, campus);
-              return { key, vacants: vacantMat.vacants };
+              const vacantMat = await hasVacant(gradeId, campus, familyName);
+              return {
+                key,
+                vacants: vacantMat.vacants,
+                matchFamily: vacantMat.matchFamily,
+              };
             } catch (error) {
               console.error(`Error fetching SIGE data for ${key}:`, error);
               return { key, vacants: 0 };
@@ -769,13 +778,18 @@ const getStatusFamilyAndChildren = async (req, res) => {
     // Optimización 3: Crear mapas para búsqueda O(1)
     const vacantsAcceptedMap = {};
     vacantsAcceptedByGradeCampus.forEach((v) => {
-      const key = `${v.grade}-${v.campus}`;
+      const key = `${v.grade}-${v.campus}-${v.children.family.name}`;
       vacantsAcceptedMap[key] = (vacantsAcceptedMap[key] || 0) + 1;
     });
 
     const vacantsSIGEMap = {};
     vacantsBySIGE.forEach(({ key, vacants }) => {
       vacantsSIGEMap[key] = vacants;
+    });
+
+    const matchFamilySIGEMap = {};
+    vacantsBySIGE.forEach(({ key, matchFamily }) => {
+      matchFamilySIGEMap[key] = matchFamily;
     });
 
     const schoolsMap = {};
@@ -793,13 +807,15 @@ const getStatusFamilyAndChildren = async (req, res) => {
         person,
       } = f;
 
-      const gradeCampusKey = `${grade}-${campus}`;
+      const gradeCampusKey = `${grade}-${campus}-${family.name}`;
       const vacants = grade ? vacantsSIGEMap[gradeCampusKey] || 0 : 0;
+      const matchFamily = matchFamilySIGEMap[gradeCampusKey];
       const awarded = vacantsAcceptedMap[gradeCampusKey] || 0;
       const school = schoolId ? schoolsMap[schoolId] || null : null;
 
       return {
         id: f.id,
+        matchFamily,
         idFamily: family.id,
         name: person.name,
         lastname: person.lastname,
@@ -851,9 +867,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
   }
 };
 
-const hasVacant = async (gradeId, campus) => {
-  const matriculaUrl = `${process.env.APP_AE_URL}/enrollment/vacants/17/grade/${gradeId}/campus/${campus}`;
+const hasVacant = async (gradeId, campus, familyName) => {
+  const matriculaUrl = `${process.env.APP_AE_URL}/enrollment/vacants/17/grade/${gradeId}/campus/${campus}/name-family/${familyName}`;
+
   const matriculaResponse = await axios.get(matriculaUrl);
+
   return matriculaResponse.data;
 };
 

@@ -213,6 +213,7 @@ class FamilyRepository {
         },
         person: true,
       },
+      // take: 10,
     });
   }
 
@@ -232,9 +233,7 @@ class FamilyRepository {
       include: {
         person: true,
         vacant: {
-          where: {
-            year_id: yearId,
-          },
+          where: {},
         },
         family: {
           include: {
