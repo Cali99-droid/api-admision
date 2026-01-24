@@ -469,7 +469,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Cuenta Activa (Sin Familia)",
         description: "Inició sesión, pero no creó la unidad familiar.",
-        agent: family.familiy_secretary[0]?.user.person.name,
+        agent: family?.familiy_secretary[0]?.user.person.name,
       });
     }
 
@@ -1456,4 +1456,5 @@ export {
   migrateAptToApp,
   getStatusFamilyByUser,
 };
+
 
