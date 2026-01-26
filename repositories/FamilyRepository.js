@@ -252,6 +252,11 @@ class FamilyRepository {
                 email: true,
               },
             },
+            person_family_parent_twoToperson: {
+  select: {
+    phone: true,
+    email: true,
+  },
           },
         },
         vacant: {
@@ -359,3 +364,4 @@ class FamilyRepository {
 }
 
 export default new FamilyRepository();
+
