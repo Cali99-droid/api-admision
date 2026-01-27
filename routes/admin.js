@@ -97,7 +97,7 @@ router.put(
   "/user-role/:id",
 
   validatorUpdateUserRole,
-  updateUserRole,
+  updateUserRole
 );
 /**
  * Route delete user-role
@@ -128,27 +128,27 @@ router.delete(
   "/user-role/:id",
 
   validatorDeleteUserRole,
-  deleteUserRole,
+  deleteUserRole
 );
 router.get(
   "/secretary/assignments",
   ensureAuthenticated(["administrador-adm"]),
-  getSecretaryAssignments,
+  getSecretaryAssignments
 );
 router.get(
   "/psychology/assignments",
 
-  getPsychologyAssignments,
+  getPsychologyAssignments
 );
 router.get(
   "/secretaries",
   ensureAuthenticated(["administrador-adm"]),
-  getSecretaries,
+  getSecretaries
 );
 router.get(
   "/psychologists",
   ensureAuthenticated(["administrador-adm"]),
-  getPsychologists,
+  getPsychologists
 );
 /**Gestion familias */
 router.put("/family/:id", validatorFamily, validatorGetFamily, update);
@@ -156,13 +156,13 @@ router.delete(
   "/family/:id",
   ensureAuthenticated(["administrador-adm"]),
   validatorGetFamily,
-  destroy,
+  destroy
 );
 
 router.get(
   "/success-families",
   ensureAuthenticated(["administrador-adm"]),
-  getSuccessFamilies,
+  getSuccessFamilies
 );
 // router.get("/status-families", ensureAuthenticated(["administrador-adm"]), getStatusFamilies);
 /**
@@ -227,7 +227,7 @@ router.get(
 router.get(
   "/status-families",
   ensureAuthenticated(["administrador-adm"]),
-  getStatusFamilyAndChildren,
+  getStatusFamilyAndChildren
 );
 
 //dashboard
@@ -235,12 +235,12 @@ router.get(
 router.get(
   "/statistics/vacant/:level/:grade",
 
-  getFilterByLevelGrade,
+  getFilterByLevelGrade
 );
 router.get(
   "/statistics/vacant/all",
   ensureAuthenticated(["administrador-adm"]),
-  getAllVacants,
+  getAllVacants
 );
 // router.get("/status-family", ensureAuthenticated(["administrador-adm"]), getStatusFamilies);
 // router.get("/status-families", ensureAuthenticated(["administrador-adm"]), getFamiliesEvaluationStatus);
@@ -249,12 +249,12 @@ router.get(
 router.post(
   "/assign/vacant/:idChildren",
   ensureAuthenticated(["administrador-adm"]),
-  assignVacant,
+  assignVacant
 );
 router.post(
   "/deny/vacant/:idChildren",
   ensureAuthenticated(["administrador-adm"]),
-  denyVacant,
+  denyVacant
 );
 
 /**comunicacion con colegio */
@@ -262,13 +262,14 @@ router.post(
   "/search-new",
   // ensureAuthenticated(["administrador-adm"]),
   validatorConsult,
-  getStudentByDocNumber,
+  getStudentByDocNumber
 );
 
 router.get(
   "/migrate-col",
   // ensureAuthenticated(["administrador-adm"]),
-  migrateAptToApp,
+  migrateAptToApp
 );
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;
+
