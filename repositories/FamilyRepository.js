@@ -246,18 +246,8 @@ class FamilyRepository {
                 status: true,
               },
             },
-            person_family_parent_oneToperson: {
-              select: {
-                phone: true,
-                email: true,
-              },
-            },
-            person_family_parent_twoToperson: {
-              select: {
-                phone: true,
-                email: true,
-              },
-            },
+            person_family_parent_oneToperson: true,
+            person_family_parent_twoToperson: true,
           },
         },
         vacant: {
