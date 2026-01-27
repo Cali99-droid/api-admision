@@ -253,10 +253,11 @@ class FamilyRepository {
               },
             },
             person_family_parent_twoToperson: {
-  select: {
-    phone: true,
-    email: true,
-  },
+              select: {
+                phone: true,
+                email: true,
+              },
+            },
           },
         },
         vacant: {
@@ -294,9 +295,10 @@ class FamilyRepository {
       total,
       page,
       pageSize,
-      totalPages: Math.ceil(total / pageSize),
+      totalPages: Math.ceil(total / pageSize)
     };
   }
+
 
   // Otros métodos relacionados con el repositorio de usuario
   async getFamilyMembers(idChildren) {

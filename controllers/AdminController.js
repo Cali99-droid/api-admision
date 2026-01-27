@@ -816,11 +816,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
       } = f;
 
         // Lógica para seleccionar el padre disponible
-  const parentOne = family?.person_family_parent_oneToperson;
-  const parentTwo = family?.person_family_parent_twoToperson;
+  // const parentOne = family?.person_family_parent_oneToperson;
+  // const parentTwo = family?.person_family_parent_twoToperson;
   
-  // Prioriza parentOne, si no existe usa parentTwo, si no, null
-  const selectedParent = parentOne || parentTwo || null;
+  // // Prioriza parentOne, si no existe usa parentTwo, si no, null
+  // const selectedParent = parentOne || parentTwo || null;
 
       const gradeCampusKey = `${grade}-${campus}-${family?.name}`;
       const vacants = grade ? vacantsSIGEMap[gradeCampusKey] || 0 : 0;
@@ -865,7 +865,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
             ? 3
             : family?.psy_evaluation[0]?.approved || 0,
         status: f.vacant[0]?.status,
-        dataParent: selectedParent,
+        dataParent: "",
       };
     });
 
@@ -1463,7 +1463,3 @@ export {
   migrateAptToApp,
   getStatusFamilyByUser,
 };
-
-
-
-
