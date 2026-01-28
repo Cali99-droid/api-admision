@@ -704,6 +704,16 @@ const getStatistics = async (req, res) => {
 const getStatusFamilyAndChildren = async (req, res) => {
   let yearId;
   const yearIdQuery = req.query.yearId;
+  const {
+    conclusionPsi,
+    conclusionEcomomic,
+    conclusionBackground,
+    level,
+    grade,
+    campus,
+    nameFamily,
+  } = req.query;
+
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 20;
 
@@ -715,13 +725,20 @@ const getStatusFamilyAndChildren = async (req, res) => {
 
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
 
+  const dataFilter = {
+    conclusionPsi,
+    conclusionEcomomic,
+    conclusionBackground,
+    level,
+    grade,
+    campus,
+    yearId,
+    nameFamily,
+  };
+
   try {
     // Obtener datos paginados del repositorio (filtro ya aplicado en la query)
-    const result = await FamilyRepository.getVacant(
-      yearActive.id,
-      page,
-      pageSize,
-    );
+    const result = await FamilyRepository.getVacant(page, pageSize, dataFilter);
     const families = result.data;
 
     // Si no hay datos, retornar vacío

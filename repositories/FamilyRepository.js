@@ -171,77 +171,157 @@ class FamilyRepository {
       },
     });
   }
-  async getVacant(yearId, page = 1, pageSize = 20) {
+  async getVacant(page = 1, pageSize = 20, dataFilter = {}) {
     const skip = (page - 1) * pageSize;
+    const {
+      conclusionPsi,
+      conclusionEcomomic,
+      conclusionBackground,
+      nameFamily,
+      level,
+      grade,
+      campus,
+      yearId,
+    } = dataFilter;
 
-    // Contar el total de registros CON FILTRO de secretario
-    const total = await prisma.children.count({
-      where: {
+    // Construir filtros dinámicamente basados en los parámetros disponibles
+    const buildFamilyFilters = () => {
+      const filters = {
+        familiy_secretary: {
+          some: {
+            status: 1,
+            ...(yearId && { year_id: yearId }),
+          },
+        },
+      };
+
+      if (conclusionPsi !== undefined) {
+        if (conclusionPsi == 3) {
+          filters.psy_evaluation = {
+            some: {
+              ...(conclusionPsi !== undefined && { applied: 0 }),
+            },
+          };
+        } else {
+          filters.psy_evaluation = {
+            some: {
+              ...(conclusionPsi !== undefined && {
+                approved: parseInt(conclusionPsi),
+              }),
+            },
+          };
+        }
+      }
+      console.log(nameFamily);
+      if (nameFamily !== undefined) {
+        // Filtrar por nombre de familia (búsqueda insensible a mayúsculas)
+        filters.name = {
+          contains: nameFamily,
+          // mode: "insensitive",
+        };
+      }
+
+      if (conclusionEcomomic !== undefined) {
+        if (conclusionEcomomic === "pendiente") {
+          // Filtrar familias que NO tengan economic_evaluation para este año
+          filters.economic_evaluation = {
+            none: {
+              year_id: yearId,
+            },
+          };
+        } else {
+          filters.economic_evaluation = {
+            some: {
+              // Usar los valores correctos del enum: apto, no_apto
+              conclusion: conclusionEcomomic,
+            },
+          };
+        }
+      }
+
+      if (conclusionBackground !== undefined) {
+        if (conclusionBackground === "pendiente") {
+          // Filtrar familias que NO tengan economic_evaluation para este año
+          filters.background_assessment = {
+            none: {
+              year_id: yearId,
+            },
+          };
+        } else {
+          filters.background_assessment = {
+            some: {
+              // Usar los valores correctos del enum: apto, no_apto
+              conclusion: conclusionBackground,
+            },
+          };
+        }
+      }
+
+      return filters;
+    };
+
+    const baseWhere = {
+      ...(yearId && {
         vacant: {
           some: {
             year_id: yearId,
+            ...(campus !== undefined && { campus }),
+            ...(grade !== undefined && { grade }),
+            ...(level !== undefined && { level }),
           },
         },
-        family: {
-          familiy_secretary: {
-            some: {
-              status: 1,
-              year_id: yearId,
-            },
-          },
-        },
-      },
+      }),
+      family: buildFamilyFilters(),
+    };
+
+    // Contar el total de registros CON FILTRO
+    const total = await prisma.children.count({
+      where: baseWhere,
     });
 
     // Obtener datos paginados CON FILTRO aplicado en la query
     const data = await prisma.children.findMany({
-      where: {
-        vacant: {
-          some: {
-            year_id: yearId,
-          },
-        },
-        family: {
-          familiy_secretary: {
-            some: {
-              status: 1,
-              year_id: yearId,
-            },
-          },
-        },
-      },
+      where: baseWhere,
       include: {
         family: {
           include: {
             psy_evaluation: {
-              where: {
-                year_id: yearId,
-              },
+              ...(yearId && {
+                where: {
+                  year_id: yearId,
+                },
+              }),
               select: {
                 applied: true,
                 approved: true,
               },
             },
             economic_evaluation: {
-              where: {
-                year_id: yearId,
-              },
+              ...(yearId && {
+                where: {
+                  year_id: yearId,
+                },
+              }),
               select: {
                 conclusion: true,
               },
             },
             background_assessment: {
-              where: {
-                year_id: yearId,
-              },
+              ...(yearId && {
+                where: {
+                  year_id: yearId,
+                },
+              }),
               select: {
                 conclusion: true,
               },
             },
             familiy_secretary: {
-              where: {
-                year_id: yearId,
-              },
+              ...(yearId && {
+                where: {
+                  year_id: yearId,
+                },
+              }),
               select: {
                 status: true,
               },
@@ -255,9 +335,11 @@ class FamilyRepository {
           },
         },
         vacant: {
-          where: {
-            year_id: yearId,
-          },
+          ...(yearId && {
+            where: {
+              year_id: yearId,
+            },
+          }),
           select: {
             id: true,
             campus: true,
