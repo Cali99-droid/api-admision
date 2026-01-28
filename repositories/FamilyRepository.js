@@ -212,7 +212,6 @@ class FamilyRepository {
           };
         }
       }
-      console.log(nameFamily);
       if (nameFamily !== undefined) {
         // Filtrar por nombre de familia (búsqueda insensible a mayúsculas)
         filters.name = {
@@ -327,7 +326,6 @@ class FamilyRepository {
               },
             },
             person_family_parent_oneToperson: true,
-            person_family_parent_twoToperson: true,
           },
         },
         vacant: {
@@ -367,10 +365,9 @@ class FamilyRepository {
       total,
       page,
       pageSize,
-      totalPages: Math.ceil(total / pageSize)
+      totalPages: Math.ceil(total / pageSize),
     };
   }
-
 
   // Otros métodos relacionados con el repositorio de usuario
   async getFamilyMembers(idChildren) {
@@ -438,4 +435,3 @@ class FamilyRepository {
 }
 
 export default new FamilyRepository();
-
