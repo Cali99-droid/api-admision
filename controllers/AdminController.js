@@ -469,7 +469,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Cuenta Activa (Sin Familia)",
         description: "Inició sesión, pero no creó la unidad familiar.",
-        agent: family.familiy_secretary[0].user.person.name,
+        agent: family?.familiy_secretary[0]?.user.person.name || '',
       });
     }
 
@@ -832,6 +832,13 @@ const getStatusFamilyAndChildren = async (req, res) => {
         person,
       } = f;
 
+        // Lógica para seleccionar el padre disponible
+      const parentOne = family?.person_family_parent_oneToperson;
+      const parentTwo = family?.person_family_parent_twoToperson;
+  
+  // Prioriza parentOne, si no existe usa parentTwo, si no, null
+      const selectedParent = parentOne || parentTwo || null;
+
       const gradeCampusKey = `${grade}-${campus}-${family?.name}`;
       const vacants = grade ? vacantsSIGEMap[gradeCampusKey] || 0 : 0;
       const matchFamily = matchFamilySIGEMap[gradeCampusKey];
@@ -875,7 +882,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
             ? 3
             : family?.psy_evaluation[0]?.approved || 0,
         status: f.vacant[0]?.status,
-        dataParent: family?.person_family_parent_oneToperson,
+        dataParent: selectedParent,
       };
     });
 
