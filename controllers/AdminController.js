@@ -465,11 +465,19 @@ const getStatusFamilyByUser = async (req, res) => {
       },
     });
 
+    if (!family?.familiy_secretary[0]) {
+      return res.status(200).json({
+        status: "Familia sin asignacion de secretaria",
+        description: "Failia existe pero aun no fue tomada por una secretaria",
+        agent: family?.familiy_secretary[0]?.user.person.name || "",
+      });
+    }
+
     if (!family) {
       return res.status(200).json({
         status: "Cuenta Activa (Sin Familia)",
         description: "Inició sesión, pero no creó la unidad familiar.",
-        agent: family?.familiy_secretary[0]?.user.person.name || '',
+        agent: family?.familiy_secretary[0]?.user.person.name || "",
       });
     }
 
@@ -815,11 +823,11 @@ const getStatusFamilyAndChildren = async (req, res) => {
         person,
       } = f;
 
-        // Lógica para seleccionar el padre disponible
+      // Lógica para seleccionar el padre disponible
       const parentOne = family?.person_family_parent_oneToperson;
       const parentTwo = family?.person_family_parent_twoToperson;
-  
-  // Prioriza parentOne, si no existe usa parentTwo, si no, null
+
+      // Prioriza parentOne, si no existe usa parentTwo, si no, null
       const selectedParent = parentOne || parentTwo || null;
 
       const gradeCampusKey = `${grade}-${campus}-${family?.name}`;
