@@ -464,6 +464,9 @@ const getStatusFamilyByUser = async (req, res) => {
           orderBy: { create_time: "desc" },
         },
       },
+      orderBy: {
+        id: "desc",
+      },
     });
 
     if (!family) {
@@ -534,67 +537,98 @@ const getStatusFamilyByUser = async (req, res) => {
     const latestBackgroundAssessment = family.background_assessment[0];
     const latestSecretaryValidation = family.familiy_secretary[0];
 
-    // Evaluación psicológica
-    if (latestPsyEvaluation) {
-      if (latestPsyEvaluation.approved === 1) {
-        // Verificar evaluación económica
-        if (
-          latestEconomicEvaluation &&
-          latestEconomicEvaluation.conclusion === "apto"
-        ) {
-          // Verificar evaluación de antecedentes
-          if (
-            latestBackgroundAssessment &&
-            latestBackgroundAssessment.conclusion === "apto"
-          ) {
-            return res.status(200).json({
-              status: "Postulando",
-              description: "en espera de asignación vacante",
-              agent: family.familiy_secretary[0].user.person.name,
-            });
-          }
-          return res.status(200).json({
-            status: "Postulando",
-            description: "evaluado por psicología y economía ",
-            agent: family.familiy_secretary[0].user.person.name,
-          });
-        }
-        return res.status(200).json({
-          status: "Postulando",
-          description: "evaluado por psicología, en evaluación económica ",
-          agent: family.familiy_secretary[0].user.person.name,
-        });
-      } else if (latestPsyEvaluation.approved === 2) {
-        return res.status(200).json({
-          status: "Postulando",
-          description:
-            "no pasó evaluacion Psicologica, en evaluación economica",
-          family: family.familiy_secretary[0].user.person.name,
-        });
-      } else if (latestPsyEvaluation.applied === 1) {
-        return res.status(200).json({
-          status: "Postulando",
-          description:
-            "Evaluación Psicologica Aplicada, en espera de resultado",
-          agent: family.familiy_secretary[0].user.person.name,
-        });
-      } else if (latestPsyEvaluation.applied === 0) {
-        return res.status(200).json({
-          status: "Postulando",
-          description: "en espera de envaluación psicologica",
-          agent: family.familiy_secretary[0].user.person.name,
-        });
-      }
-    } else {
+    if (!latestPsyEvaluation) {
       return res.status(200).json({
         status: "Postulando",
-        description: "en espera de envaluación psicologica",
+        description: "No cuenta con evaluacon psicologica",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+    if (latestPsyEvaluation && latestPsyEvaluation.applied === 0) {
+      return res.status(200).json({
+        status: "Postulando",
+        description: "Evaluacion psicologica no aplicada",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+    /**ECONOMIC */
+    if (!latestEconomicEvaluation) {
+      return res.status(200).json({
+        status: "Postulando",
+        description: "No cuenta con evaluacon economica",
+        agent: family.familiy_secretary[0].user.person.name,
+      });
+    }
+    /**ANTECEDENTEs */
+    if (!latestBackgroundAssessment) {
+      return res.status(200).json({
+        status: "Postulando",
+        description: "No cuenta con evaluacon de antecedentes",
         agent: family.familiy_secretary[0].user.person.name,
       });
     }
 
+    // Evaluación psicológica
+    // if (latestPsyEvaluation) {
+    //   if (latestPsyEvaluation.approved === 1) {
+    //     // Verificar evaluación económica
+    //     if (
+    //       latestEconomicEvaluation &&
+    //       latestEconomicEvaluation.conclusion === "apto"
+    //     ) {
+    //       // Verificar evaluación de antecedentes
+    //       if (
+    //         latestBackgroundAssessment &&
+    //         latestBackgroundAssessment.conclusion === "apto"
+    //       ) {
+    //         return res.status(200).json({
+    //           status: "Postulando",
+    //           description: "en espera de asignación vacante",
+    //           agent: family.familiy_secretary[0].user.person.name,
+    //         });
+    //       }
+    //       return res.status(200).json({
+    //         status: "Postulando",
+    //         description: "evaluado por psicología y economía ",
+    //         agent: family.familiy_secretary[0].user.person.name,
+    //       });
+    //     }
+    //     return res.status(200).json({
+    //       status: "Postulando",
+    //       description: "evaluado por psicología, en evaluación económica",
+    //       agent: family.familiy_secretary[0].user.person.name,
+    //     });
+    //   } else if (latestPsyEvaluation.approved === 2) {
+    //     return res.status(200).json({
+    //       status: "Postulando",
+    //       description:
+    //         "no pasó evaluacion Psicologica, en evaluación economica",
+    //       family: family.familiy_secretary[0].user.person.name,
+    //     });
+    //   } else if (latestPsyEvaluation.applied === 1) {
+    //     return res.status(200).json({
+    //       status: "Postulando",
+    //       description:
+    //         "Evaluación Psicologica Aplicada, en espera de resultado",
+    //       agent: family.familiy_secretary[0].user.person.name,
+    //     });
+    //   } else if (latestPsyEvaluation.applied === 0) {
+    //     return res.status(200).json({
+    //       status: "Postulando",
+    //       description: "en espera de envaluación psicologica",
+    //       agent: family.familiy_secretary[0].user.person.name,
+    //     });
+    //   }
+    // } else {
+    //   return res.status(200).json({
+    //     status: "Postulando",
+    //     description: "en espera de envaluación psicologica",
+    //     agent: family.familiy_secretary[0].user.person.name,
+    //   });
+    // }
+
     // Validación de secretaría
-    if (latestSecretaryValidation && latestSecretaryValidation.status === 1) {
+    if (latestSecretaryValidation.status === 1) {
       return res.status(200).json({
         status: "Postulando",
         description:
