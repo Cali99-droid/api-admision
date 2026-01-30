@@ -628,11 +628,11 @@ const getStatusFamilyByUser = async (req, res) => {
     // }
 
     // Validación de secretaría
-    if (latestSecretaryValidation.status === 1) {
+    if (latestSecretaryValidation.status === 0) {
       return res.status(200).json({
         status: "Postulando",
         description:
-          "Secretaría aprobó la documentación y el expediente está listo para evaluaciones.",
+          "Formularios completos; pendiente de revisión por Secretaría.",
         agent: family.familiy_secretary[0].user.person.name,
       });
     }
@@ -640,8 +640,7 @@ const getStatusFamilyByUser = async (req, res) => {
     // 7. Si llegó aquí, tiene vacante solicitada pero no ha sido validada
     return res.status(200).json({
       status: "Postulando",
-      description:
-        "Formularios completos; pendiente de revisión por Secretaría.",
+      description: "Listo para asignacion de vacante",
       agent: family.familiy_secretary[0].user.person.name,
     });
   } catch (error) {
