@@ -523,7 +523,7 @@ const getStatusFamilyByUser = async (req, res) => {
       });
     }
 
-    if (latestVacant.status === "rejected") {
+    if (latestVacant.status === "denied") {
       return res.status(200).json({
         status: "No Apto",
         description: "La familia no obtiene vacante",
