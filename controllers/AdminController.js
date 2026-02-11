@@ -469,7 +469,7 @@ const getStatusFamilyByUser = async (req, res) => {
       return res.status(200).json({
         status: "Cuenta Activa (Sin Familia)",
         description: "Inició sesión, pero no creó la unidad familiar.",
-        agent: family?.familiy_secretary[0]?.user.person.name || '',
+        agent: family?.familiy_secretary[0]?.user.person.name || "",
       });
     }
 
@@ -718,9 +718,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
   const pageSize = parseInt(req.query.pageSize) || 20;
 
   const yearActive = await prisma.year.findFirst({
-    where: {
-      status: true,
-    },
+    where: { status: true },
   });
 
   yearId = yearIdQuery ? parseInt(yearIdQuery) : yearActive.id;
@@ -737,11 +735,9 @@ const getStatusFamilyAndChildren = async (req, res) => {
   };
 
   try {
-    // Obtener datos paginados del repositorio (filtro ya aplicado en la query)
     const result = await FamilyRepository.getVacant(page, pageSize, dataFilter);
     const families = result.data;
 
-    // Si no hay datos, retornar vacío
     if (families.length === 0) {
       return res.status(200).json({
         success: true,
@@ -755,22 +751,26 @@ const getStatusFamilyAndChildren = async (req, res) => {
       });
     }
 
-    // Extraer combinaciones únicas de grade/campus para consultas SIGE batch
+    // --- NUEVO: Recolectar SchoolIds y Grade/Campus ---
     const uniqueGradeCampus = new Set();
+    const schoolIds = new Set(); // Para obtener las escuelas
+
     families.forEach((f) => {
-      const { vacant: [{ campus, grade } = {}] = [], family } = f;
+      const { vacant: [{ campus, grade } = {}] = [], family, schoolId } = f;
       if (grade && campus && family?.name) {
         uniqueGradeCampus.add(`${grade}-${campus}-${family.name}`);
       }
+      if (schoolId) {
+        schoolIds.add(schoolId); // Guardamos los IDs de escuelas presentes en la página
+      }
     });
 
-    // Hacer llamadas a SIGE en paralelo pero limitadas
+    // --- PROCESAMIENTO SIGE (Tu lógica actual) ---
     const SIGE_BATCH_SIZE = 5;
     const sigeKeys = Array.from(uniqueGradeCampus);
     const vacantsSIGEMap = {};
     const matchFamilySIGEMap = {};
 
-    // Procesar en lotes para evitar sobrecargar SIGE
     for (let i = 0; i < sigeKeys.length; i += SIGE_BATCH_SIZE) {
       const batch = sigeKeys.slice(i, i + SIGE_BATCH_SIZE);
       const batchResults = await Promise.all(
@@ -784,65 +784,65 @@ const getStatusFamilyAndChildren = async (req, res) => {
               matchFamily: vacantMat.matchFamily || null,
             };
           } catch (error) {
-            console.error(`Error fetching SIGE data for ${key}:`, error);
             return { key, vacants: 0, matchFamily: null };
           }
         }),
       );
-
       batchResults.forEach(({ key, vacants, matchFamily }) => {
         vacantsSIGEMap[key] = vacants;
         matchFamilySIGEMap[key] = matchFamily;
       });
     }
 
-    // Consulta única de vacantes aceptadas
-    const vacantsAccepted = await prisma.vacant.findMany({
-      where: {
-        status: "accepted",
-        year_id: yearId,
-      },
-      select: {
-        grade: true,
-        campus: true,
-        children: {
-          select: {
-            family: {
-              select: {
-                name: true,
-              },
-            },
-          },
+    // --- NUEVO: Consulta Batch de Escuelas y Vacantes Aceptadas en paralelo ---
+    const [vacantsAccepted, schoolsData] = await Promise.all([
+      prisma.vacant.findMany({
+        where: { status: "accepted", year_id: yearId },
+        select: {
+          grade: true,
+          campus: true,
+          children: { select: { family: { select: { name: true } } } },
         },
-      },
-    });
+      }),
+      // Solo consultamos si hay IDs de escuelas
+      schoolIds.size > 0
+        ? client.schools_new.findMany({
+            where: { id: { in: Array.from(schoolIds) } },
+            select: { id: true, cod_modular: true, name: true },
+          })
+        : Promise.resolve([]),
+    ]);
 
-    // Mapeo de vacantes aceptadas
+    // Mapas para búsqueda rápida O(1)
+    const schoolsMap = {};
+    schoolsData.forEach((s) => (schoolsMap[s.id] = s));
+
     const vacantsAcceptedMap = {};
     vacantsAccepted.forEach((v) => {
       const key = `${v.grade}-${v.campus}-${v.children.family.name}`;
       vacantsAcceptedMap[key] = (vacantsAcceptedMap[key] || 0) + 1;
     });
 
-    // Mapeo final sin consultas adicionales
+    // --- MAPEO FINAL ---
     const format = families.map((f) => {
       const {
         vacant: [{ id, campus, level, grade } = {}] = [],
         family,
         person,
+        schoolId,
       } = f;
 
-        // Lógica para seleccionar el padre disponible
       const parentOne = family?.person_family_parent_oneToperson;
       const parentTwo = family?.person_family_parent_twoToperson;
-  
-  // Prioriza parentOne, si no existe usa parentTwo, si no, null
       const selectedParent = parentOne || parentTwo || null;
 
       const gradeCampusKey = `${grade}-${campus}-${family?.name}`;
       const vacants = grade ? vacantsSIGEMap[gradeCampusKey] || 0 : 0;
       const matchFamily = matchFamilySIGEMap[gradeCampusKey];
       const awarded = vacantsAcceptedMap[gradeCampusKey] || 0;
+
+      // Obtenemos la escuela del mapa
+      const school = schoolId ? schoolsMap[schoolId] || null : null;
 
       return {
         id: f.id,
@@ -856,8 +856,8 @@ const getStatusFamilyAndChildren = async (req, res) => {
         birthdate: person?.birthdate,
         family: family?.name,
         inscription: family?.create_time,
-        phone: family?.person_family_parent_oneToperson?.phone,
-        email: family?.person_family_parent_oneToperson?.email,
+        phone: parentOne?.phone, // Simplificado usando la lógica de selectedParent o parentOne
+        email: parentOne?.email,
         vacantId: id,
         campus: parseInt(campus),
         level: parseInt(level),
@@ -883,6 +883,7 @@ const getStatusFamilyAndChildren = async (req, res) => {
             : family?.psy_evaluation[0]?.approved || 0,
         status: f.vacant[0]?.status,
         dataParent: selectedParent,
+        school, // <--- CAMPO RESTAURADO
       };
     });
 
