@@ -385,7 +385,15 @@ class FamilyRepository {
       include: {
         person: true,
         vacant: {
-          where: {},
+          where: {
+            some: {
+              vacant: {
+                some: {
+                  year_id: yearId,
+                },
+              },
+            },
+          },
         },
         family: {
           include: {
