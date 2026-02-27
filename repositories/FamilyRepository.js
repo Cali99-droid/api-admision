@@ -386,13 +386,7 @@ class FamilyRepository {
         person: true,
         vacant: {
           where: {
-            some: {
-              vacant: {
-                some: {
-                  year_id: yearId,
-                },
-              },
-            },
+            year_id: yearId,
           },
         },
         family: {
