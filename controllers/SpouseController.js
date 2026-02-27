@@ -318,7 +318,7 @@ const update = async (req, res) => {
         name: personUpdate.name,
         lastName: personUpdate.lastname + " " + personUpdate.mLastname,
       };
-      const resp = await updateUserCRM(personCRM);
+      // const resp = await updateUserCRM(personCRM);
 
       if (!resp) {
         const updateMatch = await prisma.person.update({

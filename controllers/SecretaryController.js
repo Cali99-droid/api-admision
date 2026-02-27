@@ -590,7 +590,7 @@ const getFamily = async (req, res) => {
     if (family?.person_family_parent_oneToperson) {
       mainSpouse = family.person_family_parent_oneToperson;
       mainSpouse.validate = handleVerifyValidate(
-        family.person_family_parent_oneToperson.validate
+        family.person_family_parent_oneToperson.validate,
       );
       mainSpouse = {
         email: family.person_family_parent_oneToperson.email,
@@ -610,7 +610,7 @@ const getFamily = async (req, res) => {
     if (family?.person_family_parent_twoToperson) {
       spouse = family.person_family_parent_twoToperson;
       spouse.validate = handleVerifyValidate(
-        family.person_family_parent_twoToperson.validate
+        family.person_family_parent_twoToperson.validate,
       );
       spouse = {
         email: family.person_family_parent_twoToperson.email,
@@ -943,9 +943,15 @@ const getMessage = async (req, res) => {
 
 const setServed = async (req, res) => {
   const id = parseInt(req.params.id);
+  const yearActive = await prisma.year.findFirst({
+    where: {
+      status: true,
+    },
+  });
   const family = await prisma.familiy_secretary.findFirst({
     where: {
       family_id: parseInt(id),
+      year_id: yearActive.id,
     },
     include: {
       family: {

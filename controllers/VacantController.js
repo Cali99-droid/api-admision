@@ -82,12 +82,12 @@ const store = async (req, res) => {
       personCRM.level = getLevel(parseInt(updateVacant.level));
       personCRM.grade = getGradeEd(updateVacant.grade);
 
-      const resp = await createUserCRM(personCRM);
+      // const resp = await createUserCRM(personCRM);
       res.status(201).json({
         success: true,
         data: {
           id: updateVacant.id,
-          resp,
+          // resp,
         },
       });
       return;
@@ -99,7 +99,7 @@ const store = async (req, res) => {
     });
     personCRM.level = getLevel(parseInt(createVacant.level));
     personCRM.grade = getGradeEd(createVacant.grade);
-    const resp = await createUserCRM(personCRM);
+    // const resp = await createUserCRM(personCRM);
 
     res.status(201).json({
       success: true,
@@ -268,7 +268,7 @@ const createVacant = async (req, res) => {
       handleHttpError(
         res,
         `Ya existe una solicitud de vacante vigente para el ${year.name}`,
-        404
+        404,
       );
       return;
     }
