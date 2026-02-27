@@ -1093,8 +1093,9 @@ const getStudentByDocNumber = async (req, res) => {
         },
       },
     });
-    return children;
     console.log("children", children);
+    return children;
+
     if (!children) {
       return handleHttpError(res, "No existe postulante", 404);
     }
