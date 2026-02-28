@@ -33,7 +33,7 @@ export function ensureAuthenticated(requiredRoles = []) {
       { algorithms: ["RS256"] },
       (err, decodedToken) => {
         if (err) {
-          console.error("Error verifying token:", err);
+          // console.error("Error verifying token:", err);
           return res.status(401).json({ message: "No autenticado." });
         }
 
@@ -71,7 +71,7 @@ export function ensureAuthenticated(requiredRoles = []) {
         // req.user = decodedToken;
 
         // next();
-      }
+      },
     );
   };
 }

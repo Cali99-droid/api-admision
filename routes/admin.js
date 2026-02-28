@@ -19,6 +19,7 @@ import {
   getStudentByDocNumber,
   migrateAptToApp,
   processExpired,
+  getAdmissionReport,
 } from "../controllers/AdminController.js";
 
 import {
@@ -270,6 +271,102 @@ router.get(
   // ensureAuthenticated(["administrador-adm"]),
   migrateAptToApp
 );
+
+/**
+ * Reporte de admisión agrupado por nivel educativo
+ * @openapi
+ * /admin/report/admission:
+ *    get:
+ *      tags:
+ *        - Admin
+ *      summary: "Reporte de admisión por nivel"
+ *      description: >
+ *        Retorna un resumen del proceso de admisión agrupado por nivel educativo
+ *        (inicial, primaria, secundaria) para el año indicado. Cruza datos entre
+ *        la base de datos de admisión y la base de datos del colegio para obtener
+ *        registrados, atendidos, aptos, reservados y matriculados.
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: query
+ *          name: year
+ *          required: true
+ *          schema:
+ *            type: string
+ *            pattern: '^\d{4}$'
+ *            example: "2025"
+ *          description: Año del proceso de admisión (4 dígitos numéricos)
+ *      responses:
+ *        '200':
+ *          description: Reporte generado correctamente
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    example: true
+ *                  year:
+ *                    type: string
+ *                    example: "2025"
+ *                  data:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        level:
+ *                          type: string
+ *                          enum: [inicial, primaria, secundaria]
+ *                          example: "inicial"
+ *                        registrados:
+ *                          type: integer
+ *                          description: Total de postulantes registrados en la vacante
+ *                          example: 103
+ *                        atendidos_secretaria:
+ *                          type: integer
+ *                          description: Postulantes atendidos por secretaría
+ *                          example: 98
+ *                        atendidos_psicologia:
+ *                          type: integer
+ *                          description: Postulantes con evaluación psicológica aplicada
+ *                          example: 90
+ *                        aptos:
+ *                          type: integer
+ *                          description: Postulantes con vacante en estado 'accepted'
+ *                          example: 103
+ *                        reservados:
+ *                          type: integer
+ *                          description: Postulantes que realizaron el pago de reserva en el colegio
+ *                          example: 102
+ *                        matriculados:
+ *                          type: integer
+ *                          description: Postulantes con matrícula registrada en el colegio
+ *                          example: 103
+ *        '400':
+ *          description: Parámetro 'year' ausente o con formato inválido
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  success:
+ *                    type: boolean
+ *                    example: false
+ *                  message:
+ *                    type: string
+ *                    example: "El parámetro 'year' debe ser un año de 4 dígitos numéricos"
+ *        '401':
+ *          description: No autenticado
+ *        '403':
+ *          description: No tiene permisos suficientes
+ */
+router.get(
+  "/report/admission",
+  ensureAuthenticated(["administrador-adm"]),
+  getAdmissionReport
+);
+
 // router.get("/assign/vacant/:idChildren", assignVacant);
 export default router;
 

@@ -1,5 +1,6 @@
 import { handleHttpError } from "../utils/handleHttpError.js";
 import { matchedData } from "express-validator";
+import AdmissionReportRepository from "../repositories/AdmissionReportRepository.js";
 import SecretaryRepository from "../repositories/SecretaryRepository.js";
 import PsychologyRepository from "../repositories/PsychologyRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
@@ -1503,6 +1504,25 @@ const changeNameFamily = async (req, res) => {
   }
 };
 
+const getAdmissionReport = async (req, res) => {
+  try {
+    const { year } = req.query;
+
+    if (!year || !/^\d{4}$/.test(year)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "El parámetro 'year' debe ser un año de 4 dígitos numéricos" });
+    }
+
+    const data = await AdmissionReportRepository.getReport(year);
+
+    return res.status(200).json({ success: true, year, data });
+  } catch (error) {
+    console.log(error);
+    handleHttpError(res, "ERROR_GET_ADMISSION_REPORT");
+  }
+};
+
 export {
   getAllUsers,
   createUserRole,
@@ -1523,6 +1543,7 @@ export {
   denyVacant,
   getStudentByDocNumber,
   processExpired,
+  getAdmissionReport,
   //sctipots
   changeNameFamily,
   migrateAptToApp,
