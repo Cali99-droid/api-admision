@@ -199,23 +199,27 @@ const update = async (req, res) => {
       birthdate: new Date(data.children_birthdate).toISOString(),
       validate: parseInt(data.children_validate) || 0,
     };
-    const father = {
-      name: data.father_name,
-      lastname: data.father_lastname,
-      mLastname: data.father_mLastname,
-      type_doc: data.father_type_doc,
-      doc_number: data.father_doc_number.toString(),
-      role: "P",
-    };
+    const father = data.father_id
+      ? {
+          name: data.father_name,
+          lastname: data.father_lastname,
+          mLastname: data.father_mLastname,
+          type_doc: data.father_type_doc,
+          doc_number: data.father_doc_number?.toString(),
+          role: "P",
+        }
+      : null;
 
-    const mother = {
-      name: data.mother_name,
-      lastname: data.mother_lastname,
-      mLastname: data.mother_mLastname,
-      type_doc: data.mother_type_doc,
-      doc_number: data.mother_doc_number.toString(),
-      role: "M",
-    };
+    const mother = data.mother_id
+      ? {
+          name: data.mother_name,
+          lastname: data.mother_lastname,
+          mLastname: data.mother_mLastname,
+          type_doc: data.mother_type_doc,
+          doc_number: data.mother_doc_number?.toString(),
+          role: "M",
+        }
+      : null;
     if (data.children_img1 && children_img2) {
       console.log("se reemplaza imagen 2");
       const person = await prisma.doc.findFirst({
@@ -367,7 +371,7 @@ const update = async (req, res) => {
       },
     });
 
-    if (data.father_id || data.father_id !== null) {
+    if (father) {
       await prisma.person.update({
         data: father,
         where: {
@@ -375,7 +379,7 @@ const update = async (req, res) => {
         },
       });
     }
-    if (data.mother_id || data.mother_id !== null) {
+    if (mother) {
       await prisma.person.update({
         data: mother,
         where: {

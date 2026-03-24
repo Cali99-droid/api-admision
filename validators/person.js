@@ -198,55 +198,35 @@ export const validatorUpdateChildren = [
   body("children_img1").optional(),
   body("children_img2").optional(),
   body("father_id")
-    .exists()
-    .notEmpty()
-    .withMessage("father_id no valido")
+    .optional()
     .isNumeric()
     .withMessage("el father_id no es un numero"),
-  body("father_name")
-    .trim()
-    .exists()
-    .notEmpty()
-    .withMessage("el father es incorrecto children"),
-  body("father_lastname")
-    .exists()
-    .notEmpty()
-    .withMessage("el father es incorrecto"),
-  body("father_mLastname")
-    .exists()
-    .notEmpty()
-    .withMessage("el father es incorrecto"),
+  body("father_name").optional().trim(),
+  body("father_lastname").optional(),
+  body("father_mLastname").optional(),
   body("father_type_doc")
+    .optional()
     .isIn(["DNI", "CE"])
     .withMessage("el father de documento debe ser DNI o CE"),
   body("father_doc_number")
+    .optional()
     .isNumeric()
     .withMessage("el father de documento debe ser numerico")
     .isLength({ min: 8, max: 8 })
     .withMessage("el father de documento debe ser de 8 caracteres"),
   body("mother_id")
-    .exists()
-    .notEmpty()
-    .withMessage("father_id no valido")
+    .optional()
     .isNumeric()
-    .withMessage("el father_id no es un numero"),
-  body("mother_name")
-    .trim()
-    .exists()
-    .notEmpty()
-    .withMessage("el mother es incorrecto children"),
-  body("mother_lastname")
-    .exists()
-    .notEmpty()
-    .withMessage("el mother es incorrecto"),
-  body("mother_mLastname")
-    .exists()
-    .notEmpty()
-    .withMessage("el mother es incorrecto"),
+    .withMessage("el mother_id no es un numero"),
+  body("mother_name").optional().trim(),
+  body("mother_lastname").optional(),
+  body("mother_mLastname").optional(),
   body("mother_type_doc")
+    .optional()
     .isIn(["DNI", "CE"])
     .withMessage("el mother.type_doc de documento debe ser DNI o CE"),
   body("mother_doc_number")
+    .optional()
     .isNumeric()
     .withMessage("el mother de documento debe ser numerico")
     .isLength({ min: 8, max: 8 })

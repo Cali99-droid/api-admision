@@ -102,7 +102,10 @@ const PORT = process.env.PORT || 4000;
 /**
  * Definir ruta de documentación
  */
-
+app.get("/documentation.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(openApiConfigration);
+});
 app.use(
   "/documentation",
   swaggerUI.serve,
